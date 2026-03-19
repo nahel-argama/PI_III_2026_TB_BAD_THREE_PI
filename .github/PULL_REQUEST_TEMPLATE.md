@@ -1,7 +1,7 @@
 ## Referência da Task
 
-Se este PR estiver relacionado a uma task, mencione aqui o link do Jira ou issue.
-Exemplo: [Jira Task](https://jira.exemplo.com/browse/PROJ-123)
+Se este PR estiver relacionado a uma task, mencione aqui o link da task/issue.
+Exemplo: [Task](https://www.google.com)
 
 ## Descrição
 
