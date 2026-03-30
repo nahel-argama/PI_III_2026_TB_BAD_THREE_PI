@@ -1,1 +1,8 @@
+# Python
 .venv
+
+# Docker
+composer.yaml
+
+# Env
+.env
