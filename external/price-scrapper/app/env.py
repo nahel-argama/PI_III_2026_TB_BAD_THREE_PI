@@ -30,11 +30,10 @@ class __Settings(__Env):
     env_file = ".env"
 
     def __init__(self):
-        if __settings is not None:
-            return __settings
         super().__init__(self.env_file)
 
 
 __settings = __Settings()
 
 CSV_URL = __settings.get_attr_typed("CSV_URL", "", str)
+TIMEZONE = __settings.get_attr_typed("TIMEZONE", "America/Sao_Paulo", str)
