@@ -33,18 +33,39 @@ def get_and_prepare_csv() -> str:
         raise CsvDownloadException(f"Error occurred while preparing CSV: {e}")
 
 
-def get_csv_current_week_csv_name():
+def get_csv_week_csv_name(offset: int = 0) -> str:
     today = datetime.now().date()
     tz = ZoneInfo("America/Sao_Paulo")
 
     now_date = datetime(today.year, today.month, today.day).astimezone(tz).date()
-    week_start = now_date - timedelta(days=now_date.weekday() + 1)
+    week_start = (
+        now_date - timedelta(days=now_date.weekday() + 1) + timedelta(weeks=offset)
+    )
     week_end = week_start + timedelta(days=6)
 
     return f"{week_start}_{week_end}.csv"
 
 
-def get_csv_current_week_path():
+def get_stored_csv_files() -> list[str]:
+    try:
+        import os
+
+        csv_files = []
+        for root, _, files in os.walk("data"):
+            for file in files:
+                if file.endswith(".csv"):
+                    csv_files.append(os.path.join(root, file))
+
+        csv_files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+
+        return csv_files
+    except Exception as e:
+        raise CsvDownloadException(
+            f"Error occurred while listing stored CSV files: {e}"
+        )
+
+
+def get_csv_current_week_path() -> str:
     return f"data/{get_csv_current_week_csv_name()}"
 
 
@@ -72,7 +93,7 @@ def should_download_csv() -> bool:
         raise CsvDownloadException(f"Error occurred while reading current CSV: {e}")
 
 
-def download_csv() -> None:
+def download_csv() -> str:
     try:
         response = requests.get(env.CSV_URL)
 
@@ -81,7 +102,7 @@ def download_csv() -> None:
         raise CsvDownloadException(str(e))
 
 
-def store_csv(data: str, file_path: str):
+def store_csv(data: str, file_path: str) -> None:
     if "/" in file_path:
         directory = file_path.rsplit("/", 1)[0]
         try:
