@@ -8,7 +8,7 @@ class __Env:
     def __init__(self, env_file: str = ""):
         self.__parse_env_file(env_file)
 
-    def __parse_env_file(self, env_file: str):
+    def __parse_env_file(self, env_file: str) -> None:
         try:
             with open(env_file, "r") as f:
                 for line in f:

@@ -3,17 +3,23 @@ from zoneinfo import ZoneInfo
 
 
 def main():
-    day = int(input())
-    month = int(input())
-    year = int(input())
+    offset = int(input())
 
+    print(get_csv_week_csv_name(offset))
+
+
+def get_csv_week_csv_name(offset: int = 0) -> str:
+    today = datetime.now().date()
     tz = ZoneInfo("America/Sao_Paulo")
 
-    now_date = datetime(year, month, day).astimezone(tz).date()
-    week_start = now_date - timedelta(days=now_date.weekday() + 1)
+    now_date = datetime(today.year, today.month, today.day).astimezone(tz).date()
+    week_start = (
+        now_date - timedelta(days=now_date.weekday() + 1) + timedelta(weeks=offset)
+    )
     week_end = week_start + timedelta(days=6)
 
-    print(f"data_{week_start}_{week_end}.csv")
+    return f"{week_start}_{week_end}.csv"
 
 
-main()
+if __name__ == "__main__":
+    main()

@@ -28,7 +28,7 @@ class ICommand:
 _COMMAND_REGISTRY = {}
 
 
-def register_command(cmd_class):
+def register_command(cmd_class) -> ICommand:
     cmd_instance = cmd_class()
     _COMMAND_REGISTRY[cmd_instance.command()] = cmd_instance
     return cmd_class
@@ -45,7 +45,7 @@ class HelpCommand(ICommand):
     def help(self) -> str:
         return "Show this help message."
 
-    def handler(self):
+    def handler(self) -> None:
         print("Available commands:\n")
 
         commands = _COMMAND_REGISTRY.values()
@@ -69,7 +69,7 @@ class GetCsvCommand(ICommand):
     def help(self) -> str:
         return "Download the price data from the source website and store it locally."
 
-    def handler(self):
+    def handler(self) -> None:
         try:
             csv.download_csv()
         except Exception as e:
@@ -87,7 +87,7 @@ class ProcessCsvCommand(ICommand):
     def help(self) -> str:
         return "Process and store the price data in the database. If the data is not downloaded, it will be downloaded first."
 
-    def handler(self):
+    def handler(self) -> None:
         try:
             processor.process_csv_data()
         except Exception as e:
