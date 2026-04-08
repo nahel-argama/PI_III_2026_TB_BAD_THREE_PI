@@ -1,5 +1,4 @@
 import io
-from typing import Any, Tuple
 
 import pandas as pd
 
@@ -47,7 +46,7 @@ def parse_csv_data(csv_data: str) -> pd.DataFrame:
 
         df = df.rename(columns=CSV_TO_DB_MAPPING)
 
-        for col in df.select_dtypes(include=["object"]).columns:
+        for col in df.columns:
             df[col] = df[col].str.strip()
 
         return df
@@ -55,34 +54,7 @@ def parse_csv_data(csv_data: str) -> pd.DataFrame:
         raise CsvProcessorException(f"Error parsing CSV data: {e}")
 
 
-def validate_structure(csv_data: str) -> bool:
-    try:
-        string_buffer = io.StringIO(csv_data)
-        df = pd.read_csv(string_buffer, sep=";", nrows=1)
-
-        required_cols = set(CSV_COLUMNS)
-        actual_cols = set(df.columns)
-
-        if not required_cols.issubset(actual_cols):
-            missing = required_cols - actual_cols
-            raise CsvProcessorException(f"Missing required columns: {missing}")
-
-        return True
-    except CsvProcessorException:
-        raise
-    except Exception as e:
-        raise CsvProcessorException(f"Error validating CSV structure: {e}")
-
-
-def extract_composite_key(row: pd.Series) -> Tuple[Any, str, str]:
-    return (
-        int(row["product_id"]),
-        row["municipality"],
-        row["week_date_range"],
-    )
-
-
-def clean_price_data(df: pd.DataFrame) -> pd.DataFrame:
+def format_data(df: pd.DataFrame) -> pd.DataFrame:
     try:
         if "price_per_kg" in df.columns:
             df["price_per_kg"] = (
@@ -99,11 +71,10 @@ def clean_price_data(df: pd.DataFrame) -> pd.DataFrame:
 
         return df
     except Exception as e:
-        raise CsvProcessorException(f"Error cleaning price data: {e}")
+        raise CsvProcessorException(f"Error formatting data: {e}")
 
 
 def process_csv_data(csv_data: str) -> pd.DataFrame:
-    validate_structure(csv_data)
     df = parse_csv_data(csv_data)
-    df = clean_price_data(df)
+    df = format_data(df)
     return df
