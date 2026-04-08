@@ -108,7 +108,7 @@ class IngestCommand(ICommand):
 
     def handler(self) -> None:
         try:
-
+            # TODO implementar aqui
             print("CSV data ingested successfully.")
         except Exception as e:
             print(f"Error ingesting CSV data: {e}", file=sys.stderr)
