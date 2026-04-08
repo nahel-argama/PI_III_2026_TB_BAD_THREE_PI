@@ -1,7 +1,7 @@
 import sys
 
-import app.data.processor as processor
-import app.data.csv as csv
+import app.cli.csv as csv
+from app.database.con import init_db
 
 
 class CommandNotFoundError(Exception):
@@ -77,21 +77,41 @@ class GetCsvCommand(ICommand):
 
 
 @register_command
-class ProcessCsvCommand(ICommand):
+class InitDbCommand(ICommand):
     def command(self) -> str:
-        return "process-csv"
+        return "init-db"
 
     def title(self) -> str:
-        return "Process price data"
+        return "Initialize the database"
 
     def help(self) -> str:
-        return "Process and store the price data in the database. If the data is not downloaded, it will be downloaded first."
+        return "Create the necessary tables in the database if they don't exist."
 
     def handler(self) -> None:
         try:
-            processor.process_csv_data()
+            init_db()
+            print("Database initialized successfully.")
         except Exception as e:
-            print(f"Error processing CSV data: {e}", file=sys.stderr)
+            print(f"Error initializing database: {e}", file=sys.stderr)
+
+
+@register_command
+class IngestCommand(ICommand):
+    def commnad(self) -> str:
+        return "ingest"
+
+    def title(self) -> str:
+        return "Ingest CSV data into the database"
+
+    def help(self) -> str:
+        return "Read the downloaded CSV file and insert its data into the database."
+
+    def handler(self) -> None:
+        try:
+
+            print("CSV data ingested successfully.")
+        except Exception as e:
+            print(f"Error ingesting CSV data: {e}", file=sys.stderr)
 
 
 def parse_command(command_str: str) -> ICommand:

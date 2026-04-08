@@ -66,7 +66,7 @@ def get_stored_csv_files() -> list[str]:
 
 
 def get_csv_current_week_path() -> str:
-    return f"data/{get_csv_current_week_csv_name()}"
+    return f"data/{get_csv_week_csv_name()}"
 
 
 def get_csv_file_data() -> str:
@@ -117,3 +117,21 @@ def store_csv(data: str, file_path: str) -> None:
             f.write(data)
     except Exception as e:
         raise CsvStoreException(str(e))
+
+
+def get_csv_date_boundaries(file_path: str) -> tuple[str, str]:
+    filename = file_path.rsplit("/", 1)[-1]
+    date_range = filename[:-4]
+    start_date, end_date = date_range.split("_")
+    return start_date, end_date
+
+
+def get_stored_csv_files_date_boundaries() -> list[tuple[str, str]]:
+    csv_files = get_stored_csv_files()
+    boundaries = []
+
+    for file in csv_files:
+        start_date, end_date = get_csv_date_boundaries(file)
+        boundaries.append((start_date, end_date))
+
+    return boundaries
