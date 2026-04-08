@@ -1,4 +1,4 @@
-from .PaymentMethod import PaymentMethod
+from .PaymentMethods import PaymentMethods
 from .PaymentStatus import PaymentStatus
 
-__all__ = ["PaymentMethod", "PaymentStatus"]
+__all__ = ["PaymentMethods", "PaymentStatus"]
