@@ -1,6 +1,6 @@
 from sys import argv
 
-import app.data.command as cmd
+import app.cli.command as cmd
 
 
 def get_command_str() -> str:
