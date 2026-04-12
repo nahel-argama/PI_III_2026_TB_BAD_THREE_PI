@@ -38,8 +38,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'drf_yasg',
     'corsheaders',
-    'users'
+    'users',
+    'produtor',
+    'varejista',
+    'endereco',
+    'produto',
+    'categoria'
 ]
 
 MIDDLEWARE = [
@@ -52,6 +58,20 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+        }
+    },
+    'SECURITY_REQUIREMENTS': [
+        {'Bearer': []}
+    ]
+}
 
 ROOT_URLCONF = 'app.urls'
 
