@@ -35,5 +35,9 @@ class __Settings(__Env):
 
 __settings = __Settings()
 
-CSV_URL = __settings.get_attr_typed("CSV_URL", "", str)
 TIMEZONE = __settings.get_attr_typed("TIMEZONE", "America/Sao_Paulo", str)
+MIGRATIONS_PATH = __settings.get_attr_typed(
+    "MIGRATIONS_PATH", "app/database/migrations", str
+)
+PROHORT_DAILY_URL = __settings.get_attr_typed("PROHORT_DAILY_URL", "", str)
+PROHORT_MONTHLY_URL = __settings.get_attr_typed("PROHORT_MONTHLY_URL", "", str)

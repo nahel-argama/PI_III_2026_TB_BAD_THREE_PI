@@ -1,10 +1,12 @@
-from app.cli.csv import get_stored_csv_files_date_boundaries
+import asyncio
+
+import app.data as data
 
 
-def main():
-    stored = get_stored_csv_files_date_boundaries()
-    print(stored)
+async def main():
+    products = await data.get_products_names()
+    print(products)
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

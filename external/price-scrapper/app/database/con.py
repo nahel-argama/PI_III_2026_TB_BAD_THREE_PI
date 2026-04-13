@@ -1,80 +1,74 @@
-from datetime import date
+import os
+from datetime import datetime
 
 import duckdb as db
+
+import app.env as env
 
 
 def get_db() -> db.DuckDBPyConnection:
     return db.connect("database/database.db")
 
 
-def init_db() -> None:
+def migrate() -> None:
     conn = get_db()
 
     conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS prices (
-            product TEXT,
-            classification TEXT,
-            product_id INTEGER,
-            municipality TEXT,
-            ibge_code TEXT,
-            state TEXT,
-            region TEXT,
-            year INTEGER,
-            month INTEGER,
-            week_date_range TEXT,
-            week_number INTEGER,
-            commercial_level TEXT,
-            price_per_kg DECIMAL(10, 2)
+        "CREATE TABLE IF NOT EXISTS migrations (name TEXT PRIMARY KEY, applied_at TIMESTAMP)"
+    )
+
+    migrations = []
+    for filename in os.listdir(env.MIGRATIONS_PATH):
+        migrations.append(filename)
+
+    applied_migrations = set(
+        row[0] for row in conn.execute("SELECT name FROM migrations").fetchall()
+    )
+
+    current_migration = ""
+
+    try:
+        conn.begin()
+
+        for migration in sorted(migrations):
+            if migration not in applied_migrations:
+                if not migration.endswith(".py"):
+                    continue
+
+                current_migration = migration
+
+                module_name = migration[:-3]
+                module_path = f"{env.MIGRATIONS_PATH.replace('/', '.')}.{module_name}"
+
+                mod = __import__(module_path, fromlist=["up"])
+                mod.up(conn)
+                conn.execute(
+                    "INSERT INTO migrations (name, applied_at) VALUES (?, ?)",
+                    [migration, datetime.now()],
+                )
+                print(f"Applied migration: {migration}")
+
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise Exception(f"Error applying migration {current_migration}: {e}")
+
+    conn.close()
+
+
+def create_migration(name: str) -> None:
+    os.makedirs(env.MIGRATIONS_PATH, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    filename = f"{env.MIGRATIONS_PATH}/{timestamp}_{name}.py"
+
+    with open(filename, "w") as f:
+        f.write(
+            """
+import duckdb as db
+
+def up(conn: db.DuckDBPyConnection) -> None:
+    # Write SQL commands to apply the migration here
+    pass
+
+"""
         )
-        """
-    )
-
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS read_history (
-            id INTEGER PRIMARY KEY DEFAULT nextval('read_history_id_seq'),
-            filename TEXT NOT NULL,
-            read_date DATE NOT NULL,
-            row_count INTEGER,
-            inserted_count INTEGER,
-            duration_seconds FLOAT
-        )
-        """
-    )
-
-
-def insert_new_prices_from_temp(
-    conn: db.DuckDBPyConnection, temp_table_name: str
-) -> int:
-    conn.execute(
-        f"""
-        INSERT INTO prices
-        SELECT * FROM {temp_table_name}
-        WHERE (product_id, municipality, week_date_range) NOT IN (
-            SELECT product_id, municipality, week_date_range FROM prices
-        )
-        """
-    )
-
-    inserted_count = conn.execute(
-        f"SELECT COUNT(*) FROM {temp_table_name} WHERE (product_id, municipality, week_date_range) NOT IN (SELECT product_id, municipality, week_date_range FROM prices)"
-    ).fetchone()[0]
-
-    return inserted_count
-
-
-def log_ingestion(
-    conn: db.DuckDBPyConnection,
-    filename: str,
-    row_count: int,
-    inserted_count: int,
-    duration_seconds: float,
-) -> None:
-    conn.execute(
-        """
-        INSERT INTO read_history (filename, read_date, row_count, inserted_count, duration_seconds)
-        VALUES (?, ?, ?, ?, ?)
-        """,
-        (filename, date.today(), row_count, inserted_count, duration_seconds),
-    )

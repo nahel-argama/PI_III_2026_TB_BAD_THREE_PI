@@ -1,25 +1,25 @@
 from sys import argv
 
-import app.cli.command as cmd
+import app.cli as cli
 
 
-def get_command_str() -> str:
+def get_command_str() -> tuple[str, list[str]]:
     if len(argv) < 2:
-        return "help"
+        return "help", []
 
+    args = []
     if len(argv) > 2:
-        print("Warning: More than one argument provided.")
-        return "help"
+        args = argv[2:]
 
-    return argv[1]
+    return argv[1], args
 
 
 def main():
     try:
-        command_str = get_command_str()
-        command = cmd.parse_command(command_str)
-        command.handler()
-    except cmd.CommandNotFoundError as e:
+        command_str, command_args = get_command_str()
+        command = cli.parse_command(command_str)
+        command.handler(command_args)
+    except cli.CommandNotFoundError as e:
         print(e)
     except Exception as e:
         print(f"An unexpected error occurred: {e}")

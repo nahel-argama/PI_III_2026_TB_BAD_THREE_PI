@@ -5,5 +5,8 @@ __pycache__/
 # Docker
 composer.yaml
 
+# Project
+./data/**
+
 # Env
 .env
