@@ -8,7 +8,7 @@ from app.data.fetch import get_today_filename, get_month_filename
 from app.database.products import PriceFrequency
 
 
-async def get_data_frame_from_csv(filepath: str) -> pd.DataFrame:
+async def get_daily_data_frame_from_csv(filepath: str) -> pd.DataFrame:
     df = pd.read_csv(filepath, delimiter=";", encoding="iso-8859-1")
 
     df.columns = df.columns.str.strip().str.lower()
@@ -20,6 +20,10 @@ async def get_data_frame_from_csv(filepath: str) -> pd.DataFrame:
     df = df.dropna(subset=["dsc_produto", "preco_diario"]).reset_index(drop=True)
 
     return df
+
+
+async def get_month_data_frame_from_csv(filepath: str) -> pd.DataFrame:
+    pass
 
 
 async def get_today_prices(filepath: str) -> pd.DataFrame:

@@ -61,11 +61,16 @@ async def download_monthly_csv() -> str:
 def delete_data_dir() -> None:
     data_dir = get_data_dir()
 
-    files = os.listdir(data_dir)
+    dirs = [
+        os.path.join(data_dir, "daily"),
+        os.path.join(data_dir, "monthly"),
+    ]
 
     try:
-        for file in files:
-            file_path = os.path.join(data_dir, file)
-            os.remove(file_path)
+        for dir in dirs:
+            for file in os.listdir(dir):
+                if file.endswith(".csv"):
+                    os.remove(os.path.join(dir, file))
+
     except Exception as e:
         raise Exception(f"Error cleaning data dir: {e}")

@@ -196,7 +196,7 @@ class DeleteDataCommand(ICommand):
         return "Delete data files"
 
     def help(self) -> str:
-        return "Delete data files. Use --all to delete all files, or provide a date (YYYY-MM-DD)."
+        return "Delete all downloaded data files from the data directory."
 
     def handler(self, args: list[str]) -> None:
         try:
