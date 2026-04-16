@@ -7,6 +7,6 @@ router = APIRouter()
 async def health_check():
     return {
         "status": "ok",
-        "service": "fake-payment-gateway",
+        "service": "pi-payment-gateway",
         "timestamp": datetime.now().isoformat()
     }
