@@ -72,3 +72,17 @@ def up(conn: db.DuckDBPyConnection) -> None:
 
 """
         )
+
+
+def search_products(query: str, limit: int = 100) -> list[dict]:
+    from app.database.products import fts_product_search
+
+    return fts_product_search(query, limit)
+
+
+def get_product_prices(
+    product_id: str, from_date: str = None, to_date: str = None, limit: int = 100
+) -> list[dict]:
+    from app.database.prices import get_product_prices as _get_product_prices
+
+    return _get_product_prices(product_id, from_date, to_date, limit)

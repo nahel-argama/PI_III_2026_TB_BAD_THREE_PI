@@ -35,11 +35,12 @@ async def download_daily_csv() -> str:
 
     _create_data_dir()
 
-    response = requests.get(env.PROHORT_DAILY_URL)
-    response.raise_for_status()
+    with requests.get(env.PROHORT_DAILY_URL, stream=True) as response:
+        response.raise_for_status()
 
-    with open(filepath, "wb") as f:
-        f.write(response.content)
+        with open(filepath, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
 
     return filepath
 
@@ -49,11 +50,12 @@ async def download_monthly_csv() -> str:
 
     _create_data_dir()
 
-    response = requests.get(env.PROHORT_MONTHLY_URL)
-    response.raise_for_status()
+    with requests.get(env.PROHORT_MONTHLY_URL, stream=True) as response:
+        response.raise_for_status()
 
-    with open(filepath, "wb") as f:
-        f.write(response.content)
+        with open(filepath, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
 
     return filepath
 

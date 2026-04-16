@@ -111,18 +111,19 @@ class IngestProductsCommand(ICommand):
         return "ingest-products"
 
     def title(self) -> str:
-        return "Ingest CONAB products from agrobr"
+        return "Ingest daily and monthly products from agrobr"
 
     def help(self) -> str:
-        return "Fetch horticultural products from CONAB via agrobr and store them in the database."
+        return "Fetch daily and monthly product names from CONAB via agrobr and store them in the database."
 
     def handler(self, args: list[str]) -> None:
         try:
-            filepath = args[0] if args else data.get_today_filename()
+            daily_filepath = args[0] if len(args) > 0 else data.get_today_filename()
+            monthly_filepath = args[1] if len(args) > 1 else data.get_month_filename()
 
-            result = asyncio.run(data.ingest_products(filepath))
+            result = asyncio.run(data.ingest_products(daily_filepath, monthly_filepath))
 
-            print(f"Products ingested: {result.inserted} inserted.")
+            print(f"Products ingested: {result['inserted']} inserted.")
         except Exception as e:
             print(f"Error ingesting products: {e}", file=sys.stderr)
 
@@ -133,17 +134,24 @@ class IngestPricesCommand(ICommand):
         return "ingest-prices"
 
     def title(self) -> str:
-        return "Ingest daily prices from agrobr"
+        return "Ingest daily and monthly prices from agrobr"
 
     def help(self) -> str:
-        return "Fetch daily product prices from CONAB via agrobr and store them in the database."
+        return "Fetch daily and monthly product prices from CONAB via agrobr and store them in the database."
 
     def handler(self, args: list[str]) -> None:
         try:
-            filepath = args[0] if args else data.get_today_filename()
-            result = asyncio.run(data.ingest_daily_prices(filepath))
+            daily_filepath = args[0] if len(args) > 0 else data.get_today_filename()
+            monthly_filepath = args[1] if len(args) > 1 else data.get_month_filename()
+
+            result = asyncio.run(data.ingest_daily_prices(daily_filepath))
             print(
-                f"Prices ingested: {result['inserted']} inserted, {result['skipped']} skipped, {result['total']} total."
+                f"Daily prices ingested: {result['inserted']} inserted, {result['skipped']} skipped, {result['total']} total."
+            )
+
+            monthly_result = asyncio.run(data.ingest_monthly_prices(monthly_filepath))
+            print(
+                f"Monthly prices ingested: {monthly_result['inserted']} inserted, {monthly_result['skipped']} skipped, {monthly_result['total']} total."
             )
         except Exception as e:
             print(f"Error ingesting prices: {e}", file=sys.stderr)

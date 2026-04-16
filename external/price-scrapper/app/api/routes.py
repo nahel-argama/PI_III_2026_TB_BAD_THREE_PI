@@ -9,7 +9,8 @@ router = APIRouter(prefix="/api")
 class SearchResponse(BaseModel):
     id: str
     name: str
-    classification: str | None
+    price_frequency: str | None
+    created_at: str | None
 
 
 class PriceRecord(BaseModel):

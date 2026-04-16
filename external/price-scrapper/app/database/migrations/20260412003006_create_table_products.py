@@ -13,6 +13,4 @@ def up(conn: db.DuckDBPyConnection) -> None:
         """
     )
 
-    conn.execute("PRAGMA create_fts_index('products', 'id', 'name');")
-
     pass

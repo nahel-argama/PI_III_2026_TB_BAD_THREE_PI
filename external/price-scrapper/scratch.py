@@ -4,7 +4,7 @@ import app.data as data
 
 
 async def main():
-    products = await data.get_products_names()
+    products = await data.get_daily_products_names(data.get_today_filename())
     print(products)
 
 
