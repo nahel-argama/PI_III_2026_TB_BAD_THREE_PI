@@ -1,22 +1,17 @@
 from rest_framework import serializers
 from .models import Endereco
-from estado.models import Estado
 
 class EnderecoSerializer(serializers.ModelSerializer):
-    estado_id = serializers.PrimaryKeyRelatedField(
-        source='estado',
-        queryset=Estado.objects.all()
-    )
 
     class Meta:
         model = Endereco
         fields = [
             'id_endereco',
-            'estado_id',
             'rua',
             'numero',
             'bairro',
             'cidade',
+            'estado',
             'cep'
         ]
 

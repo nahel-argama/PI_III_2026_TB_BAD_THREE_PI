@@ -10,7 +10,7 @@ class VarejistaViewSet(
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet
 ):
-    queryset = Varejista.objects.select_related('user')
+    queryset = Varejista.objects.select_related('id_usuario')
     serializer_class = VarejistaSerializer
     permission_classes = [IsAuthenticated]
 
@@ -19,6 +19,7 @@ class VarejistaViewSet(
 
         if not hasattr(user, 'varejista'):
             raise PermissionDenied("Usuário não possui perfil de varejista")
+
         return user.varejista
 
     def perform_create(self, serializer):
@@ -29,4 +30,5 @@ class VarejistaViewSet(
             
         if hasattr(user, 'varejista'):
             raise PermissionDenied("Varejista já cadastrado para este usuário")
-        serializer.save(user=user)
+
+        serializer.save(id_usuario=user)

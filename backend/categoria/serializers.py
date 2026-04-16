@@ -9,8 +9,7 @@ class CategoriaSerializer(serializers.ModelSerializer):
         fields = [
             'id_categoria',
             'nome',
-            'descricao',
-            'ativa'
+            'ativo'
         ]
 
     def validate_nome(self, value):

@@ -7,21 +7,25 @@ class ProdutoSerializer(serializers.ModelSerializer):
         model = Produto
         fields = [
             'id_produto',
+            'id_categoria',
+            'id_produtor',
             'nome',
             'descricao',
+            'quantidade_total',
+            'quantidade_reservada',
             'preco',
-            'estoque',
             'ativo'
         ]
+        read_only_fields = ['id_produto', 'id_produtor']
 
-    def validate_preco(self, value):
+    def validate_quantidade_total(self, value):
         if value <= 0:
-            raise serializers.ValidationError("Preço deve ser maior que zero")
+            raise serializers.ValidationError("Quantidade total deve ser maior que zero")
         return value
 
-    def validate_estoque(self, value):
+    def validate_quantidade_reservada(self, value):
         if value < 0:
-            raise serializers.ValidationError("Estoque não pode ser negativo")
+            raise serializers.ValidationError("Quantidade reservada não pode ser negativa")
         return value
 
     def create(self, validated_data):
@@ -33,7 +37,9 @@ class ProdutoSerializer(serializers.ModelSerializer):
         if not hasattr(user, 'produtor'):
             raise serializers.ValidationError("Usuário não é produtor")
 
+        validated_data.pop('id_produtor', None)
+
         return Produto.objects.create(
-            produtor=user.produtor,
+            id_produtor=user.produtor,
             **validated_data
         )

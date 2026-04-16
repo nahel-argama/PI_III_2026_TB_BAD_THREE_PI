@@ -36,10 +36,12 @@ urlpatterns = [
     path('api/users/', include('users.urls')),
     path('api/produtor/', include('produtor.urls')),
     path('api/varejista/', include('varejista.urls')),
-    path('api/estado/', include('estado.urls')),
     path('api/endereco/', include('endereco.urls')),
     path('api/produtos/', include('produto.urls')),
     path('api/categorias/', include('categoria.urls')),
+    path('api/pedido/', include('pedido.urls')),
+    path('api/item_pedido/', include('item_pedido.urls')),
+    path('api/avaliacao/', include('avaliacao.urls')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('swagger.json', schema_view.without_ui(cache_timeout=0), name='schema-json')

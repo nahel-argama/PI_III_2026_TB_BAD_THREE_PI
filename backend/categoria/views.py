@@ -5,6 +5,7 @@ from .serializers import CategoriaSerializer
 
 class CategoriaViewSet(
     mixins.CreateModelMixin,
+    mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet

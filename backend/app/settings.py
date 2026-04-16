@@ -45,7 +45,10 @@ INSTALLED_APPS = [
     'varejista',
     'endereco',
     'produto',
-    'categoria'
+    'categoria',
+    'pedido',
+    'item_pedido',
+    'avaliacao'
 ]
 
 MIDDLEWARE = [

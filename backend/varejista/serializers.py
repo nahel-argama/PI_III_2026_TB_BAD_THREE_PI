@@ -2,18 +2,15 @@ from rest_framework import serializers
 from .models import Varejista
 
 class VarejistaSerializer(serializers.ModelSerializer):
-    user_id = serializers.PrimaryKeyRelatedField(
-        source='user',
-        queryset=Varejista._meta.get_field('user').related_model.objects.all()
-    )
 
     class Meta:
         model = Varejista
         fields = [
-            'user_id',
+            'id_usuario',
             'tipo_documento',
             'documento'
         ]
+        read_only_fields = ['id_usuario']
 
     def validate(self, data):
         user = self.context['request'].user
@@ -26,7 +23,7 @@ class VarejistaSerializer(serializers.ModelSerializer):
         if user.type != 'VAREJISTA':
             raise serializers.ValidationError("Usuário deve ser do tipo VAREJISTA")
 
-        if hasattr(user, 'varejista'):
+        if self.instance is None and hasattr(user, 'varejista'):
             raise serializers.ValidationError("Usuário já possui cadastro de Varejista")
 
         if tipo_documento == 'CPF' and len(documento) != 11:
