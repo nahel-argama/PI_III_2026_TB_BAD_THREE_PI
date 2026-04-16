@@ -1,14 +1,10 @@
-from pydantic import BaseModel, Field, HttpUrl, model_validator
+from pydantic import BaseModel, Field, model_validator
 from src.schemas.payment.credit_card.schema import CardSchema
-from src.schemas.payment.customer.schema import CustomerSchema
 from src.schemas.payment.enums import PaymentMethods
 
 class PaymentRequestSchema(BaseModel):
-    order_id: str = Field(..., min_length=1, max_length=100)
-    currency: str = Field(..., min_length=3, max_length=3)
+    price: float = Field(..., gt=0, description="The amount to be paid. Must be greater than 0.")
     payment_method: PaymentMethods
-    callback_url: HttpUrl
-    customer: CustomerSchema
     card: CardSchema | None = None
 
     @model_validator(mode="after")
@@ -18,6 +14,5 @@ class PaymentRequestSchema(BaseModel):
 
         if self.payment_method != PaymentMethods.CREDIT_CARD and self.card is not None:
             raise ValueError("card should not be provided when payment_method is not credit_card")
-
 
         return self
