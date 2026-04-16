@@ -2,11 +2,40 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from datetime import datetime
 
 class CardSchema(BaseModel):
-    holder_name: str = Field(..., max_length=120)
-    number: str = Field(..., min_length=13, max_length=19)
-    expiry_month: int = Field(..., ge=1, le=12)
-    expiry_year: int = Field(..., ge=datetime.now().year, le=datetime.now().year + 20)
-    cvv: str = Field(..., min_length=3, max_length=4)
+    holder_name: str = Field(
+        ...,
+        max_length=120,
+        examples=["John Doe"],
+        description="Cardholder name with at least 2 words, letters only"
+    )
+    number: str = Field(
+        ...,
+        min_length=13,
+        max_length=19,
+        examples=["4242 4242 4242 4242"],
+        description="Card number, 13-16 digits (spaces are removed)"
+    )
+    expiry_month: int = Field(
+        ...,
+        ge=1,
+        le=12,
+        examples=[12],
+        description="Expiration month (1-12)"
+    )
+    expiry_year: int = Field(
+        ...,
+        ge=datetime.now().year,
+        le=datetime.now().year + 20,
+        examples=[2027],
+        description="Expiration year"
+    )
+    cvv: str = Field(
+        ...,
+        min_length=3,
+        max_length=4,
+        examples=["123"],
+        description="CVV code, 3-4 digits"
+    )
 
     @field_validator('holder_name')
     @classmethod
