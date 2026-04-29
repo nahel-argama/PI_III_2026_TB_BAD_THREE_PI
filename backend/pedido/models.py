@@ -17,4 +17,4 @@ class Pedido(models.Model):
     criado_em = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Pedido {self.id_pedido} - Varejista: {self.id_varejista.nome} - Status: {self.status}"
+        return f"Pedido {self.id} - Varejista: {self.varejista.nome} - Status: {self.status}"

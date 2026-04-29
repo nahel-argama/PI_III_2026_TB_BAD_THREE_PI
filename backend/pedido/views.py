@@ -15,18 +15,46 @@ class PedidoViewSet(
     viewsets.GenericViewSet
 ):
     serializer_class = PedidoSerializer
-    permission_classes = [IsVarejista]
     filter_backends = [DjangoFilterBackend]
     filterset_class = PedidoFilter
+
+    def get_permissions(self):
+        if self.action in ['create']:
+            return [IsAuthenticated(), IsVarejista()]
+        
+        if self.action in ['update', 'partial_update']:
+            return [IsAuthenticated()]
+
+        return [IsAuthenticated()]
 
     @action(detail=True, methods=['get'])
     def itens(self, request, pk=None):
         pedido = self.get_object()
+        user = request.user
 
-        itens = pedido.itens.all()
+        if user.type == 'VAREJISTA':
+            itens = pedido.itens.all()
+
+        elif user.type == 'PRODUTOR':
+            itens = pedido.itens.filter(
+                produto__produtor=user.produtor
+            )
+
+        else:
+            itens = []
+
         serializer = ItemPedidoSerializer(itens, many=True)
-
         return Response(serializer.data)
-
+        
     def get_queryset(self):
-        return Pedido.objects.filter(id_varejista=self.request.user.id)
+        user = self.request.user
+
+        if user.type == 'VAREJISTA':
+            return Pedido.objects.filter(varejista=user.varejista)
+
+        if user.type == 'PRODUTOR':
+            return Pedido.objects.filter(
+                itens__produto__produtor=user.produtor
+            ).distinct()
+
+        return Pedido.objects.none()
