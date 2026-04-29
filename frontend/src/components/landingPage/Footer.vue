@@ -10,7 +10,7 @@
               π
             </div>
             <span class="text-xl font-black tracking-tighter text-white">
-              bad three <span class="text-green-500">π</span>
+              Culti <span class="text-green-500">va</span>
             </span>
           </div>
           <p class="text-sm leading-relaxed text-slate-400">
@@ -50,7 +50,7 @@
       <div
         class="text-slate-00 flex flex-col items-center justify-between gap-4 border-t border-slate-800 pt-8 text-xs md:flex-row"
       >
-        <p>© 2026 bad three π. Todos os direitos reservados.</p>
+        <p>© 2026 Cultiva. Todos os direitos reservados.</p>
       </div>
     </div>
   </footer>
