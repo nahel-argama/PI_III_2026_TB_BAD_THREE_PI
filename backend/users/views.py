@@ -1,7 +1,7 @@
 from rest_framework import viewsets, mixins
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from .serializers import UserSerializer, CustomTokenSerializer
+from rest_framework.permissions import IsAuthenticated
+from .serializers import UserSerializer
 from .models import User
 
 class UserViewSet(
@@ -25,7 +25,3 @@ class UserViewSet(
             raise PermissionDenied("Usuário não autenticado")
 
         return user
-
-class LoginView(TokenObtainPairView):
-    serializer_class = CustomTokenSerializer
-    permission_classes = [AllowAny]

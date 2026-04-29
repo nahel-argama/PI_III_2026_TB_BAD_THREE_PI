@@ -6,11 +6,11 @@ from varejista.models import Varejista
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Avaliacao(models.Model):
-    id_avaliacao = models.AutoField(primary_key=True)
-    id_pedido = models.ForeignKey(to=Pedido, on_delete=models.CASCADE)
-    id_produto = models.ForeignKey(to=Produto, on_delete=models.CASCADE)
-    id_produtor = models.ForeignKey(to=Produtor, on_delete=models.CASCADE)
-    id_varejista = models.ForeignKey(to=Varejista, on_delete=models.CASCADE)
+    id = models.AutoField(primary_key=True, db_column='id_avaliacao')
+    pedido = models.ForeignKey(to=Pedido, on_delete=models.CASCADE, db_column='id_pedido')
+    produto = models.ForeignKey(to=Produto, on_delete=models.CASCADE, db_column='id_produto')
+    produtor = models.ForeignKey(to=Produtor, on_delete=models.CASCADE, db_column='id_produtor')
+    varejista = models.ForeignKey(to=Varejista, on_delete=models.CASCADE)
     nota = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(5)])
     comentario = models.TextField(blank=True, null=True)
     criado_em = models.DateTimeField(auto_now_add=True)
