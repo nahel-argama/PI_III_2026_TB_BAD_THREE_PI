@@ -12,23 +12,16 @@ class ProdutorViewSet(
 ):
     queryset = Produtor.objects.select_related('user')
     serializer_class = ProdutorSerializer
-    permission_classes = [IsAuthenticated]
 
-    def get_object(self):
-        user = self.request.user
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return [IsAuthenticated(), IsProdutor()]
+        return [IsAuthenticated()]
 
-        if not hasattr(user, 'produtor'):
-            raise PermissionDenied("Usuário não possui perfil de produtor")
-
-        return user.produtor
+    def get_queryset(self):
+        if self.action in ['update', 'partial_update']:
+            return Produtor.objects.filter(user=self.request.user)
+        return Produtor.objects.all()
 
     def perform_create(self, serializer):
-        user = self.request.user
-
-        if user.type != 'PRODUTOR':
-            raise PermissionDenied("Usuário não é do tipo PRODUTOR")
-
-        if hasattr(user, 'produtor'):
-            raise PermissionDenied("Produtor já cadastrado para este usuário")
-
-        serializer.save(user=user)
+        serializer.save(user=self.request.user)
