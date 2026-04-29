@@ -1,5 +1,6 @@
 import django_filters
 from .models import Produto
+from django.db.models import Q
 
 class ProdutoFilter(django_filters.FilterSet):
     preco_min = django_filters.NumberFilter(field_name="preco", lookup_expr='gte')
@@ -11,7 +12,7 @@ class ProdutoFilter(django_filters.FilterSet):
 
     class Meta:
         model = Produto
-        fields = ['categoria']
+        fields = []
 
     def filtrar_nome(self, queryset, name, value):
         palavras = value.split()

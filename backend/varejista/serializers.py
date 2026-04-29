@@ -13,11 +13,6 @@ class VarejistaSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['user']
 
-    def validate_tipo_documento(self, value):
-        if value not in ['CPF', 'CNPJ']:
-            raise serializers.ValidationError("Tipo de documento inválido.")
-        return value
-
     def validate_documento(self, value):
         if not value.isdigit():
             raise serializers.ValidationError("Documento deve conter apenas números.")

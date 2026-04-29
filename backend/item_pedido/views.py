@@ -17,4 +17,16 @@ class ItemPedidoViewSet(
     filterset_class = ItemPedidoFilter
 
     def get_queryset(self):
-        return ItemPedido.objects.filter(id_pedido__id_varejista=self.request.user.id)
+        user = self.request.user
+
+        if user.type == 'VAREJISTA':
+            return ItemPedido.objects.filter(
+                pedido__varejista=user.varejista
+            )
+
+        if user.type == 'PRODUTOR':
+            return ItemPedido.objects.filter(
+                produto__produtor=user.produtor
+            )
+
+        return ItemPedido.objects.none()

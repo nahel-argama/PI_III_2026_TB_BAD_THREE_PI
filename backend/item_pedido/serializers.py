@@ -12,8 +12,10 @@ class ItemPedidoSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("A quantidade deve ser maior que zero.")
         return value
 
-    def validate_id_pedido(self, value):
+    def validate_pedido(self, value):
         user = self.context['request'].user
-        if value.id_varejista_id != user.id:
+
+        if user.type == 'VAREJISTA' and value.varejista != user.varejista:
             raise serializers.ValidationError("Pedido não pertence ao usuário.")
+
         return value
