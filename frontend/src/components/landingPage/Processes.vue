@@ -7,7 +7,7 @@
           Transparência e eficiência em cada etapa
         </h2>
         <p class="text-lg leading-relaxed text-slate-600">
-          O fluxo do <span class="font-bold text-slate-800">bad three π</span> foi desenhado para
+          O fluxo do <span class="font-bold text-slate-800">Cultiva</span> foi desenhado para
           eliminar a burocracia, conectar as pontas da cadeia e maximizar o lucro de quem realmente
           produz o alimento.
         </p>
@@ -47,13 +47,13 @@ const stepsData = [
     title: 'media de preços',
     description:
       'Nosso algoritmo analisa o mercado e sugere o preço ideal em tempo real. Evitamos a concorrência predatória e garantimos que o produtor receba o valor justo pela sua colheita.',
-    theme: 'dark',
+    theme: 'green',
   },
   {
     number: 3,
     title: 'Conexão Direta',
     description:
-      'A negociação e o pedido são efetuados sem intermediários. O ponto de venda recebe produtos mais frescos e o agricultor aumenta a sua margem de lucro em cada transação.',
+      'A negociação e o pedido são efetuados sem intermediários. O varejo recebe produtos mais frescos aumenta suas opções de fornecedores e o agricultor aumenta a sua visibilidade e lucro.',
     theme: 'green',
   },
 ];

@@ -21,8 +21,8 @@
           </h1>
 
           <p class="mx-auto mb-10 max-w-xl text-xl leading-relaxed text-slate-600 lg:mx-0">
-            O <span class="font-bold text-slate-800">bad three π</span> elimina atravessadores e
-            conecta o pequeno produtor ao varejo local através do nosso website.
+            O <span class="font-bold text-slate-800">Cultiva</span> elimina atravessadores e conecta
+            o pequeno produtor ao varejo local através do nosso website.
           </p>
 
           <div class="flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
