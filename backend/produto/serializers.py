@@ -6,9 +6,9 @@ class ProdutoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Produto
         fields = [
-            'id_produto',
-            'id_categoria',
-            'id_produtor',
+            'id',
+            'categoria',
+            'produtor',
             'nome',
             'descricao',
             'quantidade_total',
@@ -16,7 +16,7 @@ class ProdutoSerializer(serializers.ModelSerializer):
             'preco',
             'ativo'
         ]
-        read_only_fields = ['id_produto', 'id_produtor']
+        read_only_fields = ['id', 'produtor']
 
     def validate_quantidade_total(self, value):
         if value <= 0:

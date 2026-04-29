@@ -4,19 +4,21 @@ from categoria.models import Categoria
 
 class Produto(models.Model):
     
-    id_produto = models.AutoField(primary_key=True, null=False)
+    id = models.AutoField(primary_key=True, null=False, db_column='id_produto')
 
-    id_categoria = models.ForeignKey(
+    categoria = models.ForeignKey(
         to=Categoria, 
         on_delete=models.CASCADE, 
-        related_name='produtos', 
+        related_name='produtos',
+        db_column='id_categoria',
         null=False
     )
 
-    id_produtor = models.ForeignKey(
+    produtor = models.ForeignKey(
         to=Produtor,
         on_delete=models.CASCADE,
         related_name='produtos',
+        db_column='id_produtor',
         null=False
     )
 

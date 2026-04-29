@@ -3,6 +3,9 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Produto
 from .serializers import ProdutoSerializer
 from users.permissions import IsProdutor
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter
+from .filters import ProdutoFilter
 
 class ProdutoViewSet(
     mixins.CreateModelMixin,
@@ -13,6 +16,9 @@ class ProdutoViewSet(
 ):
     serializer_class = ProdutoSerializer
     queryset = Produto.objects.select_related('id_produtor', 'id_categoria')
+    filterset_class = ProdutoFilter
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    ordering_fields = ['preco', 'nome']
 
     def get_permissions(self):
         permission_classes = [IsAuthenticated]

@@ -1,14 +1,14 @@
 from rest_framework import serializers
 from .models import Pedido
 
-class PedidoSerializer(serializers.Serializer):
+class PedidoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Pedido
-        fields = ['id_pedido', 'id_varejista', 'status', 'valor_total', 'criado_em']
-        read_only_fields = ['id_pedido', 'id_varejista', 'criado_em']
+        fields = ['id', 'varejista', 'status', 'valor_total', 'criado_em']
+        read_only_fields = ['id', 'varejista', 'valor_total', 'criado_em']
 
-    def validate_valor_total(self, value):
-        if value <= 0:
-            raise serializers.ValidationError("O valor total deve ser maior que zero.")
-        return value
+    def validate(self, data):
+        if self.instance and self.instance.status in ['CANCELADO', 'ENTREGUE']:
+            raise serializers.ValidationError("Não é possível alterar este pedido.")
+        return data
