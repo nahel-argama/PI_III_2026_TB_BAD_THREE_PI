@@ -2,8 +2,8 @@ from django.db import models
 from varejista.models import Varejista
 
 class Pedido(models.Model):
-    id_pedido = models.AutoField(primary_key=True)
-    id_varejista = models.ForeignKey(to=Varejista, on_delete=models.CASCADE)
+    id = models.AutoField(primary_key=True, db_column='id_pedido')
+    varejista = models.ForeignKey(to=Varejista, on_delete=models.CASCADE, db_column='id_varejista')
 
     STATUS_CHOICES = [
         ('PENDENTE', 'Pendente'),

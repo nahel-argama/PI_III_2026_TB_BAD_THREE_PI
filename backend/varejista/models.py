@@ -7,7 +7,7 @@ class Varejista(models.Model):
         CPF = 'CPF', 'CPF'
         CNPJ = 'CNPJ', 'CNPJ'
 
-    id_usuario = models.OneToOneField(
+    user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         primary_key=True,

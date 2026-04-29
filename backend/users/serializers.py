@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.core.validators import EmailValidator
 from django.core.exceptions import ValidationError
 from .models import User
@@ -33,14 +32,3 @@ class UserSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
-
-class CustomTokenSerializer(TokenObtainPairSerializer):
-    username_field = 'email'
-
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        token['email'] = user.email
-        token['type'] = user.type
-
-        return token
