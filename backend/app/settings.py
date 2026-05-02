@@ -42,14 +42,14 @@ INSTALLED_APPS = [
     'django_filters',
     'corsheaders',
     'users',
-    'produtor',
-    'varejista',
-    'endereco',
-    'produto',
-    'categoria',
-    'pedido',
-    'item_pedido',
-    'avaliacao'
+    'producer',
+    'retailer',
+    'address',
+    'product',
+    'category',
+    'order',
+    'order_item',
+    'review'
 ]
 
 MIDDLEWARE = [

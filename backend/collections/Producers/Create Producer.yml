@@ -1,0 +1,23 @@
+info:
+  name: Create Producer
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{host}}/api/producers/"
+  body:
+    type: json
+    data: |
+      {
+        "document_type": "CPF",
+        "document_number": "12345678919",
+        "trade_name": "Green Farm"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
