@@ -22,8 +22,8 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
 schema_view = get_schema_view(
-   openapi.Info(
-      title="API de Sistema Inteligente de Escoamento de Produção para Pequenos Produtores",
+    openapi.Info(
+        title="API for Production Flow for Small Producers",
       default_version='v1',
       description=""
    ),
@@ -35,14 +35,14 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('authentication.urls')),
     path('api/users/', include('users.urls')),
-    path('api/produtor/', include('produtor.urls')),
-    path('api/varejista/', include('varejista.urls')),
-    path('api/endereco/', include('endereco.urls')),
-    path('api/produtos/', include('produto.urls')),
-    path('api/categorias/', include('categoria.urls')),
-    path('api/pedido/', include('pedido.urls')),
-    path('api/item_pedido/', include('item_pedido.urls')),
-    path('api/avaliacao/', include('avaliacao.urls')),
+    path('api/producers/', include('producer.urls')),
+    path('api/retailers/', include('retailer.urls')),
+    path('api/addresses/', include('address.urls')),
+    path('api/products/', include('product.urls')),
+    path('api/categories/', include('category.urls')),
+    path('api/orders/', include('order.urls')),
+    path('api/order-items/', include('order_item.urls')),
+    path('api/reviews/', include('review.urls')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('swagger.json', schema_view.without_ui(cache_timeout=0), name='schema-json')

@@ -1,6 +1,7 @@
 from rest_framework import viewsets, mixins
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.exceptions import PermissionDenied
 from .serializers import UserSerializer
 from .models import User
 
@@ -22,6 +23,6 @@ class UserViewSet(
         user = self.request.user
 
         if not user.is_authenticated:
-            raise PermissionDenied("Usuário não autenticado")
+            raise PermissionDenied("User is not authenticated")
 
         return user

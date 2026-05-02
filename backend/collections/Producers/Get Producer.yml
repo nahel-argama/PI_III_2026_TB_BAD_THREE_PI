@@ -1,0 +1,19 @@
+info:
+  name: Get Producer
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{host}}/api/producers/:producer_id/"
+  params:
+    - name: producer_id
+      value: "1"
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,27 @@
+info:
+  name: Update Producer
+  type: http
+  seq: 3
+
+http:
+  method: PUT
+  url: "{{host}}/api/producers/:producer_id/"
+  params:
+    - name: producer_id
+      value: "1"
+      type: path
+  auth: inherit
+  body:
+    type: json
+    data: |
+      {
+        "document_type": "CNPJ",
+        "document_number": "12.345.678/0001-90",
+        "trade_name": "Green Farm Market"
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

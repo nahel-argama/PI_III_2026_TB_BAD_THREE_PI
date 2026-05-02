@@ -1,0 +1,32 @@
+info:
+  name: Login
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{host}}/api/auth/login/"
+  body:
+    type: json
+    data: |
+      {
+        "email": "producer@example.com",
+        "password": "password123"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const refresh = res.body.refresh
+        const access = res.body.access
+
+        bru.setVar('access', access)
+        bru.setVar('refresh', refresh)
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

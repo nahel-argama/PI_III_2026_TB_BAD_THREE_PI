@@ -1,0 +1,31 @@
+info:
+  name: Update Product
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: "{{host}}/api/products/:product_id/"
+  params:
+    - name: product_id
+      value: "1"
+      type: path
+  auth: inherit
+  body:
+    type: json
+    data: |
+      {
+        "category": 1,
+        "name": "Updated Tomato",
+        "description": "Premium organic tomato",
+        "total_quantity": 150.0,
+        "reserved_quantity": 20.0,
+        "price": 3.0,
+        "is_active": true
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

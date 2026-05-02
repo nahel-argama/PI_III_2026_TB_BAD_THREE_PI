@@ -1,0 +1,25 @@
+info:
+  name: Partial Update Producer
+  type: http
+  seq: 4
+
+http:
+  method: PATCH
+  url: "{{host}}/api/producers/:producer_id/"
+  params:
+    - name: producer_id
+      value: "1"
+      type: path
+  auth: inherit
+  body:
+    type: json
+    data: |
+      {
+        "trade_name": "Green Farm Updated"
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

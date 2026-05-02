@@ -1,0 +1,25 @@
+info:
+  name: Partial Update Order Item
+  type: http
+  seq: 5
+
+http:
+  method: PATCH
+  url: "{{host}}/api/order-items/:order_item_id/"
+  params:
+    - name: order_item_id
+      value: "1"
+      type: path
+  auth: inherit
+  body:
+    type: json
+    data: |
+      {
+        "quantity": 20
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

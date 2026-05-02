@@ -1,0 +1,24 @@
+info:
+  name: Create Order Item
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{host}}/api/order-items/"
+  auth: inherit
+  body:
+    type: json
+    data: |
+      {
+        "order": 1,
+        "product": 1,
+        "quantity": 10,
+        "unit_price": 2.5
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

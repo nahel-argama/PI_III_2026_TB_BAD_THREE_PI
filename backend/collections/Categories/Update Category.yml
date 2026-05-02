@@ -1,0 +1,26 @@
+info:
+  name: Update Category
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: "{{host}}/api/categories/:category_id/"
+  params:
+    - name: category_id
+      value: "1"
+      type: path
+  auth: inherit
+  body:
+    type: json
+    data: |
+      {
+        "name": "Organic Vegetables",
+        "is_active": true
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

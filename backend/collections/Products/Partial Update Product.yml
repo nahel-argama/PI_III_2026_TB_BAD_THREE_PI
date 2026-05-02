@@ -1,0 +1,25 @@
+info:
+  name: Partial Update Product
+  type: http
+  seq: 5
+
+http:
+  method: PATCH
+  url: "{{host}}/api/products/:product_id/"
+  params:
+    - name: product_id
+      value: "1"
+      type: path
+  auth: inherit
+  body:
+    type: json
+    data: |
+      {
+        "price": 2.75
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

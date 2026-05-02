@@ -1,0 +1,25 @@
+info:
+  name: Partial Update Address
+  type: http
+  seq: 5
+
+http:
+  method: PATCH
+  url: "{{host}}/api/addresses/:address_id/"
+  params:
+    - name: address_id
+      value: "1"
+      type: path
+  body:
+    type: json
+    data: |
+      {
+        "city": "Super mega cidade"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

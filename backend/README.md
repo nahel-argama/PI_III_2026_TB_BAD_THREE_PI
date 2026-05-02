@@ -8,7 +8,7 @@ API REST para gerenciamento de sistema de produção entre pequenos produtores e
 
 ```bash
 git clone https://github.com/nahel-argama/PI_III_2026_TB_BAD_THREE_PI.git
-cd seu-repo
+cd your-repo
 
 python -m venv venv
 
@@ -36,8 +36,9 @@ http://127.0.0.1:8000/
 
 # Autenticação
 
-* `POST /users/` → Criar usuário
-* `POST /users/login/` → Login (retorna token)
+* `POST /api/auth/login/` → Authenticate user (returns token)
+* `POST /api/auth/refresh/` → Refresh token
+* `POST /api/auth/verify/` → Verify token
 
 ---
 
@@ -45,89 +46,89 @@ http://127.0.0.1:8000/
 
 ## Users
 
-* `POST /users/` → Criar usuário
-* `POST /users/login/` → Autenticar usuário
-* `GET /users/{id}/` → Obter dados de um usuário
-* `PUT /users/{id}/` → Atualizar usuário completo
-* `PATCH /users/{id}/` → Atualizar usuário parcialmente
+* `POST /api/users/` → Create user
+* `GET /api/users/:id/` → Get user data
+* `PUT /api/users/:id/` → Update user (complete)
+* `PATCH /api/users/:id/` → Update user (partial)
 
 ---
 
 ## Produtor
 
-* `POST /produtor/` → Criar produtor
-* `GET /produtor/{user}/` → Obter dados do produtor
-* `PUT /produtor/{user}/` → Atualizar produtor
-* `PATCH /produtor/{user}/` → Atualização parcial do produtor
+* `POST /api/producers/` → Create producer
+* `GET /api/producers/:user_id/` → Get producer data
+* `PUT /api/producers/:user_id/` → Update producer
+* `PATCH /api/producers/:user_id/` → Update producer (partial)
 
 ---
 
 ## Varejista
 
-* `POST /varejista/` → Criar varejista
-* `GET /varejista/{id_usuario}/` → Obter dados do varejista
-* `PUT /varejista/{id_usuario}/` → Atualizar varejista
-* `PATCH /varejista/{id_usuario}/` → Atualização parcial do varejista
+* `POST /api/retailers/` → Create retailer
+* `GET /api/retailers/:user_id/` → Get retailer data
+* `PUT /api/retailers/:user_id/` → Update retailer
+* `PATCH /api/retailers/:user_id/` → Update retailer (partial)
 
 ---
 
 ## Endereço
 
-* `GET /endereco/` → Listar endereços
-* `POST /endereco/` → Criar endereço
-* `GET /endereco/{id}/` → Obter endereço
-* `PUT /endereco/{id}/` → Atualizar endereço
-* `PATCH /endereco/{id}/` → Atualização parcial do endereço
-* `DELETE /endereco/{id}/` → Remover endereço
+* `GET /api/addresses/` → List addresses
+* `POST /api/addresses/` → Create address
+* `GET /api/addresses/:id/` → Get address
+* `PUT /api/addresses/:id/` → Update address
+* `PATCH /api/addresses/:id/` → Update address (partial)
+* `DELETE /api/addresses/:id/` → Delete address
 
 ---
 
 ## Categorias
 
-* `GET /categorias/` → Listar categorias
-* `POST /categorias/` → Criar categoria
-* `GET /categorias/{id_categoria}/` → Obter categoria
-* `PUT /categorias/{id_categoria}/` → Atualizar categoria
-* `PATCH /categorias/{id_categoria}/` → Atualização parcial da categoria
+* `GET /api/categories/` → List categories
+* `POST /api/categories/` → Create category
+* `GET /api/categories/:id/` → Get category
+* `PUT /api/categories/:id/` → Update category
+* `PATCH /api/categories/:id/` → Update category (partial)
 
 ---
 
 ## Produtos
 
-* `GET /produtos/` → Listar produtos
-* `POST /produtos/` → Criar produto
-* `GET /produtos/{id_produto}/` → Obter produto
-* `PUT /produtos/{id_produto}/` → Atualizar produto
-* `PATCH /produtos/{id_produto}/` → Atualização parcial do produto
+* `GET /api/products/` → List products
+* `POST /api/products/` → Create product
+* `GET /api/products/:id/` → Get product
+* `PUT /api/products/:id/` → Update product
+* `PATCH /api/products/:id/` → Update product (partial)
 
 ---
 
 ## Pedido
 
-* `GET /pedido/` → Listar pedidos
-* `POST /pedido/` → Criar pedido
-* `GET /pedido/{id}/` → Obter pedido
-* `PUT /pedido/{id}/` → Atualizar pedido
-* `PATCH /pedido/{id}/` → Atualização parcial do pedido
+* `GET /api/orders/` → List orders
+* `POST /api/orders/` → Create order
+* `GET /api/orders/:id/` → Get order
+* `PUT /api/orders/:id/` → Update order
+* `PATCH /api/orders/:id/` → Update order (partial)
+* `GET /api/orders/:id/items/` → Get order items
 
 ---
 
 ## Item do Pedido
 
-* `GET /item_pedido/` → Listar itens de pedidos
-* `POST /item_pedido/` → Criar item de pedido
-* `GET /item_pedido/{id}/` → Obter item
-* `PUT /item_pedido/{id}/` → Atualizar item
-* `PATCH /item_pedido/{id}/` → Atualização parcial do item
+* `GET /api/order-items/` → List order items
+* `POST /api/order-items/` → Create order item
+* `GET /api/order-items/:id/` → Get order item
+* `PUT /api/order-items/:id/` → Update order item
+* `PATCH /api/order-items/:id/` → Update order item (partial)
 
 ---
 
 ## Avaliação
 
-* `GET /avaliacao/` → Listar avaliações
-* `POST /avaliacao/` → Criar avaliação
-* `GET /avaliacao/{id}/` → Obter avaliação
-* `PUT /avaliacao/{id}/` → Atualizar avaliação
-* `PATCH /avaliacao/{id}/` → Atualização parcial da avaliação
+* `GET /api/reviews/` → List reviews
+* `POST /api/reviews/` → Create review
+* `GET /api/reviews/:id/` → Get review
+* `PUT /api/reviews/:id/` → Update review
+* `PATCH /api/reviews/:id/` → Update review (partial)
 
 ---
