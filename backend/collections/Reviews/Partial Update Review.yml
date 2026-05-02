@@ -1,0 +1,25 @@
+info:
+  name: Partial Update Review
+  type: http
+  seq: 5
+
+http:
+  method: PATCH
+  url: "{{host}}/api/reviews/:review_id/"
+  params:
+    - name: review_id
+      value: "1"
+      type: path
+  auth: inherit
+  body:
+    type: json
+    data: |
+      {
+        "rating": 4.0
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

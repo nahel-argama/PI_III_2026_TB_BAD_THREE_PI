@@ -1,0 +1,23 @@
+info:
+  name: Create Retailer
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{host}}/api/retailers/"
+  auth: inherit
+  body:
+    type: json
+    data: |
+      {
+        "document_type": "CPF",
+        "document_number": "123.456.789-10",
+        "trade_name": "Local Market"
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

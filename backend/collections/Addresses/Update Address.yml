@@ -1,0 +1,31 @@
+info:
+  name: Update Address
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: "{{host}}/api/addresses/:address_id/"
+  params:
+    - name: address_id
+      value: "1"
+      type: path
+  body:
+    type: json
+    data: |
+      {
+        "street": "Main Street",
+        "number": "124",
+        "complement": "Apt 5",
+        "neighborhood": "Teste",
+        "city": "Springfield",
+        "state": "SP",
+        "postal_code": "12345-678"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

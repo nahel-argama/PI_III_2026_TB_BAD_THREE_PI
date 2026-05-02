@@ -1,0 +1,25 @@
+info:
+  name: Partial Update Retailer
+  type: http
+  seq: 4
+
+http:
+  method: PATCH
+  url: "{{host}}/api/retailers/:retailer_id/"
+  params:
+    - name: retailer_id
+      value: "1"
+      type: path
+  auth: inherit
+  body:
+    type: json
+    data: |
+      {
+        "trade_name": "Local Market Updated"
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
