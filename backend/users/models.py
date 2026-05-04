@@ -33,7 +33,7 @@ class User(AbstractBaseUser):
     REQUIRED_FIELDS = ['name', 'user_type']
 
     class Meta:
-        db_table = 'user'
+        db_table = 'users'
 
     def __str__(self):
         return self.email
