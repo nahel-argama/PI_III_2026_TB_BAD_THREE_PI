@@ -62,3 +62,11 @@ def get_prices_endpoint(
         state=state,
         avg_price=avg_price,
     )
+
+
+@router.get("/products/{product_id}")
+def get_product_endpoint(product_id: str):
+    product = db.get_product_by_id(product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return SearchResponse(**product)
