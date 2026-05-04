@@ -13,10 +13,9 @@
       </div>
 
       <div class="hidden items-center gap-8 text-sm font-medium text-slate-600 md:flex">
-        <a href="#como-funciona" class="transition hover:text-green-600">Como Funciona</a>
-        <a href="#produtores" class="transition hover:text-green-600">Para Produtores</a>
-        <a href="#varejo" class="transition hover:text-green-600">Para o Varejo</a>
-        <a href="#precos" class="transition hover:text-green-600">Preços Justos</a>
+        <a href="#como-funciona" class="transition hover:text-green-600">Seja parte do cultiva</a>
+        <a href="#produtores" class="transition hover:text-green-600">Como funciona</a>
+        <a href="#varejo" class="transition hover:text-green-600">Por que escolher o cultiva</a>
       </div>
 
       <div class="flex items-center gap-4">

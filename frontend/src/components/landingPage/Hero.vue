@@ -1,5 +1,5 @@
 <template>
-  <section class="relative overflow-hidden bg-white pt-12 pb-24 lg:pt-20 lg:pb-32">
+  <section class="relative overflow-hidden bg-green-100 pt-12 pb-24 lg:pt-20 lg:pb-32">
     <div
       class="absolute top-0 right-0 h-[600px] w-[600px] translate-x-1/4 -translate-y-1/2 rounded-full bg-green-50 opacity-60 blur-3xl"
     ></div>
@@ -44,7 +44,7 @@
         <div class="relative mt-16 lg:mt-0">
           <div class="group relative rotate-1 overflow-hidden rounded-[2.5rem] shadow-2xl">
             <img
-              src="https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&q=80"
+              src="/Hero_image.jpg"
               alt="Produção agrícola fresca"
               class="h-137 w-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
