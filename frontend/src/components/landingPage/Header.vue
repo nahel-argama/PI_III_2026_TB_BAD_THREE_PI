@@ -22,9 +22,9 @@
       <div class="flex items-center gap-4">
         <div ref="menuRef" class="relative">
           <button
-            v-if="userName"
-            @click="toggleMenu"
+            v-if="auth.isLoggedIn"
             class="hidden items-center gap-3 rounded-full px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 md:inline-flex"
+            @click="toggleMenu"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -34,7 +34,7 @@
             >
               <path d="M10 2a4 4 0 100 8 4 4 0 000-8zM2 18a8 8 0 1116 0H2z" />
             </svg>
-            <span class="text-sm font-medium text-slate-700">Olá, {{ userName }}</span>
+            <span class="text-sm font-medium text-slate-700">Olá, {{ savedDisplayName }}</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="h-4 w-4 text-slate-500"
@@ -62,8 +62,8 @@
           >
             <div class="py-1">
               <button
-                @click="handleLogout"
                 class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-slate-700 transition-colors hover:bg-slate-100"
+                @click="handleLogout"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -106,17 +106,20 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useAuth } from '@/composables/useAuth';
 
-const router = useRouter();
-
-const userName = ref(localStorage.getItem('user_name'));
+/**
+ * Usando composable SEM desestruturar para manter reatividade dos computed
+ */
+const auth = useAuth();
 const showMenu = ref(false);
 const menuRef = ref(null);
 
-function updateUserName() {
-  userName.value = localStorage.getItem('user_name');
-}
+// Guarda o nome de forma NÃO reativa para manter após logout
+// Só desaparece ao recarregar a página
+const savedDisplayName = ref('');
+
+// Salva o nome atual (não reativo) ao montar o componente
 
 function toggleMenu() {
   showMenu.value = !showMenu.value;
@@ -130,24 +133,26 @@ function onDocumentClick(e) {
 }
 
 async function handleLogout() {
-  // limpa os dados de login e tals
-  localStorage.removeItem('token');
-  localStorage.removeItem('user_name');
-  window.dispatchEvent(new Event('logout'));
-  updateUserName();
-  showMenu.value = false;
-  router.push('/');
+  try {
+    await auth.logout();
+    showMenu.value = false;
+    // Recarrega a página
+    window.location.reload();
+  } catch (err) {
+    console.error('Erro ao fazer logout:', err);
+    showMenu.value = false;
+  }
 }
 
 onMounted(() => {
-  window.addEventListener('login', updateUserName);
-  window.addEventListener('storage', updateUserName);
+  // Captura o nome atual do auth (value da Ref) e guarda localmente
+  const currentName = auth.userName?.value;
+  if (currentName) savedDisplayName.value = currentName;
+
   document.addEventListener('click', onDocumentClick);
 });
 
 onUnmounted(() => {
-  window.removeEventListener('login', updateUserName);
-  window.removeEventListener('storage', updateUserName);
   document.removeEventListener('click', onDocumentClick);
 });
 </script>
