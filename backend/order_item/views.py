@@ -1,10 +1,10 @@
 from rest_framework import viewsets, mixins
 from .serializers import OrderItemSerializer
-from users.permissions import IsRetailer
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import OrderItemFilter
 from rest_framework.permissions import IsAuthenticated
 from .models import OrderItem
+from users.permissions import IsRetailer
 
 class OrderItemViewSet(
     viewsets.GenericViewSet,
@@ -14,9 +14,14 @@ class OrderItemViewSet(
     mixins.UpdateModelMixin):
 
     serializer_class = OrderItemSerializer
-    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_class = OrderItemFilter
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return [IsAuthenticated(), IsRetailer()]
+
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         user = self.request.user

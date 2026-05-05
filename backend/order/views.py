@@ -9,6 +9,7 @@ from order_item.serializers import OrderItemSerializer
 from users.permissions import IsRetailer
 from .filters import OrderFilter
 from .models import Order
+from .services import confirm_order_with_stock, validate_item_stock
 from order_item.models import OrderItem
 from product.models import Product
 
@@ -28,7 +29,7 @@ class OrderViewSet(
         if self.action in ['create', 'add_item']:
             return [IsAuthenticated(), IsRetailer()]
 
-        if self.action in ['update', 'partial_update', 'confirm']:
+        if self.action in ['update', 'partial_update', 'confirm', 'cancel']:
             return [IsAuthenticated(), IsRetailer()]
 
         return [IsAuthenticated()]
@@ -107,6 +108,20 @@ class OrderViewSet(
                     defaults={'total_value': 0}
                 )
 
+                current_quantity = (
+                    OrderItem.objects
+                    .filter(order=order, product=product)
+                    .values_list('quantity', flat=True)
+                    .first()
+                    or 0
+                )
+                stock_error = validate_item_stock(product, current_quantity + quantity)
+                if stock_error:
+                    return Response(
+                        {"error": stock_error},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
                 # Check if product already exists in order
                 order_item, item_created = OrderItem.objects.get_or_create(
                     order=order,
@@ -155,8 +170,12 @@ class OrderViewSet(
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        order.status = 'CONFIRMED'
-        order.save()
+        order, error = confirm_order_with_stock(order)
+        if error:
+            return Response(
+                {"error": error},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         serializer = OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_200_OK)

@@ -364,6 +364,19 @@ class OrderSmartCartTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_add_item_cannot_exceed_available_stock(self):
+        """Test adding item above available stock fails."""
+        response = self.client.post(
+            f'{self.orders_url}add_item/',
+            {
+                'product_id': self.product1.id,
+                'quantity': 101
+            }
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('error', response.data)
+
 
 class OrderConfirmTestCase(TestCase):
     """Test cases for confirming orders"""
@@ -442,6 +455,26 @@ class OrderConfirmTestCase(TestCase):
         updated_order = Order.objects.get(id=self.order.id)
         self.assertEqual(updated_order.status, 'CONFIRMED')
 
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.total_quantity, 95)
+
+    def test_confirm_order_fails_when_stock_is_insufficient(self):
+        """Test confirming an order validates current stock before deduction."""
+        self.product.total_quantity = 4
+        self.product.save()
+
+        response = self.client.post(
+            f'{self.orders_url}{self.order.id}/confirm/'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('error', response.data)
+
+        self.order.refresh_from_db()
+        self.product.refresh_from_db()
+        self.assertEqual(self.order.status, 'PENDING')
+        self.assertEqual(self.product.total_quantity, 4)
+
     def test_confirm_order_without_items(self):
         """Test confirming order without items fails"""
         self.order.status = 'CONFIRMED'
@@ -493,6 +526,16 @@ class OrderConfirmTestCase(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_producer_cannot_cancel_order(self):
+        """Test producer cannot cancel a retailer order."""
+        self.client.force_authenticate(user=self.producer_user)
+
+        response = self.client.post(
+            f'{self.orders_url}{self.order.id}/cancel/'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
 class OrderListingTestCase(TestCase):

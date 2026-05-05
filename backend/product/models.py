@@ -42,5 +42,9 @@ class Product(models.Model):
     class Meta:
         db_table = 'product'
 
+    @property
+    def available_quantity(self):
+        return self.total_quantity - self.reserved_quantity
+
     def __str__(self):
         return self.name
