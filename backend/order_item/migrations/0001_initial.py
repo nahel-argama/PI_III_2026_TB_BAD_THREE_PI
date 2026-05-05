@@ -10,6 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('order', '0001_initial'),
+        ('product', '0001_initial'),
     ]
 
     operations = [
@@ -20,9 +21,11 @@ class Migration(migrations.Migration):
                 ('quantity', models.PositiveIntegerField()),
                 ('unit_price', models.DecimalField(decimal_places=2, max_digits=10)),
                 ('order', models.ForeignKey(db_column='id_order', on_delete=django.db.models.deletion.CASCADE, related_name='items', to='order.order')),
+                ('product', models.ForeignKey(db_column='id_product', on_delete=django.db.models.deletion.CASCADE, related_name='order_items', to='product.product')),
             ],
             options={
                 'db_table': 'order_item',
+                'unique_together': {('order', 'product')},
             },
         ),
     ]

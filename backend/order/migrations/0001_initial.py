@@ -9,6 +9,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ('producer', '0001_initial'),
         ('retailer', '0001_initial'),
     ]
 
@@ -20,10 +21,15 @@ class Migration(migrations.Migration):
                 ('status', models.CharField(choices=[('PENDING', 'Pending'), ('CONFIRMED', 'Confirmed'), ('CANCELED', 'Canceled'), ('DELIVERED', 'Delivered')], default='PENDING', max_length=20)),
                 ('total_value', models.DecimalField(decimal_places=2, max_digits=10)),
                 ('created_at', models.DateTimeField(auto_now_add=True, db_column='created_at')),
+                ('producer', models.ForeignKey(db_column='id_producer', on_delete=django.db.models.deletion.CASCADE, related_name='orders', to='producer.producer')),
                 ('retailer', models.ForeignKey(db_column='id_retailer', on_delete=django.db.models.deletion.CASCADE, to='retailer.retailer')),
             ],
             options={
                 'db_table': 'order',
             },
+        ),
+        migrations.AddConstraint(
+            model_name='order',
+            constraint=models.UniqueConstraint(condition=models.Q(('status', 'PENDING')), fields=('retailer', 'producer'), name='unique_pending_order_per_retailer_producer'),
         ),
     ]
