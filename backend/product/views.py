@@ -32,10 +32,10 @@ class ProductViewSet(
     def get_queryset(self):
         user = self.request.user
 
-        if hasattr(user, "producer"):
+        if user.user_type == "PRODUCER":
             return Product.objects.filter(producer=user.producer)
 
-        if hasattr(user, "retailer"):
+        if user.user_type == "RETAILER":
             return Product.objects.filter(is_active=True)
 
         return Product.objects.none()
