@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from wishlist.models import Wishlist
 from .models import Retailer
 
 
@@ -6,13 +7,8 @@ class RetailerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Retailer
-        fields = [
-            'user',
-            'document_type',
-            'document_number',
-            'trade_name'
-        ]
-        read_only_fields = ['user']
+        fields = ["user", "document_type", "document_number", "trade_name"]
+        read_only_fields = ["user"]
 
     def validate_document_number(self, value):
         if not value.isdigit():
@@ -20,27 +16,22 @@ class RetailerSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data):
-        user = self.context['request'].user
-        document_type = data.get('document_type')
-        document_number = data.get('document_number')
+        document_type = data.get("document_type")
+        document_number = data.get("document_number")
 
-        if not user or not user.is_authenticated:
-            raise serializers.ValidationError("User is not authenticated")
+        if document_type == "CPF" and len(document_number) != 11:
+            raise serializers.ValidationError(
+                {"document_number": "CPF must have 11 digits."}
+            )
 
-        if user.user_type != 'RETAILER':
-            raise serializers.ValidationError("User must be a RETAILER")
-
-        if self.instance is None and hasattr(user, 'retailer'):
-            raise serializers.ValidationError("User already has a retailer profile")
-
-        if document_type == 'CPF' and len(document_number) != 11:
-            raise serializers.ValidationError({"document_number": "CPF must have 11 digits."})
-
-        if document_type == 'CNPJ' and len(document_number) != 14:
-            raise serializers.ValidationError({"document_number": "CNPJ must have 14 digits."})
+        if document_type == "CNPJ" and len(document_number) != 14:
+            raise serializers.ValidationError(
+                {"document_number": "CNPJ must have 14 digits."}
+            )
 
         return data
 
     def create(self, validated_data):
-        user = self.context['request'].user
-        return Retailer.objects.create(user=user, **validated_data)
+        retailer = Retailer.objects.create(**validated_data)
+        Wishlist.objects.get_or_create(retailer=retailer)
+        return retailer
