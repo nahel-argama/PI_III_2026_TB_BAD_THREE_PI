@@ -27,10 +27,15 @@
         v-for="item in profile.navItems"
         :key="item.label"
         type="button"
-        class="group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-emerald-50 hover:text-emerald-700"
+        class="group flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold text-slate-600 transition hover:bg-emerald-50 hover:text-emerald-700"
         :class="item.id === activeItemId ? 'bg-emerald-50 text-emerald-700' : ''"
         @click="$emit('select', item.id)"
       >
+        <component
+          :is="item.icon"
+          class="h-5 w-5 shrink-0 text-slate-400 transition group-hover:text-emerald-500"
+          :class="item.id === activeItemId ? 'text-emerald-500' : ''"
+        />
         <span>{{ item.label }}</span>
       </button>
     </nav>
