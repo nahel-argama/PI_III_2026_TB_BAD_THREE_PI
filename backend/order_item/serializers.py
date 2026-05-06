@@ -6,7 +6,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
         fields = ['id', 'order', 'product', 'quantity', 'unit_price']
-        read_only_fields = ['id', 'unit_price']
+        read_only_fields = ['id', 'order', 'unit_price']
 
     def validate_quantity(self, value):
         if value <= 0:
