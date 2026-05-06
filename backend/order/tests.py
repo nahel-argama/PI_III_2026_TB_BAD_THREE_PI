@@ -141,10 +141,14 @@ class OrderLifecycleWithNestedItemsTestCase(TestCase):
 
         patch_response = self.client.patch(
             self.order_item_detail_url(order_id, item_id),
-            {'quantity': 3}
+            {
+                'product': self.product2.id,
+                'quantity': 3
+            }
         )
 
         self.assertEqual(patch_response.status_code, status.HTTP_200_OK, patch_response.data)
+        self.assertEqual(patch_response.data['product'], self.product1.id)
         self.assertEqual(patch_response.data['quantity'], 3)
 
         order_detail_response = self.client.get(f'{self.orders_url}{order_id}/')
@@ -562,9 +566,10 @@ class OrderListingTestCase(TestCase):
         response = self.client.get(self.orders_url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data['count'], 2)
+        self.assertEqual(len(response.data['results']), 2)
         self.assertEqual(
-            {item['id'] for item in response.data},
+            {item['id'] for item in response.data['results']},
             {self.order1.id, self.order2.id}
         )
 
@@ -580,7 +585,8 @@ class OrderListingTestCase(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual([item['id'] for item in response.data], [self.order2.id])
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual([item['id'] for item in response.data['results']], [self.order2.id])
 
     def test_producer_list_orders_for_products(self):
         """Test producer can list orders for their products"""
@@ -589,5 +595,5 @@ class OrderListingTestCase(TestCase):
         response = self.client.get(self.orders_url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['id'], self.order1.id)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['id'], self.order1.id)

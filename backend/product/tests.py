@@ -129,7 +129,8 @@ class ProductAPITestCase(TestCase):
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        product_ids = {item['id'] for item in response.data}
+        self.assertEqual(response.data['count'], 2)
+        product_ids = {item['id'] for item in response.data['results']}
         self.assertEqual(product_ids, {self.product.id, self.other_product.id})
 
     def test_producer_lists_only_own_products(self):
@@ -138,7 +139,8 @@ class ProductAPITestCase(TestCase):
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        product_ids = {item['id'] for item in response.data}
+        self.assertEqual(response.data['count'], 2)
+        product_ids = {item['id'] for item in response.data['results']}
         self.assertEqual(product_ids, {self.product.id, self.inactive_product.id})
 
     def test_producer_cannot_update_product_from_another_producer(self):
@@ -179,7 +181,8 @@ class ProductAPITestCase(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual([item['id'] for item in response.data], [self.other_product.id])
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual([item['id'] for item in response.data['results']], [self.other_product.id])
 
     def test_total_quantity_must_be_positive(self):
         self.client.force_authenticate(user=self.producer_user)

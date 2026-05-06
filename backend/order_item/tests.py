@@ -132,9 +132,10 @@ class OrderItemNestedRouteTestCase(TestCase):
         response = self.client.get(self.order_items_url())
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['id'], self.item.id)
-        self.assertEqual(response.data[0]['order'], self.order.id)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['id'], self.item.id)
+        self.assertEqual(response.data['results'][0]['order'], self.order.id)
 
     def test_create_item_on_nested_order(self):
         response = self.client.post(
@@ -169,8 +170,6 @@ class OrderItemNestedRouteTestCase(TestCase):
         response = self.client.put(
             self.order_item_detail_url(),
             {
-                'order': self.order.id,
-                'product': self.product.id,
                 'quantity': 6
             }
         )
@@ -178,6 +177,29 @@ class OrderItemNestedRouteTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
         self.item.refresh_from_db()
         self.assertEqual(self.item.quantity, 6)
+
+    def test_put_item_does_not_change_product(self):
+        second_item = OrderItem.objects.create(
+            order=self.order,
+            product=self.second_product,
+            quantity=1,
+            unit_price='20.00'
+        )
+
+        response = self.client.put(
+            self.order_item_detail_url(second_item),
+            {
+                'product': self.product.id,
+                'quantity': 5
+            }
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+        self.assertEqual(response.data['product'], self.second_product.id)
+
+        second_item.refresh_from_db()
+        self.assertEqual(second_item.product, self.second_product)
+        self.assertEqual(second_item.quantity, 5)
 
     def test_patch_item_on_nested_order(self):
         response = self.client.patch(
