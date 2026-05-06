@@ -21,7 +21,7 @@
           :description="value.description"
         >
           <template #icon>
-            <component :is="value.icon" class="h-6 w-6" />
+            <i :class="[value.icon, 'text-2xl']" />
           </template>
         </ValueCard>
       </div>
@@ -31,27 +31,32 @@
 
 <script setup>
 import ValueCard from './valueprop/ValueCard.vue';
+import 'primeicons/primeicons.css';
 
 const values = [
   {
     title: 'Margens Reais',
     description:
       'Eliminamos o atravessador para que o lucro da venda fique com quem produz, não com quem intermedia.',
+    icon: 'pi pi-chart-bar',
   },
   {
     title: 'Georreferenciamento',
     description:
       'Algoritmos que priorizam o comércio local, ajudando tanto o varejista quanto o produtor',
+    icon: 'pi pi-map-marker',
   },
   {
     title: 'Preço Dinâmico',
     description:
-      'O scrapper de preço dinamico equilibra a oferta e procura, garantindo competitividade de preços.',
+      'O scrapper de preço dinamico calcula uma media de preços, garantindo competitividade não predatoria.',
+    icon: 'pi pi-wallet',
   },
   {
     title: 'Transparencia',
     description:
-      'Informação de mercado clara para o pequeno produtor saber o que e quando plantar para vender melhor.',
+      'Informação de mercado clara para o pequeno produtor ficar por dentro do mundo agricola.',
+    icon: 'pi pi-info-circle',
   },
 ];
 </script>
