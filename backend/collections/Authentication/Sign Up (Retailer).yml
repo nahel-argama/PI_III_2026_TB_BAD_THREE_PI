@@ -1,0 +1,29 @@
+info:
+  name: Sign Up (Retailer)
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{host}}/api/auth/signup/"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Maria Santos",
+        "email": "retailer@example.com",
+        "password": "teste123",
+        "user_type": "RETAILER",
+        "profile": {
+          "document_type": "CNPJ",
+          "document_number": "12345678000195",
+          "trade_name": "Loja Santos"
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

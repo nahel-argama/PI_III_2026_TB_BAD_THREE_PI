@@ -1,0 +1,29 @@
+info:
+  name: Sign Up (Producer)
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{host}}/api/auth/signup/"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "João da Silva",
+        "email": "producer@example.com",
+        "password": "teste123",
+        "user_type": "PRODUCER",
+        "profile": {
+          "document_type": "CPF",
+          "document_number": "12345678901",
+          "trade_name": "Silva Produções"
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
