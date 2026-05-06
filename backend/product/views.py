@@ -33,9 +33,9 @@ class ProductViewSet(
         user = self.request.user
 
         if user.user_type == "PRODUCER":
-            return Product.objects.filter(producer=user.producer)
+            return Product.objects.filter(producer=user.producer).order_by('id')
 
         if user.user_type == "RETAILER":
-            return Product.objects.filter(is_active=True)
+            return Product.objects.filter(is_active=True).order_by('id')
 
         return Product.objects.none()

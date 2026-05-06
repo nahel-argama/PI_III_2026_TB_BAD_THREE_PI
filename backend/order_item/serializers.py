@@ -8,6 +8,12 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = ['id', 'order', 'product', 'quantity', 'unit_price']
         read_only_fields = ['id', 'order', 'unit_price']
 
+    def get_extra_kwargs(self):
+        extra_kwargs = super().get_extra_kwargs()
+        if self.instance:
+            extra_kwargs['product'] = {'read_only': True}
+        return extra_kwargs
+
     def validate_quantity(self, value):
         if value <= 0:
             raise serializers.ValidationError("Quantity must be greater than zero.")
@@ -31,6 +37,16 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
         if product and order and product.producer != order.producer:
             raise serializers.ValidationError("Product producer must match order producer.")
+
+        if product and order:
+            duplicate = OrderItem.objects.filter(order=order, product=product)
+            if self.instance:
+                duplicate = duplicate.exclude(pk=self.instance.pk)
+
+            if duplicate.exists():
+                raise serializers.ValidationError({
+                    "product": "This product is already in this order."
+                })
 
         if product and quantity:
             stock_error = validate_item_stock(product, quantity)

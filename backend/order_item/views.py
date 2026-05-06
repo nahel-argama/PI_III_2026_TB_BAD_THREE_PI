@@ -33,7 +33,7 @@ class OrderItemViewSet(
 
     def get_queryset(self):
         user = self.request.user
-        queryset = OrderItem.objects.all()
+        queryset = OrderItem.objects.all().order_by('id')
 
         order_id = self.kwargs.get('order_pk')
         if order_id:
@@ -102,7 +102,7 @@ class OrderItemViewSet(
         if order.status != 'PENDING':
             raise ValidationError("Cannot modify non-pending order")
 
-        product = serializer.instance.product
+        product = serializer.validated_data.get('product', serializer.instance.product)
         quantity = serializer.validated_data.get('quantity', serializer.instance.quantity)
 
         error = validate_item_stock(product, quantity)

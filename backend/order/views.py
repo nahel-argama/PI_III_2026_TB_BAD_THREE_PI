@@ -33,12 +33,12 @@ class OrderViewSet(
         if user.user_type == 'RETAILER':
             return Order.objects.filter(
                 retailer=user.retailer
-            ).prefetch_related('items')
+            ).prefetch_related('items').order_by('id')
 
         if user.user_type == 'PRODUCER':
             return Order.objects.filter(
                 producer=user.producer
-            ).prefetch_related('items').distinct()
+            ).prefetch_related('items').order_by('id')
 
         return Order.objects.none()
 
