@@ -1,6 +1,7 @@
 import LoginView from '@/views/Auth/LoginView.vue';
 import RegisterView from '@/views/Auth/RegisterView.vue';
 import LandingPage from '@/views/Landing/LandingPage.vue';
+import CheckoutView from '@/views/Checkout/CheckoutView.vue';
 import { createRouter, createWebHistory } from 'vue-router';
 import { requireGuest, requireAuth } from '@/router/guards';
 
@@ -35,6 +36,18 @@ const router = createRouter({
       name: 'login',
       component: LoginView,
       beforeEnter: requireGuest,
+    },
+
+    /**
+     * ROTA DE CHECKOUT
+     * requireAuth: Apenas usuários autenticados podem acessar
+     * Se não estiver logado, redireciona para /login
+     */
+    {
+      path: '/checkout',
+      name: 'checkout',
+      component: CheckoutView,
+      beforeEnter: requireAuth,
     },
 
     /**
