@@ -205,8 +205,10 @@
 import { reactive, ref, watch } from 'vue';
 import api from '../../services/api';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 
 const router = useRouter();
+const authStore = useAuthStore();
 const currentStep = ref(1);
 
 const form = reactive({
@@ -313,6 +315,7 @@ const handleCadastro = async () => {
       throw new Error('Token não recebido após login.');
     }
     localStorage.setItem('token', token);
+    await authStore.initializeAuth();
 
     const profilePayload = {
       tipo_documento: form.tipo_documento,
@@ -336,7 +339,7 @@ const handleCadastro = async () => {
     await api.post('/endereco/', addressPayload);
 
     alert('Cadastro realizado com sucesso!');
-    router.push('/login');
+    router.push('/dashboard');
   } catch (error) {
     console.error('Erro no cadastro:', error);
     const backendMessage = error?.response?.data || error?.message || 'Erro desconhecido';

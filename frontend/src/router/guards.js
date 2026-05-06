@@ -52,7 +52,7 @@ export const requireGuest = (to, from, next) => {
 
   if (authStore.isLoggedIn) {
     // Usuário já está autenticado, redireciona
-    next('/');
+    next('/dashboard');
   } else {
     // Usuário não está autenticado, permite acesso
     next();
@@ -84,18 +84,19 @@ export const requireRole = (requiredRoles) => {
       return;
     }
 
-    // TODO: Implementar verificação de role
-    // const userRole = authStore.getCurrentUser?.type;
-    // const roles = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles];
-    //
-    // if (roles.includes(userRole)) {
-    //   next();
-    // } else {
-    //   // Usuário não tem permissão
-    //   next('/');
-    // }
+    const userRole = authStore.getCurrentUserType || authStore.getCurrentUser?.type;
+    const roles = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles];
 
-    // Por enquanto, apenas verifica se está autenticado
-    next();
+    if (!roles.length || !requiredRoles) {
+      next();
+      return;
+    }
+
+    if (roles.includes(userRole)) {
+      next();
+      return;
+    }
+
+    next('/');
   };
 };

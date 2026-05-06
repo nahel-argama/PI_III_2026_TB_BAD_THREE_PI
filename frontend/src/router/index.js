@@ -2,6 +2,7 @@ import LoginView from '@/views/Auth/LoginView.vue';
 import RegisterView from '@/views/Auth/RegisterView.vue';
 import LandingPage from '@/views/Landing/LandingPage.vue';
 import CheckoutView from '@/views/Checkout/CheckoutView.vue';
+import DashboardView from '@/views/Dashboard/DashboardView.vue';
 import { createRouter, createWebHistory } from 'vue-router';
 import { requireGuest, requireAuth } from '@/router/guards';
 
@@ -47,6 +48,18 @@ const router = createRouter({
       path: '/checkout',
       name: 'checkout',
       component: CheckoutView,
+      beforeEnter: requireAuth,
+    },
+
+    /**
+     * DASHBOARD
+     * requireAuth: Apenas usuários autenticados podem acessar
+     * O conteúdo interno se adapta ao perfil salvo no Pinia
+     */
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: DashboardView,
       beforeEnter: requireAuth,
     },
 
