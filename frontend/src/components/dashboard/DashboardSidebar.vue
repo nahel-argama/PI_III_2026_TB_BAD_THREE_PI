@@ -23,16 +23,16 @@
     </div>
 
     <nav class="mt-6 space-y-2">
-      <a
+      <button
         v-for="item in profile.navItems"
         :key="item.label"
-        :href="item.href"
+        type="button"
         class="group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-emerald-50 hover:text-emerald-700"
-        @click="$emit('navigate')"
+        :class="item.id === activeItemId ? 'bg-emerald-50 text-emerald-700' : ''"
+        @click="$emit('select', item.id)"
       >
-        <component :is="item.icon" class="h-5 w-5 text-slate-400 transition group-hover:text-emerald-500" />
         <span>{{ item.label }}</span>
-      </a>
+      </button>
     </nav>
 
   </div>
@@ -46,7 +46,11 @@ defineProps({
     type: Object,
     required: true,
   },
+  activeItemId: {
+    type: String,
+    default: '',
+  },
 });
 
-defineEmits(['close-sidebar', 'navigate']);
+defineEmits(['close-sidebar', 'select']);
 </script>

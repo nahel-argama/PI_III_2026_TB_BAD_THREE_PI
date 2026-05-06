@@ -6,8 +6,9 @@
     <template #sidebar>
       <DashboardSidebar
         :profile="profile"
+        :active-item-id="activeItemId"
         @close-sidebar="sidebarOpen = false"
-        @navigate="sidebarOpen = false"
+        @select="handleSelect"
       />
     </template>
 
@@ -21,26 +22,61 @@
       />
     </template>
 
-    <div class="flex min-h-[calc(100vh-6.5rem)] w-full">
-      <div class="h-full w-full rounded-[28px] border border-dashed border-slate-200/80 bg-white/30" />
-    </div>
+    <component :is="activeViewComponent" />
   </DashboardShell>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import DashboardShell from '@/components/dashboard/DashboardShell.vue';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar.vue';
 import DashboardTopbar from '@/components/dashboard/DashboardTopbar.vue';
 import { dashboardProfiles } from '@/data/dashboard';
+import ProducerTest1View from '@/components/dashboard/views/ProducerTest1View.vue';
+import ProducerTest2View from '@/components/dashboard/views/ProducerTest2View.vue';
+import ProducerTest3View from '@/components/dashboard/views/ProducerTest3View.vue';
+import RetailerTest1View from '@/components/dashboard/views/RetailerTest1View.vue';
+import RetailerTest2View from '@/components/dashboard/views/RetailerTest2View.vue';
+import RetailerTest3View from '@/components/dashboard/views/RetailerTest3View.vue';
 
 const authStore = useAuthStore();
 
 const sidebarOpen = ref(false);
+const activeItemId = ref('');
 
 const currentRole = computed(() => authStore.getCurrentUserType || authStore.getCurrentUser?.type || 'VAREJISTA');
 const profile = computed(() => dashboardProfiles[currentRole.value] || dashboardProfiles.VAREJISTA);
 const userName = computed(() => authStore.getCurrentUser?.name || 'Usuário Cultiva');
 const roleLabel = computed(() => (currentRole.value === 'PRODUTOR' ? 'Produtor' : 'Varejista'));
+
+const activeViewComponent = computed(() => {
+  const viewMap = {
+    PRODUTOR: {
+      'prod-teste-1': ProducerTest1View,
+      'prod-teste-2': ProducerTest2View,
+      'prod-teste-3': ProducerTest3View,
+    },
+    VAREJISTA: {
+      'varet-teste-1': RetailerTest1View,
+      'varet-teste-2': RetailerTest2View,
+      'varet-teste-3': RetailerTest3View,
+    },
+  };
+
+  return viewMap[currentRole.value]?.[activeItemId.value] || viewMap[currentRole.value]?.[profile.value.navItems[0]?.id];
+});
+
+function handleSelect(itemId) {
+  activeItemId.value = itemId;
+  sidebarOpen.value = false;
+}
+
+watch(
+  profile,
+  (nextProfile) => {
+    activeItemId.value = nextProfile.navItems[0]?.id || '';
+  },
+  { immediate: true },
+);
 </script>
