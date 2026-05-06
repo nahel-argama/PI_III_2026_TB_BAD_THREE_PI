@@ -28,7 +28,8 @@
         :key="item.label"
         type="button"
         class="group flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold text-slate-600 transition hover:bg-emerald-50 hover:text-emerald-700"
-        :class="item.id === activeItemId ? 'bg-emerald-50 text-emerald-700' : ''"
+        :class="{ 'bg-emerald-50 text-emerald-700': item.id === activeItemId }"
+        :aria-current="item.id === activeItemId ? 'page' : undefined"
         @click="$emit('select', item.id)"
       >
         <component

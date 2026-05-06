@@ -41,31 +41,31 @@ import SalesHistoryView from '@/components/dashboard/views/SalesHistoryView.vue'
 import ProfileView from '@/components/dashboard/views/ProfileView.vue';
 
 const authStore = useAuthStore();
+const dashboardViewRegistry = {
+  PRODUTOR: {
+    'meu-estoque': StockView,
+    'historico-venda': SalesHistoryView,
+    'meu-perfil': ProfileView,
+  },
+  VAREJISTA: {
+    'explorar-ofertas': ExploreOffersView,
+    'lista-desejos': WishlistView,
+    'historico-compra': PurchaseHistoryView,
+    'meu-perfil': ProfileView,
+  },
+};
 
 const sidebarOpen = ref(false);
 const activeItemId = ref('');
 
 const currentRole = computed(() => authStore.getCurrentUserType || authStore.getCurrentUser?.type || 'VAREJISTA');
 const profile = computed(() => dashboardProfiles[currentRole.value] || dashboardProfiles.VAREJISTA);
+const defaultActiveItemId = computed(() => profile.value.navItems[0]?.id || '');
 const userName = computed(() => authStore.getCurrentUser?.name || 'Usuário Cultiva');
 const roleLabel = computed(() => (currentRole.value === 'PRODUTOR' ? 'Produtor' : 'Varejista'));
 
 const activeViewComponent = computed(() => {
-  const viewMap = {
-    PRODUTOR: {
-      'meu-estoque': StockView,
-      'historico-venda': SalesHistoryView,
-      'meu-perfil': ProfileView,
-    },
-    VAREJISTA: {
-      'explorar-ofertas': ExploreOffersView,
-      'lista-desejos': WishlistView,
-      'historico-compra': PurchaseHistoryView,
-      'meu-perfil': ProfileView,
-    },
-  };
-
-  return viewMap[currentRole.value]?.[activeItemId.value] || viewMap[currentRole.value]?.[profile.value.navItems[0]?.id];
+  return dashboardViewRegistry[currentRole.value]?.[activeItemId.value] || dashboardViewRegistry[currentRole.value]?.[defaultActiveItemId.value];
 });
 
 function handleSelect(itemId) {
@@ -73,11 +73,7 @@ function handleSelect(itemId) {
   sidebarOpen.value = false;
 }
 
-watch(
-  profile,
-  (nextProfile) => {
-    activeItemId.value = nextProfile.navItems[0]?.id || '';
-  },
-  { immediate: true },
-);
+watch(defaultActiveItemId, (nextDefaultItemId) => {
+  activeItemId.value = nextDefaultItemId;
+}, { immediate: true });
 </script>

@@ -1,11 +1,11 @@
 <template>
-  <section class="flex min-h-[calc(100vh-6.5rem)] w-full items-center justify-center rounded-[28px] border border-dashed border-slate-200/80 bg-white/30 p-6">
-    <div class="max-w-xl text-center">
-      <p class="text-xs font-bold uppercase tracking-[0.28em] text-emerald-600">Produtor</p>
-      <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">Meu Estoque</h2>
-      <p class="mt-3 text-sm leading-7 text-slate-600">
-        Componente de teste para a primeira aba do produtor.
-      </p>
-    </div>
-  </section>
+  <DashboardPlaceholderView
+    eyebrow="Produtor"
+    title="Meu Estoque"
+    description="Componente de teste para a primeira aba do produtor."
+  />
 </template>
+
+<script setup>
+import DashboardPlaceholderView from '@/components/dashboard/views/DashboardPlaceholderView.vue';
+</script>
