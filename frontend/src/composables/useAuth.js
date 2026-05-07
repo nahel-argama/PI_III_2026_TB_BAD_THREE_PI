@@ -42,6 +42,7 @@ export const useAuth = () => {
    * Computed reativo que obtém o nome do usuário
    */
   const userName = computed(() => authStore.getCurrentUser?.name || null);
+  const userType = computed(() => authStore.getCurrentUserType || authStore.getCurrentUser?.type || null);
 
   return {
     // Direct store access for reactive props
@@ -49,6 +50,7 @@ export const useAuth = () => {
 
     // Computed values
     userName, // String do nome (para {{ }})
+    userType,
 
     // Methods
     login,

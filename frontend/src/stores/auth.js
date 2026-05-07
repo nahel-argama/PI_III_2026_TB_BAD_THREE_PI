@@ -14,10 +14,7 @@ export const useAuthStore = defineStore('auth', () => {
   // ===== STATE =====
   const token = ref(localStorage.getItem('token') || null);
   const user = ref(null);
-  const userNameFromStorage = localStorage.getItem('user_name') || null;
-  if (userNameFromStorage) {
-    user.value = { name: userNameFromStorage };
-  }
+  const userType = ref(null);
 
   // ===== GETTERS =====
   const isLoggedIn = computed(() => !!token.value);
@@ -25,6 +22,8 @@ export const useAuthStore = defineStore('auth', () => {
   const getCurrentUser = computed(() => user.value);
 
   const getToken = computed(() => token.value);
+
+  const getCurrentUserType = computed(() => userType.value || user.value?.type || null);
 
   // ===== PRIVATE METHODS =====
 
@@ -68,7 +67,6 @@ export const useAuthStore = defineStore('auth', () => {
   const _clearToken = () => {
     try {
       localStorage.removeItem('token');
-      localStorage.removeItem('user_name');
       token.value = null;
     } catch (err) {
       console.warn('Erro ao limpar token de localStorage:', err);
@@ -82,17 +80,71 @@ export const useAuthStore = defineStore('auth', () => {
   const _saveUserData = (userData) => {
     try {
       if (userData) {
-        // Salva name se existir
-        if (userData?.name) {
-          localStorage.setItem('user_name', userData.name);
-        }
-
         // Salva dados completos do usuário no state
         user.value = userData;
+        userType.value = userData?.type || null;
       }
     } catch (err) {
       console.warn('Erro ao salvar dados do usuário:', err);
     }
+  };
+
+  /**
+   * Decodifica o payload do JWT.
+   * @param {string} jwt - Token JWT de acesso
+   * @returns {object|null} - Payload decodificado
+   */
+  const _decodeJwtPayload = (jwt) => {
+    try {
+      if (!jwt) return null;
+
+      const base64Url = jwt.split('.')[1];
+      if (!base64Url) return null;
+
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join(''),
+      );
+
+      return JSON.parse(jsonPayload);
+    } catch (err) {
+      console.warn('Erro ao decodificar payload do JWT:', err);
+      return null;
+    }
+  };
+
+  /**
+   * Obtém o ID do usuário a partir do token JWT.
+   * @param {string} jwt - Token JWT de acesso
+   * @returns {number|null}
+   */
+  const _getUserIdFromToken = (jwt) => {
+    const decodedToken = _decodeJwtPayload(jwt);
+    const userId = decodedToken?.user_id || decodedToken?.userId || decodedToken?.id;
+
+    return userId || null;
+  };
+
+  /**
+   * Busca os dados completos do usuário autenticado no backend.
+   * @param {string} jwt - Token JWT de acesso
+   * @returns {Promise<object>} - Dados do usuário
+   */
+  const _fetchCurrentUser = async (jwt) => {
+    const userId = _getUserIdFromToken(jwt);
+
+    if (!userId) {
+      throw new Error('ID do usuário não encontrado no token');
+    }
+
+    const { default: api } = await import('@/services/api');
+    const response = await api.get(`/users/${userId}/`);
+    _saveUserData(response.data);
+
+    return response.data;
   };
 
   // ===== PUBLIC ACTIONS =====
@@ -104,12 +156,16 @@ export const useAuthStore = defineStore('auth', () => {
   const initializeAuth = async () => {
     try {
       const storedToken = _loadToken();
-      if (storedToken) {
-        // Token existe no localStorage, marca como autenticado
-        // Em produção, aqui você poderia validar o token com o backend
+      if (!storedToken) {
+        user.value = null;
+        userType.value = null;
+        return;
       }
+
+      await _fetchCurrentUser(storedToken);
     } catch (err) {
       console.error('Erro ao inicializar autenticação:', err);
+      clearAuth();
     }
   };
 
@@ -141,37 +197,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       // Salva token
       _saveToken(accessToken);
-
-      // ===== BUSCA DADOS COMPLETOS DO USUÁRIO =====
-      // O backend não retorna 'name' no login, apenas email e type
-      // Precisa decodificar JWT para extrair user_id, depois buscar dados completos
-      try {
-        const base64Url = accessToken.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(
-          atob(base64)
-            .split('')
-            .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-            .join(''),
-        );
-        const decodedToken = JSON.parse(jsonPayload);
-        const userId = decodedToken.user_id || decodedToken.userId || decodedToken.id;
-
-        if (userId) {
-          const userResp = await api.get(`/users/${userId}/`);
-
-          // Salva dados completos do usuário (com 'name')
-          _saveUserData(userResp.data);
-        } else {
-          console.warn('[Auth Store] user_id não encontrado no JWT');
-          // Fallback: salva apenas dados do login
-          _saveUserData(userData);
-        }
-      } catch (decodeErr) {
-        console.warn('[Auth Store] Erro ao decodificar JWT ou buscar user:', decodeErr);
-        // Fallback: salva apenas dados do login (sem name)
-        _saveUserData(userData);
-      }
+      await _fetchCurrentUser(accessToken);
 
       // TODO: Armazenar refresh token quando backend implementar refresh endpoint
       // localStorage.setItem('refresh_token', refreshToken);
@@ -228,12 +254,12 @@ export const useAuthStore = defineStore('auth', () => {
   const setTokenFromStorage = (newToken, userData = null) => {
     if (newToken) {
       token.value = newToken;
-      if (userData) {
-        user.value = userData;
-      }
+      user.value = userData;
+      userType.value = userData?.type || null;
     } else {
       token.value = null;
       user.value = null;
+      userType.value = null;
     }
   };
 
@@ -279,8 +305,9 @@ export const useAuthStore = defineStore('auth', () => {
         }
         // Se o token foi adicionado/alterado em outra aba, sincroniza
         else {
-          setTokenFromStorage(event.newValue, {
-            name: localStorage.getItem('user_name'),
+          setTokenFromStorage(event.newValue);
+          _fetchCurrentUser(event.newValue).catch((err) => {
+            console.warn('Erro ao sincronizar usuário entre abas:', err);
           });
         }
       }
@@ -297,11 +324,13 @@ export const useAuthStore = defineStore('auth', () => {
     // State
     token,
     user,
+    userType,
 
     // Getters
     isLoggedIn,
     getCurrentUser,
     getToken,
+    getCurrentUserType,
 
     // Actions
     initializeAuth,
