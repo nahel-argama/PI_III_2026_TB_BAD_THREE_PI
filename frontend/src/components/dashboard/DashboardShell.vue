@@ -22,7 +22,7 @@
           <slot name="topbar" />
         </div>
 
-        <main class="flex-1 px-4 pb-5 sm:px-6 lg:px-8">
+        <main class="flex-1 px-4 pb-5 sm:p-6 lg:p-8">
           <slot />
         </main>
       </div>
