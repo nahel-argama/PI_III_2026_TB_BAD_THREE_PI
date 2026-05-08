@@ -3,6 +3,7 @@ import {
   ArchiveBoxIcon,
   ClipboardDocumentListIcon,
   EyeIcon,
+  PhotoIcon,
   UserCircleIcon,
 } from '@heroicons/vue/24/outline';
 
@@ -23,7 +24,16 @@ export const dashboardProfiles = {
       { id: 'explorar-ofertas', label: 'Explorar Ofertas', icon: EyeIcon },
       { id: 'lista-desejos', label: 'Lista de Desejos', icon: ClipboardDocumentListIcon },
       { id: 'historico-compra', label: 'Histórico de Compra', icon: ArrowPathIcon },
+      // TODO: mover esta aba para ADMIN quando o backend suportar o novo tipo de usuário.
+      { id: 'gerenciar-imagens-produtos', label: 'Gerenciar Imagens de Produtos', icon: PhotoIcon },
       { id: 'meu-perfil', label: 'Meu Perfil', icon: UserCircleIcon },
+    ],
+  },
+  ADMIN: {
+    title: 'Painel do Admin',
+    subtitle: 'Área administrativa para manter a operação e a curadoria da plataforma.',
+    navItems: [
+      { id: 'gerenciar-imagens-produtos', label: 'Gerenciar Imagens de Produtos', icon: PhotoIcon },
     ],
   },
 };
