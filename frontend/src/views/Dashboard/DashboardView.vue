@@ -39,6 +39,7 @@ import WishlistView from '@/components/dashboard/views/WishlistView.vue';
 import PurchaseHistoryView from '@/components/dashboard/views/PurchaseHistoryView.vue';
 import SalesHistoryView from '@/components/dashboard/views/SalesHistoryView.vue';
 import ProfileView from '@/components/dashboard/views/ProfileView.vue';
+import ProductImagesPlaceholderView from '@/components/dashboard/views/ProductImagesPlaceholderView.vue';
 
 const authStore = useAuthStore();
 const dashboardViewRegistry = {
@@ -51,7 +52,11 @@ const dashboardViewRegistry = {
     'explorar-ofertas': ExploreOffersView,
     'lista-desejos': WishlistView,
     'historico-compra': PurchaseHistoryView,
+    'gerenciar-imagens-produtos': ProductImagesPlaceholderView,
     'meu-perfil': ProfileView,
+  },
+  ADMIN: {
+    'gerenciar-imagens-produtos': ProductImagesPlaceholderView,
   },
 };
 
@@ -62,7 +67,11 @@ const currentRole = computed(() => authStore.getCurrentUserType || authStore.get
 const profile = computed(() => dashboardProfiles[currentRole.value] || dashboardProfiles.VAREJISTA);
 const defaultActiveItemId = computed(() => profile.value.navItems[0]?.id || '');
 const userName = computed(() => authStore.getCurrentUser?.name || 'Usuário Cultiva');
-const roleLabel = computed(() => (currentRole.value === 'PRODUTOR' ? 'Produtor' : 'Varejista'));
+const roleLabel = computed(() => {
+  if (currentRole.value === 'PRODUTOR') return 'Produtor';
+  if (currentRole.value === 'ADMIN') return 'Administrador';
+  return 'Varejista';
+});
 
 const activeViewComponent = computed(() => {
   return dashboardViewRegistry[currentRole.value]?.[activeItemId.value] || dashboardViewRegistry[currentRole.value]?.[defaultActiveItemId.value];
