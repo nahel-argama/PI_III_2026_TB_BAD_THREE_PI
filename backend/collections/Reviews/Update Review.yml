@@ -1,0 +1,30 @@
+info:
+  name: Update Review
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: "{{host}}/api/reviews/:review_id/"
+  params:
+    - name: review_id
+      value: "1"
+      type: path
+  auth: inherit
+  body:
+    type: json
+    data: |
+      {
+        "order": 1,
+        "product": 1,
+        "producer": 1,
+        "retailer": 1,
+        "rating": 5.0,
+        "comment": "Excellent product quality, very satisfied"
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

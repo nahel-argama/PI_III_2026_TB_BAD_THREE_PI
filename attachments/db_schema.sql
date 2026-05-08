@@ -1,127 +1,156 @@
-CREATE TYPE "tipo_documento_enum" AS ENUM (
+CREATE TYPE "document_type_enum" AS ENUM (
   'CPF',
   'CNPJ'
 );
 
-CREATE TYPE "status_pedido_enum" AS ENUM (
-  'PENDENTE',
-  'CONFIRMADO',
-  'CANCELADO',
-  'ENTREGUE'
+CREATE TYPE "order_status_enum" AS ENUM (
+  'PENDING',
+  'CONFIRMED',
+  'CANCELED',
+  'DELIVERED'
 );
 
-CREATE TABLE "usuario" (
-  "id_usuario" BIGSERIAL PRIMARY KEY,
-  "nome" "VARCHAR(150)" NOT NULL,
+CREATE TABLE "users" (
+  "id_user" BIGSERIAL PRIMARY KEY,
+  "name" "VARCHAR(150)" NOT NULL,
   "email" "VARCHAR(150)" UNIQUE NOT NULL,
-  "senha" TEXT NOT NULL,
-  "criado_em" TIMESTAMP DEFAULT (CURRENT_TIMESTAMP)
+  "password" TEXT NOT NULL,
+  "user_type" "VARCHAR(20)" NOT NULL,
+  "is_active" BOOLEAN NOT NULL DEFAULT true,
+  "is_staff" BOOLEAN NOT NULL DEFAULT false,
+  "created_at" TIMESTAMP DEFAULT (CURRENT_TIMESTAMP)
 );
 
-CREATE TABLE "produtor" (
-  "id_usuario" BIGINT PRIMARY KEY,
-  "tipo_documento" tipo_documento_enum NOT NULL,
-  "documento_numero" "VARCHAR(20)" UNIQUE NOT NULL,
-  "nome_fantasia" "VARCHAR(150)"
+CREATE TABLE "producer" (
+  "id_user" BIGINT PRIMARY KEY,
+  "document_type" document_type_enum NOT NULL,
+  "document_number" "VARCHAR(20)" UNIQUE NOT NULL,
+  "trade_name" "VARCHAR(150)"
 );
 
-CREATE TABLE "varejista" (
-  "id_usuario" BIGINT PRIMARY KEY,
-  "documento" VARCHAR UNIQUE NOT NULL,
-  "nome_fantasia" VARCHAR NOT NULL
+CREATE TABLE "retailer" (
+  "id_user" BIGINT PRIMARY KEY,
+  "document_type" document_type_enum NOT NULL,
+  "document_number" "VARCHAR(20)" UNIQUE NOT NULL,
+  "trade_name" "VARCHAR(150)"
 );
 
-CREATE TABLE "endereco" (
-  "id_endereco" BIGSERIAL PRIMARY KEY,
-  "id_usuario" BIGINT,
-  "rua" VARCHAR NOT NULL,
-  "numero" VARCHAR,
-  "complemento" TEXT,
-  "bairro" VARCHAR NOT NULL,
-  "cidade" VARCHAR,
-  "estado" "CHAR(2)" NOT NULL,
-  "cep" VARCHAR
+CREATE TABLE "address" (
+  "id_address" BIGSERIAL PRIMARY KEY,
+  "id_user" BIGINT,
+  "street" VARCHAR NOT NULL,
+  "number" VARCHAR,
+  "complement" TEXT,
+  "neighborhood" VARCHAR NOT NULL,
+  "city" VARCHAR,
+  "state" "CHAR(2)" NOT NULL,
+  "postal_code" VARCHAR
 );
 
-CREATE TABLE "categoria" (
-  "id_categoria" SERIAL PRIMARY KEY,
-  "nome" VARCHAR UNIQUE NOT NULL,
-  "ativo" BOOLEAN NOT NULL
+CREATE TABLE "category" (
+  "id_category" SERIAL PRIMARY KEY,
+  "name" VARCHAR UNIQUE NOT NULL,
+  "is_active" BOOLEAN NOT NULL
 );
 
-CREATE TABLE "produto" (
-  "id_produto" BIGSERIAL PRIMARY KEY,
-  "id_categoria" INT,
-  "id_produtor" BIGINT,
-  "nome" VARCHAR NOT NULL,
-  "descricao" TEXT NOT NULL,
-  "preco" NUMERIC NOT NULL,
-  "quantidade_total" NUMERIC NOT NULL,
-  "quantidade_reservada" NUMERIC,
-  "ativo" BOOLEAN NOT NULL,
-  "criado_em" TIMESTAMP DEFAULT (CURRENT_TIMESTAMP)
+CREATE TABLE "product" (
+  "id_product" BIGSERIAL PRIMARY KEY,
+  "id_category" INT,
+  "id_producer" BIGINT,
+  "name" VARCHAR NOT NULL,
+  "description" TEXT,
+  "price" NUMERIC NOT NULL,
+  "total_quantity" NUMERIC NOT NULL,
+  "reserved_quantity" NUMERIC,
+  "is_active" BOOLEAN NOT NULL,
+  "created_at" TIMESTAMP DEFAULT (CURRENT_TIMESTAMP)
 );
 
-CREATE TABLE "pedido" (
-  "id_pedido" BIGSERIAL PRIMARY KEY,
-  "id_varejista" BIGINT,
-  "status" status_pedido_enum NOT NULL,
-  "valor_total" NUMERIC NOT NULL,
-  "criado_em" TIMESTAMP NOT NULL
+CREATE TABLE "order" (
+  "id_order" BIGSERIAL PRIMARY KEY,
+  "id_retailer" BIGINT,
+  "status" order_status_enum NOT NULL,
+  "total_value" NUMERIC NOT NULL,
+  "created_at" TIMESTAMP NOT NULL
 );
 
-CREATE TABLE "item_pedido" (
-  "id_item" BIGSERIAL PRIMARY KEY,
-  "id_pedido" BIGINT,
-  "quantidade" NUMERIC NOT NULL,
-  "preco_unitario" NUMERIC NOT NULL
+CREATE TABLE "order_item" (
+  "id_order_item" BIGSERIAL PRIMARY KEY,
+  "id_order" BIGINT,
+  "id_product" BIGINT NOT NULL,
+  "quantity" NUMERIC NOT NULL,
+  "unit_price" NUMERIC NOT NULL
 );
 
-CREATE TABLE "avaliacao" (
-  "id_avaliacao" BIGSERIAL PRIMARY KEY,
-  "id_pedido" BIGINT,
-  "id_produto" BIGINT,
-  "id_produtor" BIGINT,
-  "id_varejista" BIGINT,
-  "nota" INT NOT NULL,
-  "comentario" TEXT,
-  "criado_em" TIMESTAMP NOT NULL
+CREATE TABLE "review" (
+  "id_review" BIGSERIAL PRIMARY KEY,
+  "id_order" BIGINT,
+  "id_product" BIGINT,
+  "id_producer" BIGINT,
+  "id_retailer" BIGINT,
+  "rating" INT NOT NULL,
+  "comment" TEXT,
+  "created_at" TIMESTAMP NOT NULL
 );
 
-CREATE TABLE "imagem" (
-  "id_imagem" BIGSERIAL PRIMARY KEY,
+CREATE TABLE "image" (
+  "id_image" BIGSERIAL PRIMARY KEY,
   "url" TEXT NOT NULL,
-  "criado_em" timestamp NOT NULL
+  "created_at" TIMESTAMP NOT NULL
 );
 
-CREATE TABLE "imagem_produto" (
-  "id_imagem_produto" BIGSERIAL PRIMARY KEY,
-  "id_imagem" BIGSERIAL NOT NULL,
-  "id_produto" BIGSERIAL NOT NULL
+CREATE TABLE "product_image" (
+  "id_product_image" BIGSERIAL PRIMARY KEY,
+  "id_image" BIGSERIAL NOT NULL,
+  "id_product" BIGSERIAL NOT NULL
 );
 
-ALTER TABLE "imagem_produto" ADD FOREIGN KEY ("id_produto") REFERENCES "produto" ("id_produto") DEFERRABLE INITIALLY IMMEDIATE;
+CREATE TABLE "wishlist" (
+  "id_wishlist" BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  "id_retailer" BIGINT NOT NULL
+);
 
-ALTER TABLE "imagem_produto" ADD FOREIGN KEY ("id_imagem") REFERENCES "imagem" ("id_imagem") DEFERRABLE INITIALLY IMMEDIATE;
+CREATE TABLE "wishlist_item_image" (
+  "id_wishlist_item_image" BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  "product_external_key" TEXT NOT NULL UNIQUE,
+  "id_image" BIGINT NOT NULL
+);
 
-ALTER TABLE "produtor" ADD FOREIGN KEY ("id_usuario") REFERENCES "usuario" ("id_usuario") DEFERRABLE INITIALLY IMMEDIATE;
+CREATE TABLE "wishlist_item" (
+  "id_wishlist_item" BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  "id_wishlist" BIGINT NOT NULL,
+  "product_external_key" TEXT,
+  "product_name" VARCHAR NOT NULL
+);
 
-ALTER TABLE "varejista" ADD FOREIGN KEY ("id_usuario") REFERENCES "usuario" ("id_usuario") DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "wishlist_item" ADD FOREIGN KEY ("id_wishlist") REFERENCES "wishlist" ("id_wishlist") DEFERRABLE INITIALLY IMMEDIATE;
 
-ALTER TABLE "endereco" ADD FOREIGN KEY ("id_usuario") REFERENCES "usuario" ("id_usuario") DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "wishlist_item_image" ADD FOREIGN KEY ("id_image") REFERENCES "image" ("id_image") DEFERRABLE INITIALLY IMMEDIATE;
 
-ALTER TABLE "produto" ADD FOREIGN KEY ("id_categoria") REFERENCES "categoria" ("id_categoria") DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "retailer" ADD FOREIGN KEY ("id_user") REFERENCES "wishlist" ("id_wishlist") DEFERRABLE INITIALLY IMMEDIATE;
 
-ALTER TABLE "produto" ADD FOREIGN KEY ("id_produtor") REFERENCES "produtor" ("id_usuario") DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "product_image" ADD FOREIGN KEY ("id_product") REFERENCES "product" ("id_product") DEFERRABLE INITIALLY IMMEDIATE;
 
-ALTER TABLE "pedido" ADD FOREIGN KEY ("id_varejista") REFERENCES "varejista" ("id_usuario") DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "product_image" ADD FOREIGN KEY ("id_image") REFERENCES "image" ("id_image") DEFERRABLE INITIALLY IMMEDIATE;
 
-ALTER TABLE "item_pedido" ADD FOREIGN KEY ("id_pedido") REFERENCES "pedido" ("id_pedido") DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "producer" ADD FOREIGN KEY ("id_user") REFERENCES "users" ("id_user") DEFERRABLE INITIALLY IMMEDIATE;
 
-ALTER TABLE "avaliacao" ADD FOREIGN KEY ("id_varejista") REFERENCES "varejista" ("id_usuario") DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "retailer" ADD FOREIGN KEY ("id_user") REFERENCES "users" ("id_user") DEFERRABLE INITIALLY IMMEDIATE;
 
-ALTER TABLE "avaliacao" ADD FOREIGN KEY ("id_pedido") REFERENCES "pedido" ("id_pedido") DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "address" ADD FOREIGN KEY ("id_user") REFERENCES "users" ("id_user") DEFERRABLE INITIALLY IMMEDIATE;
 
-ALTER TABLE "avaliacao" ADD FOREIGN KEY ("id_produto") REFERENCES "produto" ("id_produto") DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "product" ADD FOREIGN KEY ("id_category") REFERENCES "category" ("id_category") DEFERRABLE INITIALLY IMMEDIATE;
 
-ALTER TABLE "avaliacao" ADD FOREIGN KEY ("id_produtor") REFERENCES "produtor" ("id_usuario") DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "product" ADD FOREIGN KEY ("id_producer") REFERENCES "producer" ("id_user") DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "order" ADD FOREIGN KEY ("id_retailer") REFERENCES "retailer" ("id_user") DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "order_item" ADD FOREIGN KEY ("id_order") REFERENCES "order" ("id_order") DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "review" ADD FOREIGN KEY ("id_retailer") REFERENCES "retailer" ("id_user") DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "review" ADD FOREIGN KEY ("id_order") REFERENCES "order" ("id_order") DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "review" ADD FOREIGN KEY ("id_product") REFERENCES "product" ("id_product") DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "review" ADD FOREIGN KEY ("id_producer") REFERENCES "producer" ("id_user") DEFERRABLE INITIALLY IMMEDIATE;

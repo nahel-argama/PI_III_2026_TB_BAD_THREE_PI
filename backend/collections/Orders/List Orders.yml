@@ -1,0 +1,28 @@
+info:
+  name: List Orders
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{host}}/api/orders/?status=&created_at=&total_min=&total_max="
+  params:
+    - name: status
+      value: ""
+      type: query
+    - name: created_at
+      value: ""
+      type: query
+    - name: total_min
+      value: ""
+      type: query
+    - name: total_max
+      value: ""
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

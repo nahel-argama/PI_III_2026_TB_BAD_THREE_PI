@@ -1,0 +1,27 @@
+info:
+  name: Create Product
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{host}}/api/products/"
+  auth: inherit
+  body:
+    type: json
+    data: |
+      {
+        "category": 1,
+        "name": "Tomato",
+        "description": "Fresh organic tomato",
+        "total_quantity": 100.0,
+        "reserved_quantity": 0.0,
+        "price": 2.5,
+        "is_active": true
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,9 @@
+info:
+  name: Addresses
+  type: folder
+  seq: 1
+
+request:
+  auth:
+    type: bearer
+    token: "{{access}}"
