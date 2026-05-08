@@ -65,7 +65,7 @@ export const requireGuest = (to, from, next) => {
  * Protege rotas por role/tipo de usuário (futuro)
  *
  * TODO: Implementar quando o backend retornar tipos de usuário
- * Esperado: user.type === 'PRODUTOR' ou 'VAREJISTA'
+ * Esperado: user_type normalizado para 'PRODUTOR' ou 'VAREJISTA'
  *
  * Uso:
  * { path: '/produtor/dashboard', beforeEnter: requireRole('PRODUTOR') }
@@ -84,7 +84,7 @@ export const requireRole = (requiredRoles) => {
       return;
     }
 
-    const userRole = authStore.getCurrentUserType || authStore.getCurrentUser?.type;
+    const userRole = authStore.getCurrentUserType || authStore.getCurrentUser?.user_type || authStore.getCurrentUser?.type;
     const roles = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles];
 
     if (!roles.length || !requiredRoles) {

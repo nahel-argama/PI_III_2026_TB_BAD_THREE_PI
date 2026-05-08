@@ -56,9 +56,19 @@
               v-model="form.type"
               class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-green-800 focus:outline-none"
             >
-              <option value="PRODUTOR">Produtor</option>
-              <option value="VAREJISTA">Varejista</option>
+              <option value="PRODUCER">Produtor</option>
+              <option value="RETAILER">Varejista</option>
             </select>
+          </div>
+
+          <div class="mb-4">
+            <label class="mb-2 block text-sm font-bold text-gray-700">Nome fantasia / Razão social</label>
+            <input
+              v-model="form.nome_fantasia"
+              type="text"
+              class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-green-800 focus:outline-none"
+              required
+            />
           </div>
 
           <div class="mb-6">
@@ -99,14 +109,6 @@
             <p v-if="errors.documento" class="mt-1 text-sm text-red-600">{{ errors.documento }}</p>
           </div>
 
-          <div v-if="form.type === 'PRODUTOR'" class="mb-6">
-            <label class="mb-2 block text-sm font-bold text-gray-700">Nome de usuário (Opcional)</label>
-            <input
-              v-model="form.nome_fantasia"
-              type="text"
-              class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-green-800 focus:outline-none"
-            />
-          </div>
         </div>
 
         <!-- Step 3: endereços -->
@@ -203,7 +205,6 @@
 
 <script setup>
 import { reactive, ref, watch } from 'vue';
-import api from '../../services/api';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 
@@ -214,7 +215,7 @@ const currentStep = ref(1);
 const form = reactive({
   name: '',
   email: '',
-  type: 'PRODUTOR',
+  type: 'PRODUCER',
   password: '',
   tipo_documento: 'CPF',
   documento: '',
@@ -298,51 +299,39 @@ const handleCadastro = async () => {
   }
 
   try {
-    const userPayload = {
+    const signupPayload = {
       name: form.name,
       email: form.email,
-      type: form.type,
       password: form.password,
+      user_type: form.type,
+      profile: {
+        document_type: form.tipo_documento,
+        document_number: form.documento.replace(/\D/g, ''),
+        trade_name: form.nome_fantasia,
+      },
+      address: {
+        street: form.rua,
+        number: form.numero || 'S/N',
+        complement: '',
+        neighborhood: form.bairro,
+        city: form.cidade,
+        state: form.estado,
+        postal_code: form.cep.replace(/\D/g, ''),
+      },
     };
-    await api.post('/users/', userPayload);
-
-    const loginResponse = await api.post('/users/login/', {
-      email: form.email,
-      password: form.password,
-    });
-    const token = loginResponse.data.access;
-    if (!token) {
-      throw new Error('Token não recebido após login.');
-    }
-    localStorage.setItem('token', token);
-    await authStore.initializeAuth();
-
-    const profilePayload = {
-      tipo_documento: form.tipo_documento,
-      documento: form.documento,
-    };
-    if (form.type === 'PRODUTOR') {
-      profilePayload.nome_fantasia = form.nome_fantasia;
-      await api.post('/produtor/', profilePayload);
-    } else {
-      await api.post('/varejista/', profilePayload);
-    }
-
-    const addressPayload = {
-      rua: form.rua,
-      numero: form.numero,
-      bairro: form.bairro,
-      cidade: form.cidade,
-      estado: form.estado,
-      cep: form.cep,
-    };
-    await api.post('/endereco/', addressPayload);
+    await authStore.signup(signupPayload);
 
     alert('Cadastro realizado com sucesso!');
     router.push('/dashboard');
   } catch (error) {
     console.error('Erro no cadastro:', error);
-    const backendMessage = error?.response?.data || error?.message || 'Erro desconhecido';
+    const backendMessage =
+      error?.response?.data?.detail ||
+      error?.response?.data?.message ||
+      error?.response?.data?.non_field_errors?.[0] ||
+      error?.response?.data ||
+      error?.message ||
+      'Erro desconhecido';
     alert(`Falha ao cadastrar. Detalhes: ${JSON.stringify(backendMessage)}`);
   }
 };
