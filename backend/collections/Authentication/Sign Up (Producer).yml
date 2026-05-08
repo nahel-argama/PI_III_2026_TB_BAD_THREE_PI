@@ -1,0 +1,37 @@
+info:
+  name: Sign Up (Producer)
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{host}}/api/auth/signup/"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "João da Silva",
+        "email": "producer@example.com",
+        "password": "teste123",
+        "user_type": "PRODUCER",
+        "profile": {
+          "document_type": "CPF",
+          "document_number": "12345678901",
+          "trade_name": "Silva Produções"
+        },
+        "address": {
+          "street": "Rua Alameda",
+          "city": "Springfield",
+          "number": "67",
+          "neighborhood": "Vila Sésamo",
+          "state": "SP",
+          "postal_code": "12345678"
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

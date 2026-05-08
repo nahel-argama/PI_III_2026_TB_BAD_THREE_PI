@@ -1,15 +1,15 @@
 from rest_framework.permissions import BasePermission
 
-class IsProdutor(BasePermission):
+class IsProducer(BasePermission):
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated and
-            request.user.type == 'PRODUTOR'
+            request.user.user_type == 'PRODUCER'
         )
 
-class IsVarejista(BasePermission):
+class IsRetailer(BasePermission):
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated and
-            request.user.type == 'VAREJISTA'
+            request.user.user_type == 'RETAILER'
         )

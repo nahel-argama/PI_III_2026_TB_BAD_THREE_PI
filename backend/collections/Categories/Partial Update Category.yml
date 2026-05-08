@@ -1,0 +1,25 @@
+info:
+  name: Partial Update Category
+  type: http
+  seq: 5
+
+http:
+  method: PATCH
+  url: "{{host}}/api/categories/:category_id/"
+  params:
+    - name: category_id
+      value: "1"
+      type: path
+  auth: inherit
+  body:
+    type: json
+    data: |
+      {
+        "is_active": false
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

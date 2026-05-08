@@ -1,0 +1,26 @@
+info:
+  name: Create Review
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{host}}/api/reviews/"
+  auth: inherit
+  body:
+    type: json
+    data: |
+      {
+        "order": 1,
+        "product": 1,
+        "producer": 1,
+        "retailer": 1,
+        "rating": 4.5,
+        "comment": "Excellent product quality"
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
