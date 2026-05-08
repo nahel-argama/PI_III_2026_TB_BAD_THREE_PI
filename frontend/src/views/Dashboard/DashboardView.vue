@@ -63,7 +63,9 @@ const dashboardViewRegistry = {
 const sidebarOpen = ref(false);
 const activeItemId = ref('');
 
-const currentRole = computed(() => authStore.getCurrentUserType || authStore.getCurrentUser?.type || 'VAREJISTA');
+const currentRole = computed(
+  () => authStore.getCurrentUserType || authStore.getCurrentUser?.user_type || authStore.getCurrentUser?.type || 'VAREJISTA',
+);
 const profile = computed(() => dashboardProfiles[currentRole.value] || dashboardProfiles.VAREJISTA);
 const defaultActiveItemId = computed(() => profile.value.navItems[0]?.id || '');
 const userName = computed(() => authStore.getCurrentUser?.name || 'Usuário Cultiva');

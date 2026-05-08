@@ -6,35 +6,40 @@ import { defineStore } from 'pinia';
  *
  * Responsabilidades:
  * - Manter estado do usuário autenticado (token, dados do usuário)
- * - Persistir/carregar token de localStorage
- * - Ações de login, logout e inicialização
- * - Métodos para refresh token (TODO - quando backend implementar)
+ * - Persistir/carregar tokens de localStorage
+ * - Ações de login, signup, logout e inicialização
+ * - Renovação de access token com refresh token
  */
 export const useAuthStore = defineStore('auth', () => {
+  const ACCESS_TOKEN_KEY = 'token';
+  const REFRESH_TOKEN_KEY = 'refresh_token';
+  const USER_TYPE_MAP = {
+    PRODUCER: 'PRODUTOR',
+    RETAILER: 'VAREJISTA',
+  };
+
+  const _normalizeUserType = (value) => USER_TYPE_MAP[value] || value || null;
+
   // ===== STATE =====
-  const token = ref(localStorage.getItem('token') || null);
+  const token = ref(localStorage.getItem(ACCESS_TOKEN_KEY) || null);
+  const refreshTokenValue = ref(localStorage.getItem(REFRESH_TOKEN_KEY) || null);
   const user = ref(null);
   const userType = ref(null);
 
   // ===== GETTERS =====
   const isLoggedIn = computed(() => !!token.value);
-
   const getCurrentUser = computed(() => user.value);
-
   const getToken = computed(() => token.value);
-
-  const getCurrentUserType = computed(() => userType.value || user.value?.type || null);
+  const getCurrentUserType = computed(() =>
+    _normalizeUserType(userType.value || user.value?.user_type || user.value?.type),
+  );
 
   // ===== PRIVATE METHODS =====
 
-  /**
-   * Salva token em localStorage de forma segura
-   * @param {string} newToken - Token JWT a ser salvo
-   */
   const _saveToken = (newToken) => {
     try {
       if (newToken) {
-        localStorage.setItem('token', newToken);
+        localStorage.setItem(ACCESS_TOKEN_KEY, newToken);
         token.value = newToken;
       }
     } catch (err) {
@@ -43,13 +48,21 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
-  /**
-   * Carrega token de localStorage
-   * @returns {string|null} - Token ou null se não existir
-   */
+  const _saveRefreshToken = (newRefreshToken) => {
+    try {
+      if (newRefreshToken) {
+        localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
+        refreshTokenValue.value = newRefreshToken;
+      }
+    } catch (err) {
+      console.warn('Erro ao salvar refresh token em localStorage:', err);
+      throw err;
+    }
+  };
+
   const _loadToken = () => {
     try {
-      const storedToken = localStorage.getItem('token');
+      const storedToken = localStorage.getItem(ACCESS_TOKEN_KEY);
       if (storedToken) {
         token.value = storedToken;
         return storedToken;
@@ -61,146 +74,117 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
-  /**
-   * Remove token de localStorage de forma segura
-   */
+  const _loadRefreshToken = () => {
+    try {
+      const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+      if (storedRefreshToken) {
+        refreshTokenValue.value = storedRefreshToken;
+        return storedRefreshToken;
+      }
+      return null;
+    } catch (err) {
+      console.warn('Erro ao carregar refresh token de localStorage:', err);
+      return null;
+    }
+  };
+
   const _clearToken = () => {
     try {
-      localStorage.removeItem('token');
+      localStorage.removeItem(ACCESS_TOKEN_KEY);
       token.value = null;
     } catch (err) {
       console.warn('Erro ao limpar token de localStorage:', err);
     }
   };
 
-  /**
-   * Salva dados do usuário em localStorage e state
-   * @param {object} userData - Dados do usuário a serem salvos
-   */
+  const _clearRefreshToken = () => {
+    try {
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
+      refreshTokenValue.value = null;
+    } catch (err) {
+      console.warn('Erro ao limpar refresh token de localStorage:', err);
+    }
+  };
+
   const _saveUserData = (userData) => {
     try {
       if (userData) {
-        // Salva dados completos do usuário no state
         user.value = userData;
-        userType.value = userData?.type || null;
+        userType.value = _normalizeUserType(userData?.user_type || userData?.type);
       }
     } catch (err) {
       console.warn('Erro ao salvar dados do usuário:', err);
     }
   };
 
-  /**
-   * Decodifica o payload do JWT.
-   * @param {string} jwt - Token JWT de acesso
-   * @returns {object|null} - Payload decodificado
-   */
-  const _decodeJwtPayload = (jwt) => {
-    try {
-      if (!jwt) return null;
-
-      const base64Url = jwt.split('.')[1];
-      if (!base64Url) return null;
-
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join(''),
-      );
-
-      return JSON.parse(jsonPayload);
-    } catch (err) {
-      console.warn('Erro ao decodificar payload do JWT:', err);
-      return null;
-    }
-  };
-
-  /**
-   * Obtém o ID do usuário a partir do token JWT.
-   * @param {string} jwt - Token JWT de acesso
-   * @returns {number|null}
-   */
-  const _getUserIdFromToken = (jwt) => {
-    const decodedToken = _decodeJwtPayload(jwt);
-    const userId = decodedToken?.user_id || decodedToken?.userId || decodedToken?.id;
-
-    return userId || null;
-  };
-
-  /**
-   * Busca os dados completos do usuário autenticado no backend.
-   * @param {string} jwt - Token JWT de acesso
-   * @returns {Promise<object>} - Dados do usuário
-   */
-  const _fetchCurrentUser = async (jwt) => {
-    const userId = _getUserIdFromToken(jwt);
-
-    if (!userId) {
-      throw new Error('ID do usuário não encontrado no token');
-    }
-
+  const _fetchCurrentUser = async () => {
     const { default: api } = await import('@/services/api');
-    const response = await api.get(`/users/${userId}/`);
+    const response = await api.get('/auth/me/');
     _saveUserData(response.data);
-
     return response.data;
+  };
+
+  const _hydrateAuthStateFromResponse = (responseData) => {
+    const accessToken = responseData?.access || null;
+    const refreshToken = responseData?.refresh || null;
+    const userData = responseData?.user || null;
+
+    if (!accessToken) {
+      throw new Error('Token de acesso não recebido do servidor');
+    }
+
+    _saveToken(accessToken);
+
+    if (refreshToken) {
+      _saveRefreshToken(refreshToken);
+    }
+
+    if (userData) {
+      _saveUserData(userData);
+    }
+
+    return responseData;
   };
 
   // ===== PUBLIC ACTIONS =====
 
-  /**
-   * Inicializa autenticação ao abrir a aplicação
-   * Carrega token do localStorage se existir
-   */
   const initializeAuth = async () => {
     try {
       const storedToken = _loadToken();
+      const storedRefreshToken = _loadRefreshToken();
+
       if (!storedToken) {
         user.value = null;
         userType.value = null;
         return;
       }
 
-      await _fetchCurrentUser(storedToken);
+      try {
+        await _fetchCurrentUser();
+      } catch (err) {
+        if (storedRefreshToken) {
+          await refreshToken();
+          await _fetchCurrentUser();
+          return;
+        }
+
+        throw err;
+      }
     } catch (err) {
       console.error('Erro ao inicializar autenticação:', err);
       clearAuth();
     }
   };
 
-  /**
-   * Realiza login do usuário
-   * @param {string} email - Email do usuário
-   * @param {string} password - Senha do usuário
-   * @returns {object} - Dados retornados pelo backend
-   * @throws {Error} - Se falhar no login
-   */
   const login = async (email, password) => {
     try {
-      // ===== NOTA IMPORTANTE =====
-      // Aqui é feito o import dinâmico do api service para evitar
-      // dependência circular (auth store → api → auth store)
       const { default: api } = await import('@/services/api');
-
-      const payload = {
+      const response = await api.post('/auth/login/', {
         email,
         password,
-      };
+      });
 
-      const response = await api.post('/users/login/', payload);
-      const { access: accessToken, refresh: refreshToken, ...userData } = response.data;
-
-      if (!accessToken) {
-        throw new Error('Token não recebido do servidor');
-      }
-
-      // Salva token
-      _saveToken(accessToken);
-      await _fetchCurrentUser(accessToken);
-
-      // TODO: Armazenar refresh token quando backend implementar refresh endpoint
-      // localStorage.setItem('refresh_token', refreshToken);
+      _hydrateAuthStateFromResponse(response.data);
 
       return response.data;
     } catch (err) {
@@ -209,53 +193,47 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
-  /**
-   * Faz logout do usuário
-   * Limpa token, dados e redireciona para login
-   */
+  const signup = async (payload) => {
+    try {
+      const { default: api } = await import('@/services/api');
+      const response = await api.post('/auth/signup/', payload);
+
+      _hydrateAuthStateFromResponse(response.data);
+
+      return response.data;
+    } catch (err) {
+      console.error('Erro no cadastro:', err);
+      throw err;
+    }
+  };
+
   const logout = async () => {
     try {
-      // TODO: Chamar backend endpoint de logout quando implementado
-      // const { default: api } = await import('@/services/api');
-      // await api.post('/users/logout/');
-
       clearAuth();
     } catch (err) {
       console.error('Erro ao fazer logout:', err);
-      // Mesmo com erro, limpa o estado local
       clearAuth();
     }
   };
 
-  /**
-   * Limpa estado de autenticação completamente
-   * Remove token e user data (sem redireção - deixa para o componente fazer)
-   *
-   * IMPORTANTE: Não redireciona aqui pois useRouter() não funciona em actions
-   * A redireção é responsabilidade de quem chama (componente ou interceptor)
-   */
   const clearAuth = () => {
     try {
       _clearToken();
+      _clearRefreshToken();
       user.value = null;
+      userType.value = null;
 
-      // Notifica outras abas sobre logout (via storage event)
       window.dispatchEvent(new Event('logout'));
     } catch (err) {
       console.error('Erro ao limpar autenticação:', err);
     }
   };
 
-  /**
-   * Define token a partir do armazenamento (por exemplo, após sincronizar entre abas)
-   * @param {string} newToken - Novo token a ser definido
-   * @param {object} userData - Dados do usuário
-   */
   const setTokenFromStorage = (newToken, userData = null) => {
     if (newToken) {
       token.value = newToken;
       user.value = userData;
-      userType.value = userData?.type || null;
+      userType.value = _normalizeUserType(userData?.user_type || userData?.type);
     } else {
       token.value = null;
       user.value = null;
@@ -263,78 +241,70 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
-  /**
-   * Tenta renovar o token (refresh token)
-   *
-   * TODO: Implementar quando backend tiver endpoint de refresh
-   * Esperado: POST /api/users/token/refresh/
-   * Payload: { refresh: refreshToken }
-   * Resposta: { access: newAccessToken }
-   *
-   * @returns {Promise<string>} - Novo token de acesso
-   * @throws {Error} - Se falhar ao renovar
-   */
   const refreshToken = async () => {
-    // TODO: Implementar refresh token
-    // const refreshTokenValue = localStorage.getItem('refresh_token');
-    // if (!refreshTokenValue) {
-    //   throw new Error('Refresh token não encontrado');
-    // }
-    //
-    // const { default: api } = await import('@/services/api');
-    // const response = await api.post('/users/token/refresh/', {
-    //   refresh: refreshTokenValue,
-    // });
-    //
-    // const newAccessToken = response.data.access;
-    // _saveToken(newAccessToken);
-    //
-    // return newAccessToken;
+    const storedRefreshToken = refreshTokenValue.value || _loadRefreshToken();
 
-    throw new Error('Refresh token não implementado. Backend não possui endpoint.');
+    if (!storedRefreshToken) {
+      throw new Error('Refresh token não encontrado');
+    }
+
+    const { default: api } = await import('@/services/api');
+    const response = await api.post('/auth/refresh/', {
+      refresh: storedRefreshToken,
+    });
+
+    const newAccessToken = response.data?.access;
+    if (!newAccessToken) {
+      throw new Error('Novo access token não recebido');
+    }
+
+    _saveToken(newAccessToken);
+    return newAccessToken;
   };
 
   // ===== SINCRONIZAÇÃO ENTRE ABAS =====
-  // Escuta mudanças em localStorage para sincronizar logout/login entre abas
   if (typeof window !== 'undefined') {
     window.addEventListener('storage', (event) => {
-      if (event.key === 'token') {
-        // Se o token foi removido em outra aba, remove localmente também
+      if (event.key === ACCESS_TOKEN_KEY) {
         if (!event.newValue) {
           setTokenFromStorage(null);
-        }
-        // Se o token foi adicionado/alterado em outra aba, sincroniza
-        else {
+        } else {
           setTokenFromStorage(event.newValue);
-          _fetchCurrentUser(event.newValue).catch((err) => {
+          _fetchCurrentUser().catch((err) => {
             console.warn('Erro ao sincronizar usuário entre abas:', err);
           });
         }
       }
+
+      if (event.key === REFRESH_TOKEN_KEY) {
+        if (!event.newValue) {
+          refreshTokenValue.value = null;
+        } else {
+          refreshTokenValue.value = event.newValue;
+        }
+      }
     });
 
-    // Sincronização via custom events (logout manual)
     window.addEventListener('logout', () => {
       token.value = null;
+      refreshTokenValue.value = null;
       user.value = null;
+      userType.value = null;
     });
   }
 
   return {
-    // State
     token,
+    refreshTokenValue,
     user,
     userType,
-
-    // Getters
     isLoggedIn,
     getCurrentUser,
     getToken,
     getCurrentUserType,
-
-    // Actions
     initializeAuth,
     login,
+    signup,
     logout,
     clearAuth,
     setTokenFromStorage,

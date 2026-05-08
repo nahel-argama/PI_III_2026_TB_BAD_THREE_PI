@@ -27,6 +27,10 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+const isAuthEndpoint = (url = '') => {
+  return /\/auth\/(login|signup|refresh|verify)\//.test(url);
+};
+
 /**
  * ===== INTERCEPTOR DE RESPOSTA =====
  *
@@ -51,64 +55,56 @@ api.interceptors.response.use(
   // Erro - captura 401 inteligentemente
   async (error) => {
     try {
-      const { response } = error;
+      const { response, config } = error;
 
       // Se não é erro 401, apenas re-lança (componente trata)
       if (!response || response.status !== 401) {
         return Promise.reject(error);
       }
 
+      if (config?._retry) {
+        return Promise.reject(error);
+      }
+
+      if (isAuthEndpoint(config?.url)) {
+        return Promise.reject(error);
+      }
+
       // ===== ERRO 401 CAPTURADO =====
       // Verifica se há token armazenado
       const token = localStorage.getItem('token');
+      const refreshToken = localStorage.getItem('refresh_token');
 
       // Se NÃO há token → é um erro de credenciais inválidas (login)
       // Deixa o erro passar para o componente LoginView tratar
-      if (!token) {
+      if (!token && !refreshToken) {
         console.warn('[API] 401 sem token (credenciais inválidas)', {
           url: response.config?.url,
         });
         return Promise.reject(error);
       }
 
-      // Se HÁ token → é um erro real de autenticação (token expirado/inválido)
-      // Faz logout automático
-      console.warn('[API] 401 com token (autenticação expirada):', {
-        url: response.config?.url,
-        errorCode: response.data?.code,
-        detail: response.data?.detail,
-      });
-
       // Import dinâmico do auth store para evitar dependência circular
       const { useAuthStore } = await import('@/stores/auth');
       const authStore = useAuthStore();
 
-      // ===== TODO: IMPLEMENTAR REFRESH TOKEN =====
-      // Quando backend tiver endpoint POST /api/users/token/refresh/
-      //
-      // try {
-      //   const newToken = await authStore.refreshToken();
-      //   // Se sucesso, atualiza header e retenta requisição
-      //   error.config.headers.Authorization = `Bearer ${newToken}`;
-      //   return api(error.config);
-      // } catch (refreshErr) {
-      //   console.warn('[API] Falha ao renovar token:', refreshErr);
-      //   authStore.clearAuth();
-      //   return Promise.reject(error);
-      // }
+      if (refreshToken) {
+        try {
+          const newToken = await authStore.refreshToken();
+          config._retry = true;
+          config.headers.Authorization = `Bearer ${newToken}`;
+          return api(config);
+        } catch (refreshErr) {
+          console.warn('[API] Falha ao renovar token:', refreshErr);
+        }
+      }
 
-      // Por enquanto (sem refresh endpoint): logout imediato
       authStore.clearAuth();
 
-      // Redireciona para login
       try {
-        const { useRouter } = await import('vue-router');
-        const router = useRouter();
-        router.push('/login');
-      } catch (routerErr) {
-        console.warn('[API] Erro ao redirecionar via router, usando location.href:', routerErr);
-        // Fallback: redireciona via location se router falhar
         window.location.href = '/login';
+      } catch (routerErr) {
+        console.warn('[API] Erro ao redirecionar para login:', routerErr);
       }
 
       // Re-lança o erro para o componente decidir como exibir
