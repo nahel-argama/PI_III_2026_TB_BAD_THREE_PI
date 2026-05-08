@@ -1,0 +1,17 @@
+info:
+  name: Me
+  type: http
+  seq: 6
+
+http:
+  method: GET
+  url: "{{host}}/api/auth/me"
+  auth:
+    type: bearer
+    token: "{{access}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

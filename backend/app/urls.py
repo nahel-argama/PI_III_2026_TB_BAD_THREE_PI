@@ -34,12 +34,9 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('authentication.urls')),
-    path('api/users/', include('users.urls')),
-    path('api/addresses/', include('address.urls')),
     path('api/products/', include('product.urls')),
     path('api/categories/', include('category.urls')),
     path('api/orders/', include('order.urls')),
-    path('api/order-items/', include('order_item.urls')),
     path('api/reviews/', include('review.urls')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
