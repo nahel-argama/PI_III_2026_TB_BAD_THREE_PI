@@ -7,8 +7,7 @@ class RetailerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Retailer
-        fields = ["user", "document_type", "document_number", "trade_name"]
-        read_only_fields = ["user"]
+        fields = ["document_type", "document_number", "trade_name"]
 
     def validate_document_number(self, value):
         if not value.isdigit():

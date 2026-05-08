@@ -18,6 +18,14 @@ http:
           "document_type": "CPF",
           "document_number": "12345678901",
           "trade_name": "Silva Produções"
+        },
+        "address": {
+          "street": "Rua Alameda",
+          "city": "Springfield",
+          "number": "67",
+          "neighborhood": "Vila Sésamo",
+          "state": "SP",
+          "postal_code": "12345678"
         }
       }
   auth: inherit

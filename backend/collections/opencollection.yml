@@ -1,8 +1,7 @@
 opencollection: 1.0.0
 
 info:
-  name: Production Flow for Small Producers API
-
+  name: Cultiva
 config:
   proxy:
     inherit: true

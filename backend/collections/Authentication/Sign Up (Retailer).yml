@@ -17,7 +17,15 @@ http:
         "profile": {
           "document_type": "CNPJ",
           "document_number": "12345678000195",
-          "trade_name": "Loja Santos"
+          "trade_name": "Teste"
+        },
+        "address": {
+          "street": "Rua Alameda",
+          "city": "Springfield",
+          "number": "67",
+          "neighborhood": "Vila Sésamo",
+          "state": "SP",
+          "postal_code": "12345678"
         }
       }
   auth: inherit

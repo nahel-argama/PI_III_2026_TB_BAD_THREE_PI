@@ -24,7 +24,7 @@ class Producer(models.Model):
         max_length=20, unique=True, null=False, blank=False
     )
 
-    trade_name = models.CharField(max_length=150, blank=True, null=True)
+    trade_name = models.CharField(max_length=150, blank=False, null=False)
 
     class Meta:
         db_table = "producer"

@@ -6,8 +6,7 @@ class ProducerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Producer
-        fields = ["user", "document_type", "document_number", "trade_name"]
-        read_only_fields = ["user"]
+        fields = ["document_type", "document_number", "trade_name"]
 
     def validate(self, data):
         document_type = data.get("document_type")
