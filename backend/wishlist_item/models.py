@@ -10,8 +10,8 @@ class WishlistItem(models.Model):
         related_name="items",
         db_column="id_wishlist",
     )
-    product_external_key = models.TextField(null=True, blank=True)
-    product_name = models.CharField(max_length=150)
+    product_external_key = models.TextField(db_column="product_external_key")
+    product_name = models.CharField(max_length=150, db_column="product_name")
 
     class Meta:
         db_table = "wishlist_item"

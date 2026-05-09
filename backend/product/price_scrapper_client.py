@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from typing import Generic, TypeVar, TypedDict
 import requests
+import config.settings as settings
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = settings.PRICE_SCRAPPER_ENDPOINT
 TIMEOUT_SECONDS = 10
 
 
@@ -43,7 +44,7 @@ def get_product_by_id(
     if not response.ok:
         return ExternalServiceError(
             error_type="ExternalServiceError",
-            message=response.json()['detail'] or 'External service request failed',
+            message=response.json()["detail"] or "External service request failed",
         )
 
     return ExternalServiceResponse(status=response.status_code, data=response.json())
