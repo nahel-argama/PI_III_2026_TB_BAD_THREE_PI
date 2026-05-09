@@ -4,7 +4,9 @@ from image.models import Image
 
 class WishlistItemImage(models.Model):
     id = models.BigAutoField(primary_key=True, db_column="id_wishlist_item_image")
-    product_external_key = models.TextField(unique=True)
+    product_external_key = models.TextField(
+        unique=True, db_column="product_external_key"
+    )
     image = models.ForeignKey(
         Image,
         on_delete=models.CASCADE,
