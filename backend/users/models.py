@@ -20,9 +20,11 @@ class User(AbstractBaseUser):
     name = models.CharField(max_length=255, null=False, blank=False)
     email = models.EmailField(unique=True, null=False, blank=False)
 
+    USER_TYPE_ADMIN = "ADMIN"
     USER_TYPE_PRODUCER = "PRODUCER"
     USER_TYPE_RETAILER = "RETAILER"
     USER_TYPE_CHOICES = [
+        (USER_TYPE_ADMIN, "Admin"),
         (USER_TYPE_PRODUCER, "Producer"),
         (USER_TYPE_RETAILER, "Retailer"),
     ]

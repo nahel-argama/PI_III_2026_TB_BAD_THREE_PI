@@ -88,8 +88,8 @@ class SignUpSerializer(serializers.Serializer):
             )
 
             self.profile_serializer.save(user=user)
-            if self.address_serializer is not None:
-                self.address_serializer.save(user=user)
+
+            self.address_serializer.save(user=user)
 
         return user
 
@@ -110,4 +110,7 @@ class MeSerializer(serializers.ModelSerializer):
         return None
 
     def get_address(self, obj):
-        return AddressSerializer(obj.address).data
+        address = getattr(obj, "address", None)
+        if not address:
+            return None
+        return AddressSerializer(address).data
