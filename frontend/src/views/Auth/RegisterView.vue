@@ -99,11 +99,13 @@
           <div class="mb-4">
             <label class="mb-2 block text-sm font-bold text-gray-700">Documento</label>
             <input
-              v-model="form.documento"
+              :value="form.documento"
               type="text"
               class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-green-800 focus:outline-none"
               :placeholder="form.tipo_documento === 'CPF' ? '000.000.000-00' : '00.000.000/0000-00'"
+              :maxlength="form.tipo_documento === 'CPF' ? 14 : 18"
               required
+              @input="applyDocumentMask"
               @blur="validateDocumento"
             />
             <p v-if="errors.documento" class="mt-1 text-sm text-red-600">{{ errors.documento }}</p>
@@ -113,6 +115,31 @@
 
         <!-- Step 3: endereços -->
         <div v-if="currentStep === 3">
+          <div class="mb-4">
+            <label class="mb-2 block text-sm font-bold text-gray-700">CEP</label>
+            <div class="relative">
+              <input
+                :value="form.cep"
+                type="text"
+                class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-green-800 focus:outline-none"
+                :class="{ 'border-red-500': errors.cep, 'bg-gray-50': isSearchingCep }"
+                placeholder="00000-000"
+                maxlength="9"
+                required
+                :disabled="isSearchingCep"
+                @input="applyCepMask"
+                @blur="handleCepBlur"
+              />
+              <div v-if="isSearchingCep" class="absolute right-3 top-2">
+                <svg class="h-5 w-5 animate-spin text-green-800" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
+            </div>
+            <p v-if="errors.cep" class="mt-1 text-sm text-red-600">{{ errors.cep }}</p>
+          </div>
+
           <div class="mb-4">
             <label class="mb-2 block text-sm font-bold text-gray-700">Rua</label>
             <input
@@ -153,28 +180,15 @@
           </div>
 
           <div class="mb-4">
-            <label class="mb-2 block text-sm font-bold text-gray-700">Estado</label>
-            <input
+            <AppSelect
               v-model="form.estado"
-              type="text"
-              class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-green-800 focus:outline-none"
-              placeholder="Ex: SP"
-              maxlength="2"
+              :options="stateOptions"
+              :loading="isLoadingStates"
+              label="Estado"
+              placeholder="Selecione o estado"
               required
+              :error="errors.estado"
             />
-          </div>
-
-          <div class="mb-6">
-            <label class="mb-2 block text-sm font-bold text-gray-700">CEP</label>
-            <input
-              v-model="form.cep"
-              type="text"
-              class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-green-800 focus:outline-none"
-              placeholder="00000-000"
-              required
-              @blur="validateCep"
-            />
-            <p v-if="errors.cep" class="mt-1 text-sm text-red-600">{{ errors.cep }}</p>
           </div>
         </div>
 
@@ -182,8 +196,8 @@
           <button
             v-if="currentStep > 1"
             type="button"
-            @click="prevStep"
             class="rounded-lg border px-4 py-2 font-bold text-gray-700 hover:bg-gray-100"
+            @click="prevStep"
           >
             Anterior
           </button>
@@ -204,13 +218,17 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch } from 'vue';
+import { reactive, ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { fetchAddressByCep, fetchStates } from '@/services/brasilApi';
+import AppSelect from '@/components/ui/AppSelect.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
 const currentStep = ref(1);
+const isSearchingCep = ref(false);
+const isLoadingStates = ref(false);
 
 const form = reactive({
   name: '',
@@ -231,11 +249,39 @@ const form = reactive({
 const errors = reactive({
   cep: '',
   documento: '',
+  estado: '',
+});
+
+const stateOptions = ref([]);
+
+onMounted(async () => {
+  isLoadingStates.value = true;
+  try {
+    const data = await fetchStates();
+    stateOptions.value = data
+      .map((s) => ({
+        label: `${s.nome} (${s.sigla})`,
+        value: s.sigla,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  } catch (error) {
+    console.error('Erro ao carregar estados:', error);
+  } finally {
+    isLoadingStates.value = false;
+  }
 });
 
 watch(() => form.tipo_documento, () => {
   errors.documento = '';
   form.documento = '';
+});
+
+watch(() => form.cep, () => {
+  errors.cep = '';
+});
+
+watch(() => form.estado, () => {
+  errors.estado = '';
 });
 
 const nextStep = () => {
@@ -263,12 +309,77 @@ const prevStep = () => {
   }
 };
 
+const maskCPF = (value) => {
+  return value
+    .replace(/\D/g, '')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+    .replace(/(-\d{2})\d+?$/, '$1');
+};
+
+const maskCNPJ = (value) => {
+  return value
+    .replace(/\D/g, '')
+    .replace(/(\d{2})(\d)/, '$1.$2')
+    .replace(/(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+    .replace(/\.(\d{3})(\d)/, '.$1/$2')
+    .replace(/(\d{4})(\d)/, '$1-$2')
+    .replace(/(-\d{2})\d+?$/, '$1');
+};
+
+const maskCEP = (value) => {
+  return value
+    .replace(/\D/g, '')
+    .replace(/(\d{5})(\d)/, '$1-$2')
+    .replace(/(-\d{3})\d+?$/, '$1');
+};
+
+const applyDocumentMask = (event) => {
+  const value = event.target.value;
+  if (form.tipo_documento === 'CPF') {
+    form.documento = maskCPF(value);
+  } else {
+    form.documento = maskCNPJ(value);
+  }
+};
+
+const applyCepMask = (event) => {
+  form.cep = maskCEP(event.target.value);
+};
+
 const validateCep = () => {
   const cep = form.cep.replace(/\D/g, '');
   if (cep.length !== 8) {
     errors.cep = 'CEP invalido.';
-  } else {
+    return false;
+  }
+  // Se já houver um erro (como "CEP não encontrado"), não limpamos aqui
+  // Isso impede o envio se a busca falhou anteriormente
+  if (errors.cep) {
+    return false;
+  }
+  return true;
+};
+
+const handleCepBlur = async () => {
+  const isValid = validateCep();
+  if (!isValid) return;
+
+  const cep = form.cep.replace(/\D/g, '');
+  isSearchingCep.value = true;
+  try {
+    const data = await fetchAddressByCep(cep);
+    form.rua = data.street || '';
+    form.bairro = data.neighborhood || '';
+    form.cidade = data.city || '';
+    form.estado = data.state || '';
     errors.cep = '';
+  } catch (error) {
+    console.error('Erro ao buscar endereço:', error);
+    errors.cep = 'CEP não encontrado ou erro na busca.';
+  } finally {
+    isSearchingCep.value = false;
   }
 };
 
@@ -290,10 +401,22 @@ const validateDocumento = () => {
 };
 
 const handleCadastro = async () => {
+  // Garantir que a busca do CEP foi feita se o campo estiver preenchido
+  if (form.cep.replace(/\D/g, '').length === 8 && !form.rua) {
+    await handleCepBlur();
+  }
+
   // Validar campos antes de enviar
   validateCep();
   validateDocumento();
-  if (errors.cep || errors.documento) {
+
+  if (!form.estado) {
+    errors.estado = 'Selecione um estado.';
+  } else {
+    errors.estado = '';
+  }
+
+  if (errors.cep || errors.documento || errors.estado) {
     alert('Corrija os erros nos campos antes de cadastrar.');
     return;
   }
