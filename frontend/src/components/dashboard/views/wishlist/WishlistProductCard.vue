@@ -7,15 +7,16 @@
             Produto salvo
           </p>
           <h3 class="mt-2 truncate text-xl font-black tracking-tight text-slate-900">
-            {{ item.name }}
+            {{ item.product_name }}
           </h3>
         </div>
 
         <button
           type="button"
-          class="rounded-2xl border border-slate-200 bg-white p-2.5 text-slate-500 transition hover:border-rose-200 hover:text-rose-600"
-          :aria-label="`Remover ${item.name}`"
-          @click="$emit('remove', item.id)"
+          class="rounded-2xl border border-slate-200 bg-white p-2.5 text-slate-500 transition hover:border-rose-200 hover:text-rose-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          :aria-label="`Remover ${item.product_name}`"
+          :disabled="isRemoving"
+          @click="handleRemove"
         >
           <TrashIcon class="h-5 w-5" />
         </button>
@@ -36,14 +37,30 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { PhotoIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import { removeProductFromWishlist } from '@/services/wishlist';
 
-defineProps({
+const props = defineProps({
   item: {
     type: Object,
     required: true,
   },
 });
 
-defineEmits(['remove']);
+const emit = defineEmits(['remove']);
+
+const isRemoving = ref(false);
+
+async function handleRemove() {
+  isRemoving.value = true;
+  try {
+    await removeProductFromWishlist(props.item.id);
+    emit('remove', props.item.id);
+  } catch (err) {
+    console.error('[WishlistProductCard] Falha ao remover item:', err);
+  } finally {
+    isRemoving.value = false;
+  }
+}
 </script>
