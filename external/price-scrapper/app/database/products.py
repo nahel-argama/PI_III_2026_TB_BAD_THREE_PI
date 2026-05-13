@@ -21,11 +21,6 @@ def refresh_products_fts_index(conn: db.DuckDBPyConnection) -> None:
 
 
 def product_search(query: str, limit: int = 100) -> list[dict]:
-    fts_results = fts_product_search(query, limit)
-
-    if fts_results:
-        return fts_results
-
     return levenshtein_product_search(query, limit)
 
 
