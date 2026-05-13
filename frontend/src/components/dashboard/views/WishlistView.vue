@@ -2,7 +2,6 @@
   <section class="space-y-6 pb-6">
     <WishlistToolbar
       :search="searchTerm"
-      :item-count="wishlistItems.length"
       :loading="isLoading"
       @update-search="onSearch"
       @open-modal="isCreateModalOpen = true"
@@ -12,6 +11,12 @@
       :items="wishlistItems"
       :loading="isLoading"
       @remove="removeProduct"
+    />
+
+    <AppPagination
+      v-model="currentPage"
+      :total-items="totalItems"
+      @change="(page) => fetchItems(searchTerm, page)"
     />
 
     <WishlistCreateModal
@@ -26,6 +31,7 @@ import { ref, onMounted } from 'vue';
 import WishlistCreateModal from './wishlist/WishlistCreateModal.vue';
 import WishlistGrid from './wishlist/WishlistGrid.vue';
 import WishlistToolbar from './wishlist/WishlistToolbar.vue';
+import AppPagination from '@/components/ui/AppPagination.vue';
 import { listWishlistItems } from '@/services/wishlist';
 
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -35,16 +41,22 @@ const isCreateModalOpen = ref(false);
 const wishlistItems = ref([]);
 const isLoading = ref(false);
 
+const currentPage = ref(1);
+const totalItems = ref(0);
+
 // ── Fetch ─────────────────────────────────────────────────────────────────────
 
-async function fetchItems(productName = '') {
+async function fetchItems(productName = '', page = 1) {
   isLoading.value = true;
+  currentPage.value = page;
   try {
-    const data = await listWishlistItems({ productName });
+    const data = await listWishlistItems({ productName, page });
     wishlistItems.value = data.results;
+    totalItems.value = data.count || 0;
   } catch (err) {
     console.error('[WishlistView] Falha ao carregar itens:', err);
     wishlistItems.value = [];
+    totalItems.value = 0;
   } finally {
     isLoading.value = false;
   }
