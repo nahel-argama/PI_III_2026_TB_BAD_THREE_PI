@@ -1,127 +1,108 @@
-CREATE TYPE "tipo_documento_enum" AS ENUM (
-  'CPF',
-  'CNPJ'
+CREATE TABLE users (
+    id_user     BIGSERIAL    PRIMARY KEY,
+    name        VARCHAR(255) NOT NULL,
+    email       VARCHAR(254) NOT NULL UNIQUE,
+    password    VARCHAR(128) NOT NULL,
+    user_type   VARCHAR(50)  NOT NULL CHECK (user_type IN ('ADMIN', 'PRODUCER', 'RETAILER')),
+    is_active   BOOLEAN      NOT NULL DEFAULT TRUE,
+    is_staff    BOOLEAN      NOT NULL DEFAULT FALSE,
+    last_login  TIMESTAMP    NULL,
+    created_at  TIMESTAMP    NOT NULL DEFAULT NOW()
 );
-
-CREATE TYPE "status_pedido_enum" AS ENUM (
-  'PENDENTE',
-  'CONFIRMADO',
-  'CANCELADO',
-  'ENTREGUE'
+CREATE TABLE address (
+    id_address   BIGSERIAL    PRIMARY KEY,
+    street       VARCHAR(150) NOT NULL,
+    number       VARCHAR(10)  NOT NULL,
+    complement   TEXT         NOT NULL DEFAULT '',
+    neighborhood VARCHAR(100) NOT NULL,
+    city         VARCHAR(100) NOT NULL,
+    state        VARCHAR(2)   NOT NULL,
+    postal_code  VARCHAR(10)  NOT NULL,
+    latitude     NUMERIC(9,6) NULL,
+    longitude    NUMERIC(9,6) NULL,
+    id_user      BIGINT       NOT NULL UNIQUE REFERENCES users(id_user) ON DELETE CASCADE
 );
-
-CREATE TABLE "usuario" (
-  "id_usuario" BIGSERIAL PRIMARY KEY,
-  "nome" "VARCHAR(150)" NOT NULL,
-  "email" "VARCHAR(150)" UNIQUE NOT NULL,
-  "senha" TEXT NOT NULL,
-  "criado_em" TIMESTAMP DEFAULT (CURRENT_TIMESTAMP)
+CREATE TABLE category (
+    id_category SERIAL       PRIMARY KEY,
+    name        VARCHAR(100) NOT NULL UNIQUE,
+    is_active   BOOLEAN      NOT NULL DEFAULT TRUE
 );
-
-CREATE TABLE "produtor" (
-  "id_usuario" BIGINT PRIMARY KEY,
-  "tipo_documento" tipo_documento_enum NOT NULL,
-  "documento_numero" "VARCHAR(20)" UNIQUE NOT NULL,
-  "nome_fantasia" "VARCHAR(150)"
+CREATE TABLE producer (
+    id_producer     BIGSERIAL    PRIMARY KEY,
+    document_type   VARCHAR(4)   NOT NULL CHECK (document_type IN ('CPF', 'CNPJ')),
+    document_number VARCHAR(20)  NOT NULL UNIQUE,
+    trade_name      VARCHAR(150) NOT NULL,
+    id_user         BIGINT       NOT NULL UNIQUE REFERENCES users(id_user) ON DELETE CASCADE
 );
-
-CREATE TABLE "varejista" (
-  "id_usuario" BIGINT PRIMARY KEY,
-  "documento" VARCHAR UNIQUE NOT NULL,
-  "nome_fantasia" VARCHAR NOT NULL
+CREATE TABLE retailer (
+    id_retailer     BIGSERIAL    PRIMARY KEY,
+    document_type   VARCHAR(4)   NOT NULL CHECK (document_type IN ('CPF', 'CNPJ')),
+    document_number VARCHAR(20)  NOT NULL UNIQUE,
+    trade_name      VARCHAR(150) NOT NULL,
+    id_user         BIGINT       NOT NULL UNIQUE REFERENCES users(id_user) ON DELETE CASCADE
 );
-
-CREATE TABLE "endereco" (
-  "id_endereco" BIGSERIAL PRIMARY KEY,
-  "id_usuario" BIGINT,
-  "rua" VARCHAR NOT NULL,
-  "numero" VARCHAR,
-  "complemento" TEXT,
-  "bairro" VARCHAR NOT NULL,
-  "cidade" VARCHAR,
-  "estado" "CHAR(2)" NOT NULL,
-  "cep" VARCHAR
+CREATE TABLE product (
+    id_product        BIGSERIAL      PRIMARY KEY,
+    name              VARCHAR(150)   NOT NULL,
+    description       TEXT           NULL,
+    total_quantity    FLOAT          NOT NULL,
+    reserved_quantity FLOAT          NOT NULL,
+    price             NUMERIC(10,2)  NOT NULL,
+    is_active         BOOLEAN        NOT NULL DEFAULT TRUE,
+    created_at        TIMESTAMP      NOT NULL DEFAULT NOW(),
+    id_category       INT            NOT NULL REFERENCES category(id_category) ON DELETE CASCADE,
+    id_producer       BIGINT         NOT NULL REFERENCES producer(id_producer) ON DELETE CASCADE
 );
-
-CREATE TABLE "categoria" (
-  "id_categoria" SERIAL PRIMARY KEY,
-  "nome" VARCHAR UNIQUE NOT NULL,
-  "ativo" BOOLEAN NOT NULL
+CREATE TABLE image (
+    id_image    BIGSERIAL    PRIMARY KEY,
+    blob        BYTEA        NOT NULL,
+    mime_type   VARCHAR(100) NOT NULL DEFAULT 'application/octet-stream',
+    created_at  TIMESTAMP    NOT NULL DEFAULT NOW()
 );
+CREATE TABLE product_image (
+    id_product_image BIGSERIAL PRIMARY KEY,
+    id_product       BIGINT    NOT NULL REFERENCES product(id_product) ON DELETE CASCADE,
+    id_image         BIGINT    NOT NULL REFERENCES image(id_image) ON DELETE CASCADE,
 
-CREATE TABLE "produto" (
-  "id_produto" BIGSERIAL PRIMARY KEY,
-  "id_categoria" INT,
-  "id_produtor" BIGINT,
-  "nome" VARCHAR NOT NULL,
-  "descricao" TEXT NOT NULL,
-  "preco" NUMERIC NOT NULL,
-  "quantidade_total" NUMERIC NOT NULL,
-  "quantidade_reservada" NUMERIC,
-  "ativo" BOOLEAN NOT NULL,
-  "criado_em" TIMESTAMP DEFAULT (CURRENT_TIMESTAMP)
+    UNIQUE (id_product, id_image)
 );
-
-CREATE TABLE "pedido" (
-  "id_pedido" BIGSERIAL PRIMARY KEY,
-  "id_varejista" BIGINT,
-  "status" status_pedido_enum NOT NULL,
-  "valor_total" NUMERIC NOT NULL,
-  "criado_em" TIMESTAMP NOT NULL
+CREATE TABLE "order" (
+    id_order    BIGSERIAL      PRIMARY KEY,
+    status      VARCHAR(20)    NOT NULL DEFAULT 'PENDING'
+                               CHECK (status IN ('PENDING', 'CONFIRMED', 'CANCELED', 'DELIVERED')),
+    total_value NUMERIC(10,2)  NOT NULL DEFAULT 0,
+    created_at  TIMESTAMP      NOT NULL DEFAULT NOW(),
+    id_producer BIGINT         NOT NULL REFERENCES producer(id_producer) ON DELETE CASCADE,
+    id_retailer BIGINT         NOT NULL REFERENCES retailer(id_retailer) ON DELETE CASCADE
 );
+CREATE TABLE order_item (
+    id_order_item BIGSERIAL      PRIMARY KEY,
+    quantity      INTEGER        NOT NULL CHECK (quantity > 0),
+    unit_price    NUMERIC(10,2)  NOT NULL,
+    id_order      BIGINT         NOT NULL REFERENCES "order"(id_order) ON DELETE CASCADE,
+    id_product    BIGINT         NOT NULL REFERENCES product(id_product) ON DELETE CASCADE,
 
-CREATE TABLE "item_pedido" (
-  "id_item" BIGSERIAL PRIMARY KEY,
-  "id_pedido" BIGINT,
-  "quantidade" NUMERIC NOT NULL,
-  "preco_unitario" NUMERIC NOT NULL
+    UNIQUE (id_order, id_product)
 );
-
-CREATE TABLE "avaliacao" (
-  "id_avaliacao" BIGSERIAL PRIMARY KEY,
-  "id_pedido" BIGINT,
-  "id_produto" BIGINT,
-  "id_produtor" BIGINT,
-  "id_varejista" BIGINT,
-  "nota" INT NOT NULL,
-  "comentario" TEXT,
-  "criado_em" TIMESTAMP NOT NULL
+CREATE TABLE review (
+    id_review   BIGSERIAL PRIMARY KEY,
+    rating      FLOAT     NOT NULL CHECK (rating >= 0 AND rating <= 5),
+    comment     TEXT      NULL,
+    created_at  TIMESTAMP NOT NULL DEFAULT NOW(),
+    id_order    BIGINT    NOT NULL REFERENCES "order"(id_order) ON DELETE CASCADE
 );
-
-CREATE TABLE "imagem" (
-  "id_imagem" BIGSERIAL PRIMARY KEY,
-  "url" TEXT NOT NULL,
-  "criado_em" timestamp NOT NULL
+CREATE TABLE wishlist (
+    id_wishlist BIGSERIAL PRIMARY KEY,
+    id_retailer BIGINT    NOT NULL UNIQUE REFERENCES retailer(id_retailer) ON DELETE CASCADE
 );
-
-CREATE TABLE "imagem_produto" (
-  "id_imagem_produto" BIGSERIAL PRIMARY KEY,
-  "id_imagem" BIGSERIAL NOT NULL,
-  "id_produto" BIGSERIAL NOT NULL
+CREATE TABLE wishlist_item (
+    id_wishlist_item     BIGSERIAL    PRIMARY KEY,
+    product_external_key TEXT         NOT NULL,
+    product_name         VARCHAR(150) NOT NULL,
+    id_wishlist          BIGINT       NOT NULL REFERENCES wishlist(id_wishlist) ON DELETE CASCADE
 );
-
-ALTER TABLE "imagem_produto" ADD FOREIGN KEY ("id_produto") REFERENCES "produto" ("id_produto") DEFERRABLE INITIALLY IMMEDIATE;
-
-ALTER TABLE "imagem_produto" ADD FOREIGN KEY ("id_imagem") REFERENCES "imagem" ("id_imagem") DEFERRABLE INITIALLY IMMEDIATE;
-
-ALTER TABLE "produtor" ADD FOREIGN KEY ("id_usuario") REFERENCES "usuario" ("id_usuario") DEFERRABLE INITIALLY IMMEDIATE;
-
-ALTER TABLE "varejista" ADD FOREIGN KEY ("id_usuario") REFERENCES "usuario" ("id_usuario") DEFERRABLE INITIALLY IMMEDIATE;
-
-ALTER TABLE "endereco" ADD FOREIGN KEY ("id_usuario") REFERENCES "usuario" ("id_usuario") DEFERRABLE INITIALLY IMMEDIATE;
-
-ALTER TABLE "produto" ADD FOREIGN KEY ("id_categoria") REFERENCES "categoria" ("id_categoria") DEFERRABLE INITIALLY IMMEDIATE;
-
-ALTER TABLE "produto" ADD FOREIGN KEY ("id_produtor") REFERENCES "produtor" ("id_usuario") DEFERRABLE INITIALLY IMMEDIATE;
-
-ALTER TABLE "pedido" ADD FOREIGN KEY ("id_varejista") REFERENCES "varejista" ("id_usuario") DEFERRABLE INITIALLY IMMEDIATE;
-
-ALTER TABLE "item_pedido" ADD FOREIGN KEY ("id_pedido") REFERENCES "pedido" ("id_pedido") DEFERRABLE INITIALLY IMMEDIATE;
-
-ALTER TABLE "avaliacao" ADD FOREIGN KEY ("id_varejista") REFERENCES "varejista" ("id_usuario") DEFERRABLE INITIALLY IMMEDIATE;
-
-ALTER TABLE "avaliacao" ADD FOREIGN KEY ("id_pedido") REFERENCES "pedido" ("id_pedido") DEFERRABLE INITIALLY IMMEDIATE;
-
-ALTER TABLE "avaliacao" ADD FOREIGN KEY ("id_produto") REFERENCES "produto" ("id_produto") DEFERRABLE INITIALLY IMMEDIATE;
-
-ALTER TABLE "avaliacao" ADD FOREIGN KEY ("id_produtor") REFERENCES "produtor" ("id_usuario") DEFERRABLE INITIALLY IMMEDIATE;
+CREATE TABLE wishlist_item_image (
+    id_wishlist_item_image BIGSERIAL PRIMARY KEY,
+    product_external_key   TEXT      NOT NULL UNIQUE,
+    id_image               BIGINT    NOT NULL REFERENCES image(id_image) ON DELETE CASCADE
+);
