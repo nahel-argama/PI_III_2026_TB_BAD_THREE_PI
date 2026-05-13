@@ -2,71 +2,74 @@
   <section class="space-y-6 pb-6">
     <WishlistToolbar
       :search="searchTerm"
-      :item-count="filteredProducts.length"
-      @update-search="searchTerm = $event"
+      :item-count="wishlistItems.length"
+      :loading="isLoading"
+      @update-search="onSearch"
       @open-modal="isCreateModalOpen = true"
     />
 
     <WishlistGrid
-      :items="filteredProducts"
+      :items="wishlistItems"
+      :loading="isLoading"
       @remove="removeProduct"
     />
 
     <WishlistCreateModal
       v-model="isCreateModalOpen"
-      @submit="addProduct"
+      @submit="onItemCreated"
     />
   </section>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import WishlistCreateModal from './wishlist/WishlistCreateModal.vue';
 import WishlistGrid from './wishlist/WishlistGrid.vue';
 import WishlistToolbar from './wishlist/WishlistToolbar.vue';
+import { listWishlistItems } from '@/services/wishlist';
+
+// ── State ─────────────────────────────────────────────────────────────────────
 
 const searchTerm = ref('');
 const isCreateModalOpen = ref(false);
+const wishlistItems = ref([]);
+const isLoading = ref(false);
 
-const wishlistProducts = ref([
-  {
-    id: 1,
-    name: 'Tomate Italiano',
-  },
-  {
-    id: 2,
-    name: 'Maçã Gala',
-  },
-  {
-    id: 3,
-    name: 'Alface Crespa',
-  },
-  {
-    id: 4,
-    name: 'Banana Prata',
-  },
-]);
+// ── Fetch ─────────────────────────────────────────────────────────────────────
 
-const filteredProducts = computed(() => {
-  const query = searchTerm.value.trim().toLowerCase();
-
-  if (!query) {
-    return wishlistProducts.value;
+async function fetchItems(productName = '') {
+  isLoading.value = true;
+  try {
+    const data = await listWishlistItems({ productName });
+    wishlistItems.value = data.results;
+  } catch (err) {
+    console.error('[WishlistView] Falha ao carregar itens:', err);
+    wishlistItems.value = [];
+  } finally {
+    isLoading.value = false;
   }
-
-  return wishlistProducts.value.filter((product) => {
-    return product.name.toLowerCase().includes(query);
-  });
-});
-
-function addProduct(newProduct) {
-  wishlistProducts.value.unshift({
-    ...newProduct,
-    id: Date.now(),
-  });
 }
 
-function removeProduct(productId) {
-  wishlistProducts.value = wishlistProducts.value.filter((product) => product.id !== productId);
+onMounted(() => fetchItems());
+
+// ── Search (debounced, delegado à API) ────────────────────────────────────────
+
+let searchTimer = null;
+
+function onSearch(value) {
+  searchTerm.value = value;
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => fetchItems(value.trim()), 400);
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+
+/** Chamado após o modal criar o item com sucesso — insere no topo da lista. */
+function onItemCreated(newItem) {
+  wishlistItems.value.unshift(newItem);
+}
+
+function removeProduct(itemId) {
+  wishlistItems.value = wishlistItems.value.filter((item) => item.id !== itemId);
 }
 </script>

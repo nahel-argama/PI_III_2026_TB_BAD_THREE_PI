@@ -6,10 +6,14 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4 py-6 backdrop-blur-sm"
         @click.self="closeModal"
       >
-        <section class="w-full max-w-2xl overflow-hidden rounded-[28px] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.22)]">
-          <div class="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5 sm:px-8">
+        <section
+          class="w-full max-w-2xl overflow-hidden rounded-[28px] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.22)]"
+        >
+          <div
+            class="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5 sm:px-8"
+          >
             <div>
-              <p class="text-xs font-bold uppercase tracking-[0.28em] text-emerald-600">
+              <p class="text-xs font-bold tracking-[0.28em] text-emerald-600 uppercase">
                 Marketplace
               </p>
               <h3 class="mt-2 text-2xl font-black tracking-tight text-slate-900">
@@ -31,25 +35,24 @@
           </div>
 
           <form class="px-6 py-6 sm:px-8" @submit.prevent="handleSubmit">
-            <label class="space-y-2">
-              <span class="text-sm font-semibold text-slate-700">Nome do produto</span>
-              <input
-                v-model="form.name"
-                type="text"
-                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-300 focus:bg-white focus:ring-4 focus:ring-emerald-100"
-                placeholder="Ex.: Abacate premium"
-                required
-              />
-            </label>
+            <AppSelect
+              v-model="form.productId"
+              label="Nome do produto"
+              placeholder="Ex.: Abacate premium"
+              :options="productOptions"
+              label-key="name"
+              value-key="id"
+              :loading="searchLoading"
+              :filter-locally="false"
+              autocomplete
+              required
+              @search="handleSearch"
+              @select="handleProductSelect"
+            />
 
-            <div class="mt-6 rounded-[24px] border border-dashed border-slate-200 bg-slate-50 px-5 py-8 text-center">
-              <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-slate-300 shadow-sm">
-                <PhotoIcon class="h-8 w-8" />
-              </div>
-              <p class="mt-3 text-sm font-semibold text-slate-600">
-                Foto do produto ficará aqui no futuro
-              </p>
-            </div>
+            <p v-if="submitError" class="mt-2 text-sm text-red-600" role="alert">
+              {{ submitError }}
+            </p>
 
             <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
@@ -62,9 +65,10 @@
 
               <button
                 type="submit"
-                class="rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700"
+                :disabled="isSubmitting"
+                class="rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Salvar produto
+                {{ isSubmitting ? 'Salvando…' : 'Salvar produto' }}
               </button>
             </div>
           </form>
@@ -75,8 +79,13 @@
 </template>
 
 <script setup>
-import { reactive, watch } from 'vue';
-import { PhotoIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { reactive, ref, watch } from 'vue';
+import { XMarkIcon } from '@heroicons/vue/24/outline';
+import AppSelect from '@/components/ui/AppSelect.vue';
+import { useProductSearch } from '@/composables/useProductSearch';
+import { addProductToWishlist } from '@/services/wishlist';
+
+// ── Props & Emits ────────────────────────────────────────────────────────────
 
 const props = defineProps({
   modelValue: {
@@ -87,32 +96,70 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'submit']);
 
-const initialForm = {
-  name: '',
-};
+// ── Form ─────────────────────────────────────────────────────────────────────
 
-const form = reactive({ ...initialForm });
+const INITIAL_FORM = { productId: null };
+const form = reactive({ ...INITIAL_FORM });
+
+/** Objeto completo da opção selecionada (contém id, name, etc.) */
+const selectedProduct = ref(null);
+
+/** Erro retornado pela API ao tentar adicionar */
+const submitError = ref('');
+
+const isSubmitting = ref(false);
+
+function resetForm() {
+  Object.assign(form, INITIAL_FORM);
+  selectedProduct.value = null;
+  submitError.value = '';
+}
+
+// ── Product Search ────────────────────────────────────────────────────────────
+
+const { options: productOptions, isLoading: searchLoading, search: handleSearch, reset: resetSearch } = useProductSearch();
+
+// ── Modal Lifecycle ───────────────────────────────────────────────────────────
 
 watch(
   () => props.modelValue,
   (isOpen) => {
-    if (!isOpen) {
+    if (isOpen) {
+      handleSearch();
+    } else {
       resetForm();
+      resetSearch();
     }
   },
 );
 
-function resetForm() {
-  Object.assign(form, initialForm);
-}
+// ── Actions ───────────────────────────────────────────────────────────────────
 
 function closeModal() {
   emit('update:modelValue', false);
 }
 
-function handleSubmit() {
-  emit('submit', { ...form });
-  closeModal();
+function handleProductSelect(option) {
+  selectedProduct.value = option;
+}
+
+async function handleSubmit() {
+  if (!selectedProduct.value?.id) return;
+
+  submitError.value = '';
+  isSubmitting.value = true;
+
+  try {
+    const item = await addProductToWishlist(selectedProduct.value.id);
+    emit('submit', item);
+    closeModal();
+  } catch (err) {
+    submitError.value =
+      err?.response?.data?.detail ??
+      'Não foi possível adicionar o produto. Tente novamente.';
+  } finally {
+    isSubmitting.value = false;
+  }
 }
 </script>
 
