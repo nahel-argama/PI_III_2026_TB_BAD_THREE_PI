@@ -24,7 +24,6 @@ class ExternalServiceResponse(Generic[T]):
 
 @dataclass(frozen=True)
 class ExternalServiceError:
-    error_type: str
     message: str
 
 
@@ -37,14 +36,12 @@ def get_product_by_id(
         response = requests.get(url, timeout=TIMEOUT_SECONDS)
     except requests.RequestException:
         return ExternalServiceError(
-            error_type="ExternalServiceError",
             message="External service request failed",
         )
 
     if not response.ok:
         return ExternalServiceError(
-            error_type="ExternalServiceError",
-            message=response.json()["detail"] or "External service request failed",
+            message=response.json()["detail"],
         )
 
     return ExternalServiceResponse(status=response.status_code, data=response.json())

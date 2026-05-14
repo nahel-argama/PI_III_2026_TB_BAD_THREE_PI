@@ -1,7 +1,10 @@
 from rest_framework import serializers
+
+from product_image.serializers import ProductImageSerializer
 from .models import Product
 
 class ProductSerializer(serializers.ModelSerializer):
+    images = ProductImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
@@ -14,7 +17,8 @@ class ProductSerializer(serializers.ModelSerializer):
             'total_quantity',
             'reserved_quantity',
             'price',
-            'is_active'
+            'is_active',
+            'images'
         ]
         read_only_fields = ['id', 'producer']
 

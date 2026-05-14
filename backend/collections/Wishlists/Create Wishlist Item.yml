@@ -10,7 +10,7 @@ http:
     type: json
     data: |
       {
-        "product_external_key": "108"
+        "product_external_key": "109"
       }
   auth: inherit
 

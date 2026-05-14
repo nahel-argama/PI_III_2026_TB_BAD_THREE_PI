@@ -8,7 +8,7 @@ http:
   url: "{{host}}/api/wishlists/items/:item_id/"
   params:
     - name: item_id
-      value: "1"
+      value: "2"
       type: path
   auth: inherit
 

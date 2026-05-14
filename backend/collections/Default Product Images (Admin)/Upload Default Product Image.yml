@@ -1,0 +1,22 @@
+info:
+  name: Upload Default Product Image
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{host}}/api/default-product-images/108/image/"
+  body:
+    type: multipart-form
+    data:
+      - name: image
+        type: file
+        value:
+          - /home/henri/Pictures/Funny/rato_motivacional.jpg
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

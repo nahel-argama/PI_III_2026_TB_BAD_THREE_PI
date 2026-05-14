@@ -8,7 +8,7 @@ from rest_framework.test import APIClient
 from retailer.models import Retailer
 from wishlist.models import Wishlist
 from wishlist_item.models import WishlistItem
-from wishlist_item_image.models import WishlistItemImage
+from default_product_image.models import DefaultProductImage
 from image.models import Image
 from product.price_scrapper_client import ExternalServiceResponse
 
@@ -85,16 +85,18 @@ class WishlistItemNestedRouteTestCase(TestCase):
         self.assertEqual(response.data['results'][0]['wishlist'], self.wishlist.id)
 
     def test_list_items_returns_image_url_when_available(self):
-        image = Image.objects.create(url='https://example.com/image.png')
-        WishlistItemImage.objects.create(
+        image = Image.objects.create(blob=b"image-data", mime_type="image/png")
+        DefaultProductImage.objects.create(
             product_external_key=self.item.product_external_key,
-            image=image
+            product_name=self.item.product_name,
+            image=image,
         )
 
         response = self.client.get(self.wishlist_items_url())
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['results'][0]['image_url'], image.url)
+        expected_url = f"http://testserver/api/images/{image.id}/download/"
+        self.assertEqual(response.data['results'][0]['image_url'], expected_url)
 
     def test_list_items_returns_null_image_url_when_missing(self):
         response = self.client.get(self.wishlist_items_url())
@@ -130,6 +132,34 @@ class WishlistItemNestedRouteTestCase(TestCase):
         )
 
     @patch('wishlist_item.views.price_scrapper_client.get_product_by_id')
+    def test_create_item_creates_default_image_placeholder(self, mocked_get_product):
+        mocked_get_product.return_value = ExternalServiceResponse(
+            status=200,
+            data={
+                'id': 'external-3',
+                'name': 'External Product Three',
+                'created_at': '2024-01-01T00:00:00Z'
+            }
+        )
+
+        response = self.client.post(
+            self.wishlist_items_url(),
+            {'product_external_key': 'external-3'}
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
+        self.assertTrue(
+            DefaultProductImage.objects.filter(
+                product_external_key='external-3'
+            ).exists()
+        )
+        default_image = DefaultProductImage.objects.get(
+            product_external_key='external-3'
+        )
+        self.assertEqual(default_image.product_name, 'External Product Three')
+        self.assertIsNone(default_image.image)
+
+    @patch('wishlist_item.views.price_scrapper_client.get_product_by_id')
     def test_create_rejects_existing_external_key(self, mocked_get_product):
         mocked_get_product.return_value = ExternalServiceResponse(
             status=200,
@@ -149,17 +179,20 @@ class WishlistItemNestedRouteTestCase(TestCase):
         self.assertIn('product_external_key', response.data)
 
     def test_delete_item_does_not_remove_image(self):
-        image = Image.objects.create(url='https://example.com/image.png')
-        wishlist_image = WishlistItemImage.objects.create(
+        image = Image.objects.create(blob=b"image-data", mime_type="image/png")
+        default_image = DefaultProductImage.objects.create(
             product_external_key=self.item.product_external_key,
-            image=image
+            product_name=self.item.product_name,
+            image=image,
         )
 
         response = self.client.delete(self.wishlist_item_detail_url())
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(WishlistItem.objects.filter(id=self.item.id).exists())
-        self.assertTrue(WishlistItemImage.objects.filter(id=wishlist_image.id).exists())
+        self.assertTrue(
+            DefaultProductImage.objects.filter(id=default_image.id).exists()
+        )
 
     def test_retailer_only_permission_for_list(self):
         self.client.force_authenticate(user=self.producer_user)
