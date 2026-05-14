@@ -1,0 +1,9 @@
+info:
+  name: Default Product Images (Admin)
+  type: folder
+  seq: 10
+
+request:
+  auth:
+    type: bearer
+    token: "{{access}}"

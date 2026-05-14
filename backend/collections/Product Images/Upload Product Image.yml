@@ -1,0 +1,21 @@
+info:
+  name: Upload Product Image
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{host}}/api/products/1/images/"
+  auth: inherit
+  body:
+    type: multipart-form
+    multipartForm:
+      - name: image
+        type: file
+        filePath: ""
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

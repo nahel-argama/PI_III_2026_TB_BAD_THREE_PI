@@ -51,9 +51,10 @@ INSTALLED_APPS = [
     "order_item",
     "review",
     "image",
+    "default_product_image",
+    "product_image",
     "wishlist",
     "wishlist_item",
-    "wishlist_item_image",
     "authentication",
 ]
 

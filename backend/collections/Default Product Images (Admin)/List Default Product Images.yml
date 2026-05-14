@@ -1,0 +1,26 @@
+info:
+  name: List Default Product Images
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{host}}/api/default-product-images/?page=1&missing=true"
+  params:
+    - name: page
+      value: "1"
+      type: query
+    - name: missing
+      value: "true"
+      type: query
+    - name: name
+      value: ""
+      type: query
+      disabled: true
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
