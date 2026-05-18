@@ -48,8 +48,8 @@
             </svg>
           </button>
           <RouterLink
-            to="/register"
             v-else
+            to="/register"
             class="rounded-full bg-green-600 px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-green-700"
           >
             Começar Agora

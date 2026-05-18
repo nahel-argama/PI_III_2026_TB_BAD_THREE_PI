@@ -111,6 +111,7 @@ const emit = defineEmits(['close', 'action-click']);
 // ── State ─────────────────────────────────────────────────────────────────────
 
 const isHovered = ref(false);
+// eslint-disable-next-line vue/no-setup-props-reactivity-loss
 const remainingTime = ref(props.duration);
 
 let timerId = null;
@@ -215,7 +216,7 @@ onBeforeUnmount(() => {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(226, 232, 240, 0.8);
-  box-shadow: 
+  box-shadow:
     0 4px 6px -1px rgba(15, 23, 42, 0.05),
     0 10px 30px -3px rgba(15, 23, 42, 0.08);
   overflow: hidden;
@@ -230,7 +231,7 @@ onBeforeUnmount(() => {
 
 .app-toast--hovered {
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 10px 15px -3px rgba(15, 23, 42, 0.07),
     0 20px 40px -4px rgba(15, 23, 42, 0.12);
   background: rgba(255, 255, 255, 0.95);

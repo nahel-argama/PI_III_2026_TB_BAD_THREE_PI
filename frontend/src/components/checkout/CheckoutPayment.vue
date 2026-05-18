@@ -13,8 +13,8 @@
           type="radio"
           :value="method.id"
           :checked="selectedPaymentId === method.id"
-          @change="onSelectPaymentMethod(method.id)"
           class="mt-1 h-5 w-5 accent-green-600"
+          @change="onSelectPaymentMethod(method.id)"
         />
         <div>
           <p class="font-bold text-slate-900">{{ method.name }}</p>

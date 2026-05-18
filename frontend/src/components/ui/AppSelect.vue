@@ -1,5 +1,8 @@
 <template>
-  <div class="app-select" :class="[$attrs.class, { 'app-select--open': isOpen, 'app-select--disabled': disabled }]">
+  <div
+    class="app-select"
+    :class="[$attrs.class, { 'app-select--open': isOpen, 'app-select--disabled': disabled }]"
+  >
     <!-- Label -->
     <label v-if="label" :for="inputId" class="app-select__label">
       {{ label }}
@@ -36,7 +39,7 @@
           tabindex="-1"
           :value="modelValue ?? ''"
           :required="required"
-          style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;"
+          style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none"
         />
 
         <input
@@ -83,14 +86,24 @@
         @click.stop="clear"
       >
         <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14" aria-hidden="true">
-          <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+          <path
+            d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"
+          />
         </svg>
       </button>
 
       <!-- Chevron -->
-      <span class="app-select__chevron" :class="{ 'app-select__chevron--open': isOpen }" aria-hidden="true">
+      <span
+        class="app-select__chevron"
+        :class="{ 'app-select__chevron--open': isOpen }"
+        aria-hidden="true"
+      >
         <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
-          <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+          <path
+            fill-rule="evenodd"
+            d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+            clip-rule="evenodd"
+          />
         </svg>
       </span>
     </div>
@@ -119,7 +132,10 @@
           </div>
 
           <!-- Empty state -->
-          <div v-else-if="filteredOptions.length === 0" class="app-select__state app-select__state--empty">
+          <div
+            v-else-if="filteredOptions.length === 0"
+            class="app-select__state app-select__state--empty"
+          >
             <slot name="empty">{{ emptyText }}</slot>
           </div>
 
@@ -146,7 +162,11 @@
                 <!-- Checkmark for selected -->
                 <span v-if="isSelected(option)" class="app-select__option-check" aria-hidden="true">
                   <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
-                    <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd" />
+                    <path
+                      fill-rule="evenodd"
+                      d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
+                      clip-rule="evenodd"
+                    />
                   </svg>
                 </span>
               </slot>
@@ -342,7 +362,8 @@ function optionKey(option) {
  * Label da opção atualmente selecionada.
  */
 const selectedLabel = computed(() => {
-  if (props.modelValue === null || props.modelValue === undefined || props.modelValue === '') return '';
+  if (props.modelValue === null || props.modelValue === undefined || props.modelValue === '')
+    return '';
   const found = props.options.find((o) => String(optionValue(o)) === String(props.modelValue));
   return found ? optionLabel(found) : String(props.modelValue);
 });
@@ -394,7 +415,11 @@ function closeDropdown() {
 
 function toggleDropdown() {
   if (props.disabled) return;
-  isOpen.value ? closeDropdown() : openDropdown();
+  if (isOpen.value) {
+    closeDropdown();
+  } else {
+    openDropdown();
+  }
 }
 
 function selectOption(option) {
@@ -495,10 +520,7 @@ function positionDropdown() {
 // ─── Click outside ───────────────────────────────────────────────────────────
 
 function onClickOutside(e) {
-  if (
-    !triggerRef.value?.contains(e.target) &&
-    !dropdownRef.value?.contains(e.target)
-  ) {
+  if (!triggerRef.value?.contains(e.target) && !dropdownRef.value?.contains(e.target)) {
     closeDropdown();
   }
 }
@@ -734,13 +756,17 @@ watch(
 }
 
 @keyframes app-select-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Dropdown transition ───────────────────────────────────────────────── */
 .app-select-dropdown-enter-active,
 .app-select-dropdown-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 
 .app-select-dropdown-enter-from,

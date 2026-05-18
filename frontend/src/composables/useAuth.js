@@ -19,11 +19,7 @@ export const useAuth = () => {
    * @param {string} password
    */
   const login = async (email, password) => {
-    try {
-      return await authStore.login(email, password);
-    } catch (err) {
-      throw err;
-    }
+    return await authStore.login(email, password);
   };
 
   /**

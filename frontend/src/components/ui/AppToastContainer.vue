@@ -13,8 +13,8 @@
       >
         <AppToast
           v-for="toast in toastsByPosition[position]"
-          :key="toast.id"
           :id="toast.id"
+          :key="toast.id"
           :type="toast.type"
           :title="toast.title"
           :description="toast.description"
