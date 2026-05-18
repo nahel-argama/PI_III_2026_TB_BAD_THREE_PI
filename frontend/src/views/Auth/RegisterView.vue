@@ -21,9 +21,15 @@
 
       <div class="mb-6 flex justify-center">
         <div class="flex space-x-2">
-          <div :class="['h-2 w-8 rounded', currentStep >= 1 ? 'bg-green-600' : 'bg-gray-300']"></div>
-          <div :class="['h-2 w-8 rounded', currentStep >= 2 ? 'bg-green-600' : 'bg-gray-300']"></div>
-          <div :class="['h-2 w-8 rounded', currentStep >= 3 ? 'bg-green-600' : 'bg-gray-300']"></div>
+          <div
+            :class="['h-2 w-8 rounded', currentStep >= 1 ? 'bg-green-600' : 'bg-gray-300']"
+          ></div>
+          <div
+            :class="['h-2 w-8 rounded', currentStep >= 2 ? 'bg-green-600' : 'bg-gray-300']"
+          ></div>
+          <div
+            :class="['h-2 w-8 rounded', currentStep >= 3 ? 'bg-green-600' : 'bg-gray-300']"
+          ></div>
         </div>
       </div>
 
@@ -62,7 +68,9 @@
           </div>
 
           <div class="mb-4">
-            <label class="mb-2 block text-sm font-bold text-gray-700">Nome fantasia / Razão social</label>
+            <label class="mb-2 block text-sm font-bold text-gray-700"
+              >Nome fantasia / Razão social</label
+            >
             <input
               v-model="form.nome_fantasia"
               type="text"
@@ -110,7 +118,6 @@
             />
             <p v-if="errors.documento" class="mt-1 text-sm text-red-600">{{ errors.documento }}</p>
           </div>
-
         </div>
 
         <!-- Step 3: endereços -->
@@ -130,10 +137,26 @@
                 @input="applyCepMask"
                 @blur="handleCepBlur"
               />
-              <div v-if="isSearchingCep" class="absolute right-3 top-2">
-                <svg class="h-5 w-5 animate-spin text-green-800" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <div v-if="isSearchingCep" class="absolute top-2 right-3">
+                <svg
+                  class="h-5 w-5 animate-spin text-green-800"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
               </div>
             </div>
@@ -267,43 +290,58 @@ onMounted(async () => {
         value: s.sigla,
       }))
       .sort((a, b) => a.label.localeCompare(b.label));
-  } catch (error) {
-    console.error('Erro ao carregar estados:', error);
+  } catch {
+    // Silencia falha ao carregar estados
   } finally {
     isLoadingStates.value = false;
   }
 });
 
-watch(() => form.tipo_documento, () => {
-  errors.documento = '';
-  form.documento = '';
-});
+watch(
+  () => form.tipo_documento,
+  () => {
+    errors.documento = '';
+    form.documento = '';
+  },
+);
 
-watch(() => form.cep, (newVal) => {
-  errors.cep = '';
-  const cleanCep = newVal.replace(/\D/g, '');
-  if (cleanCep.length !== 8) {
-    lastSearchedCep.value = '';
-  } else if (cleanCep.length === 8 && !isSearchingCep.value) {
-    handleCepBlur();
-  }
-});
+watch(
+  () => form.cep,
+  (newVal) => {
+    errors.cep = '';
+    const cleanCep = newVal.replace(/\D/g, '');
+    if (cleanCep.length !== 8) {
+      lastSearchedCep.value = '';
+    } else if (cleanCep.length === 8 && !isSearchingCep.value) {
+      handleCepBlur();
+    }
+  },
+);
 
-watch(() => form.estado, () => {
-  errors.estado = '';
-});
+watch(
+  () => form.estado,
+  () => {
+    errors.estado = '';
+  },
+);
 
 const nextStep = () => {
   if (currentStep.value === 2) {
     validateDocumento();
     if (errors.documento) {
-      toast.warning('Por favor, verifique os dígitos do documento CPF/CNPJ antes de prosseguir.', 'Documento Inválido');
+      toast.warning(
+        'Por favor, verifique os dígitos do documento CPF/CNPJ antes de prosseguir.',
+        'Documento Inválido',
+      );
       return;
     }
   } else if (currentStep.value === 3) {
     validateCep();
     if (errors.cep) {
-      toast.warning('O CEP informado está incompleto ou a busca automática falhou. Verifique os dados.', 'CEP Inválido');
+      toast.warning(
+        'O CEP informado está incompleto ou a busca automática falhou. Verifique os dados.',
+        'CEP Inválido',
+      );
       return;
     }
   }
@@ -387,8 +425,7 @@ const handleCepBlur = async () => {
     form.estado = data.state || '';
     errors.cep = '';
     lastSearchedCep.value = cep;
-  } catch (error) {
-    console.error('Erro ao buscar endereço:', error);
+  } catch {
     errors.cep = 'CEP não encontrado ou erro na busca.';
     lastSearchedCep.value = '';
   } finally {
@@ -430,7 +467,10 @@ const handleCadastro = async () => {
   }
 
   if (errors.cep || errors.documento || errors.estado) {
-    toast.warning('Existem erros pendentes nos campos do formulário. Corrija-os para continuar.', 'Formulário Incompleto');
+    toast.warning(
+      'Existem erros pendentes nos campos do formulário. Corrija-os para continuar.',
+      'Formulário Incompleto',
+    );
     return;
   }
 
@@ -457,12 +497,15 @@ const handleCadastro = async () => {
     };
     await authStore.signup(signupPayload);
 
-    toast.success('Sua conta foi criada com sucesso! Seja bem-vindo à nossa plataforma.', 'Cadastro Concluído', {
-      duration: 5000,
-    });
+    toast.success(
+      'Sua conta foi criada com sucesso! Seja bem-vindo à nossa plataforma.',
+      'Cadastro Concluído',
+      {
+        duration: 5000,
+      },
+    );
     router.push('/dashboard');
   } catch (error) {
-    console.error('Erro no cadastro:', error);
     const backendMessage =
       error?.response?.data?.detail ||
       error?.response?.data?.message ||
@@ -470,10 +513,9 @@ const handleCadastro = async () => {
       error?.response?.data ||
       error?.message ||
       'Erro desconhecido';
-      
-    const errorDetails = typeof backendMessage === 'object' 
-      ? JSON.stringify(backendMessage) 
-      : String(backendMessage);
+
+    const errorDetails =
+      typeof backendMessage === 'object' ? JSON.stringify(backendMessage) : String(backendMessage);
 
     toast.error(`Falha ao concluir seu cadastro. Detalhes: ${errorDetails}`, 'Falha no Cadastro');
   }

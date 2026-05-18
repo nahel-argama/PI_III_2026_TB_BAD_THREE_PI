@@ -53,8 +53,7 @@ async function fetchItems(productName = '', page = 1) {
     const data = await listWishlistItems({ productName, page });
     wishlistItems.value = data.results;
     totalItems.value = data.count || 0;
-  } catch (err) {
-    console.error('[WishlistView] Falha ao carregar itens:', err);
+  } catch {
     wishlistItems.value = [];
     totalItems.value = 0;
   } finally {

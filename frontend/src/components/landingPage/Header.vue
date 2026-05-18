@@ -137,8 +137,7 @@ async function handleLogout() {
     showMenu.value = false;
     // Recarrega a página
     window.location.reload();
-  } catch (err) {
-    console.error('Erro ao fazer logout:', err);
+  } catch {
     showMenu.value = false;
   }
 }

@@ -1,5 +1,7 @@
 <template>
-  <div class="flex w-full flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+  <div
+    class="flex w-full flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8"
+  >
     <div class="flex items-start gap-3">
       <button
         class="rounded-2xl border border-slate-200 bg-white p-3 text-slate-700 shadow-sm transition hover:border-emerald-200 hover:text-emerald-600 lg:hidden"
@@ -10,7 +12,7 @@
       </button>
 
       <div>
-        <p class="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-600">
+        <p class="text-xs font-semibold tracking-[0.24em] text-emerald-600 uppercase">
           {{ roleLabel }}
         </p>
         <h1 class="mt-1 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
@@ -28,7 +30,9 @@
         type="button"
         @click="toggleMenu"
       >
-        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+        <div
+          class="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-700"
+        >
           <UserCircleIcon class="h-5 w-5" />
         </div>
         <span class="hidden sm:inline">{{ userName }}</span>
@@ -37,7 +41,7 @@
 
       <div
         v-if="showMenu"
-        class="absolute right-0 top-full z-30 mt-2 min-w-44 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-lg"
+        class="absolute top-full right-0 z-30 mt-2 min-w-44 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-lg"
       >
         <button
           type="button"
@@ -87,8 +91,7 @@ async function handleLogout() {
     await auth.logout();
     showMenu.value = false;
     await router.push('/login');
-  } catch (error) {
-    console.error('Erro ao deslogar:', error);
+  } catch {
     showMenu.value = false;
     await router.push('/login');
   }

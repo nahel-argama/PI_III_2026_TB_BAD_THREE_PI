@@ -37,26 +37,16 @@ export const useAuthStore = defineStore('auth', () => {
   // ===== PRIVATE METHODS =====
 
   const _saveToken = (newToken) => {
-    try {
-      if (newToken) {
-        localStorage.setItem(ACCESS_TOKEN_KEY, newToken);
-        token.value = newToken;
-      }
-    } catch (err) {
-      console.warn('Erro ao salvar token em localStorage:', err);
-      throw err;
+    if (newToken) {
+      localStorage.setItem(ACCESS_TOKEN_KEY, newToken);
+      token.value = newToken;
     }
   };
 
   const _saveRefreshToken = (newRefreshToken) => {
-    try {
-      if (newRefreshToken) {
-        localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
-        refreshTokenValue.value = newRefreshToken;
-      }
-    } catch (err) {
-      console.warn('Erro ao salvar refresh token em localStorage:', err);
-      throw err;
+    if (newRefreshToken) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
+      refreshTokenValue.value = newRefreshToken;
     }
   };
 
@@ -68,8 +58,7 @@ export const useAuthStore = defineStore('auth', () => {
         return storedToken;
       }
       return null;
-    } catch (err) {
-      console.warn('Erro ao carregar token de localStorage:', err);
+    } catch {
       return null;
     }
   };
@@ -82,8 +71,7 @@ export const useAuthStore = defineStore('auth', () => {
         return storedRefreshToken;
       }
       return null;
-    } catch (err) {
-      console.warn('Erro ao carregar refresh token de localStorage:', err);
+    } catch {
       return null;
     }
   };
@@ -92,8 +80,8 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       localStorage.removeItem(ACCESS_TOKEN_KEY);
       token.value = null;
-    } catch (err) {
-      console.warn('Erro ao limpar token de localStorage:', err);
+    } catch {
+      // Ignora erro de persistência
     }
   };
 
@@ -101,8 +89,8 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       localStorage.removeItem(REFRESH_TOKEN_KEY);
       refreshTokenValue.value = null;
-    } catch (err) {
-      console.warn('Erro ao limpar refresh token de localStorage:', err);
+    } catch {
+      // Ignora erro de persistência
     }
   };
 
@@ -112,8 +100,8 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = userData;
         userType.value = _normalizeUserType(userData?.user_type || userData?.type);
       }
-    } catch (err) {
-      console.warn('Erro ao salvar dados do usuário:', err);
+    } catch {
+      // Ignora erro ao salvar dados
     }
   };
 
@@ -170,48 +158,36 @@ export const useAuthStore = defineStore('auth', () => {
 
         throw err;
       }
-    } catch (err) {
-      console.error('Erro ao inicializar autenticação:', err);
+    } catch {
       clearAuth();
     }
   };
 
   const login = async (email, password) => {
-    try {
-      const { default: api } = await import('@/services/api');
-      const response = await api.post('/auth/login/', {
-        email,
-        password,
-      });
+    const { default: api } = await import('@/services/api');
+    const response = await api.post('/auth/login/', {
+      email,
+      password,
+    });
 
-      _hydrateAuthStateFromResponse(response.data);
+    _hydrateAuthStateFromResponse(response.data);
 
-      return response.data;
-    } catch (err) {
-      console.error('Erro no login:', err);
-      throw err;
-    }
+    return response.data;
   };
 
   const signup = async (payload) => {
-    try {
-      const { default: api } = await import('@/services/api');
-      const response = await api.post('/auth/signup/', payload);
+    const { default: api } = await import('@/services/api');
+    const response = await api.post('/auth/signup/', payload);
 
-      _hydrateAuthStateFromResponse(response.data);
+    _hydrateAuthStateFromResponse(response.data);
 
-      return response.data;
-    } catch (err) {
-      console.error('Erro no cadastro:', err);
-      throw err;
-    }
+    return response.data;
   };
 
   const logout = async () => {
     try {
       clearAuth();
-    } catch (err) {
-      console.error('Erro ao fazer logout:', err);
+    } catch {
       clearAuth();
     }
   };
@@ -224,8 +200,8 @@ export const useAuthStore = defineStore('auth', () => {
       userType.value = null;
 
       window.dispatchEvent(new Event('logout'));
-    } catch (err) {
-      console.error('Erro ao limpar autenticação:', err);
+    } catch {
+      // Ignora erro ao limpar sessão
     }
   };
 
@@ -270,8 +246,8 @@ export const useAuthStore = defineStore('auth', () => {
           setTokenFromStorage(null);
         } else {
           setTokenFromStorage(event.newValue);
-          _fetchCurrentUser().catch((err) => {
-            console.warn('Erro ao sincronizar usuário entre abas:', err);
+          _fetchCurrentUser().catch(() => {
+            // Ignora falha silenciosa de sincronização
           });
         }
       }

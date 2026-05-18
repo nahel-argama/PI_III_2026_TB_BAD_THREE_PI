@@ -17,8 +17,7 @@ export function useProductSearch() {
     isLoading.value = true;
     try {
       options.value = await productSearchService.search(query);
-    } catch (err) {
-      console.error('[useProductSearch] Falha ao buscar produtos:', err);
+    } catch {
       options.value = [];
     } finally {
       isLoading.value = false;

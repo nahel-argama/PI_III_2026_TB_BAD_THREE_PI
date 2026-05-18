@@ -52,8 +52,8 @@ export function useToast() {
     if (typeof options.onOpen === 'function') {
       try {
         options.onOpen(newToast);
-      } catch (err) {
-        console.error('[useToast] Error inside onOpen callback:', err);
+      } catch {
+        // Silencia erro no callback de abertura
       }
     }
 
@@ -99,8 +99,8 @@ export function useToast() {
       if (typeof toast.onClose === 'function') {
         try {
           toast.onClose(toast);
-        } catch (err) {
-          console.error('[useToast] Error inside onClose callback:', err);
+        } catch {
+          // Silencia erro no callback de fechamento
         }
       }
       activeToasts.value.splice(index, 1);
@@ -115,8 +115,8 @@ export function useToast() {
       if (typeof toast.onClose === 'function') {
         try {
           toast.onClose(toast);
-        } catch (err) {
-          console.error('[useToast] Error inside onClose callback:', err);
+        } catch {
+          // Silencia erro no callback de fechamento
         }
       }
     });

@@ -21,8 +21,8 @@ api.interceptors.request.use((config) => {
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-  } catch (err) {
-    console.warn('Erro ao adicionar token no header:', err);
+  } catch {
+    // Ignora erro ao obter do localStorage
   }
   return config;
 });
@@ -78,9 +78,6 @@ api.interceptors.response.use(
       // Se NÃO há token → é um erro de credenciais inválidas (login)
       // Deixa o erro passar para o componente LoginView tratar
       if (!token && !refreshToken) {
-        console.warn('[API] 401 sem token (credenciais inválidas)', {
-          url: response.config?.url,
-        });
         return Promise.reject(error);
       }
 
@@ -94,8 +91,8 @@ api.interceptors.response.use(
           config._retry = true;
           config.headers.Authorization = `Bearer ${newToken}`;
           return api(config);
-        } catch (refreshErr) {
-          console.warn('[API] Falha ao renovar token:', refreshErr);
+        } catch {
+          // Ignora falha de renovação do token
         }
       }
 
@@ -103,14 +100,13 @@ api.interceptors.response.use(
 
       try {
         window.location.href = '/login';
-      } catch (routerErr) {
-        console.warn('[API] Erro ao redirecionar para login:', routerErr);
+      } catch {
+        // Ignora erro de redirecionamento
       }
 
       // Re-lança o erro para o componente decidir como exibir
       return Promise.reject(error);
-    } catch (err) {
-      console.error('[API] Erro ao processar erro 401:', err);
+    } catch {
       return Promise.reject(error);
     }
   },

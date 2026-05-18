@@ -22,8 +22,7 @@ onBeforeMount(async () => {
   try {
     // Carrega token do localStorage e restaura estado
     await authStore.initializeAuth();
-  } catch (err) {
-    console.error('Erro ao inicializar autenticação:', err);
+  } catch {
     // Mesmo com erro, continua - usuário pode fazer login novamente
   }
 });

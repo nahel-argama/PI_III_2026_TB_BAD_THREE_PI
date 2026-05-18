@@ -26,12 +26,7 @@ export const useAuth = () => {
    * Logout do usuário
    */
   const logout = async () => {
-    try {
-      await authStore.logout();
-    } catch (err) {
-      console.error('Erro ao fazer logout:', err);
-      throw err;
-    }
+    await authStore.logout();
   };
 
   /**

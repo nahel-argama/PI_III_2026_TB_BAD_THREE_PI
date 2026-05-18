@@ -18,7 +18,7 @@
 <script setup>
 import { computed } from 'vue';
 
-const props = defineProps({
+defineProps({
   number: {
     type: [Number, String],
     required: true,

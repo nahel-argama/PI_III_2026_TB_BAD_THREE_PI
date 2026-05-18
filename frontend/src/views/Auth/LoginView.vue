@@ -107,7 +107,6 @@ const handleLogin = async () => {
     // Store já salvou token e Pinia está atualizado
     router.push('/dashboard'); // Redireciona para o dashboard adaptativo
   } catch (error) {
-    console.error('Erro no login:', error);
 
     // Trata mensagem de erro do backend
     const msg =
