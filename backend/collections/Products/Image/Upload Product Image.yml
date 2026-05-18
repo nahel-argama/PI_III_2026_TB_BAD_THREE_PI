@@ -5,14 +5,14 @@ info:
 
 http:
   method: POST
-  url: "{{host}}/api/products/1/images/"
-  auth: inherit
+  url: "{{host}}/api/products/:product-id/images/"
+  params:
+    - name: product-id
+      value: ""
+      type: path
   body:
     type: multipart-form
-    multipartForm:
-      - name: image
-        type: file
-        filePath: ""
+  auth: inherit
 
 settings:
   encodeUrl: true
