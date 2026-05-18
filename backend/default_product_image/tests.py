@@ -54,7 +54,7 @@ class DefaultProductImageAdminTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_upload_default_image(self):
+    def test_upload_for_an_existent_default_image_entry(self):
         self.client.force_authenticate(user=self.admin_user)
         upload = SimpleUploadedFile(
             "image.png", b"image-data", content_type="image/png"
@@ -80,5 +80,28 @@ class DefaultProductImageAdminTestCase(TestCase):
         )
         mapping = DefaultProductImage.objects.get(product_external_key="external-3")
         self.assertEqual(mapping.product_name, "External Three")
+        self.assertIsNotNone(mapping.image)
+        self.assertEqual(mapping.image.mime_type, "image/png")
+
+    def test_upload_for_a_non_existent_default_image_entry(self):
+        self.client.force_authenticate(user=self.admin_user)
+        upload = SimpleUploadedFile(
+            "image.png", b"image-data", content_type="image/png"
+        )
+
+        response = self.client.post(
+            "/api/default-product-images/external-4/image/",
+            {"image": upload, "product_name": "External Four"},
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(
+            DefaultProductImage.objects.filter(
+                product_external_key="external-4"
+            ).exists()
+        )
+        mapping = DefaultProductImage.objects.get(product_external_key="external-4")
+        self.assertEqual(mapping.product_name, "External Four")
         self.assertIsNotNone(mapping.image)
         self.assertEqual(mapping.image.mime_type, "image/png")
