@@ -1,10 +1,12 @@
 <template>
   <router-view />
+  <AppToastContainer />
 </template>
 
 <script setup>
 import { onBeforeMount } from 'vue';
 import { useAuth } from '@/composables/useAuth';
+import AppToastContainer from '@/components/ui/AppToastContainer.vue';
 
 /**
  * Inicializa autenticação quando a aplicação é montada

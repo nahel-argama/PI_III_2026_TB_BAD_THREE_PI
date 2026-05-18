@@ -223,12 +223,15 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { fetchAddressByCep, fetchStates } from '@/services/brasilApi';
 import AppSelect from '@/components/ui/AppSelect.vue';
+import { useToast } from '@/composables/useToast';
 
 const router = useRouter();
 const authStore = useAuthStore();
+const toast = useToast();
 const currentStep = ref(1);
 const isSearchingCep = ref(false);
 const isLoadingStates = ref(false);
+const lastSearchedCep = ref('');
 
 const form = reactive({
   name: '',
@@ -276,8 +279,14 @@ watch(() => form.tipo_documento, () => {
   form.documento = '';
 });
 
-watch(() => form.cep, () => {
+watch(() => form.cep, (newVal) => {
   errors.cep = '';
+  const cleanCep = newVal.replace(/\D/g, '');
+  if (cleanCep.length !== 8) {
+    lastSearchedCep.value = '';
+  } else if (cleanCep.length === 8 && !isSearchingCep.value) {
+    handleCepBlur();
+  }
 });
 
 watch(() => form.estado, () => {
@@ -288,13 +297,13 @@ const nextStep = () => {
   if (currentStep.value === 2) {
     validateDocumento();
     if (errors.documento) {
-      alert('Corrija o documento antes de prosseguir.');
+      toast.warning('Por favor, verifique os dígitos do documento CPF/CNPJ antes de prosseguir.', 'Documento Inválido');
       return;
     }
   } else if (currentStep.value === 3) {
     validateCep();
     if (errors.cep) {
-      alert('Corrija o CEP antes de prosseguir.');
+      toast.warning('O CEP informado está incompleto ou a busca automática falhou. Verifique os dados.', 'CEP Inválido');
       return;
     }
   }
@@ -363,10 +372,12 @@ const validateCep = () => {
 };
 
 const handleCepBlur = async () => {
+  const cep = form.cep.replace(/\D/g, '');
+  if (cep === lastSearchedCep.value) return;
+
   const isValid = validateCep();
   if (!isValid) return;
 
-  const cep = form.cep.replace(/\D/g, '');
   isSearchingCep.value = true;
   try {
     const data = await fetchAddressByCep(cep);
@@ -375,9 +386,11 @@ const handleCepBlur = async () => {
     form.cidade = data.city || '';
     form.estado = data.state || '';
     errors.cep = '';
+    lastSearchedCep.value = cep;
   } catch (error) {
     console.error('Erro ao buscar endereço:', error);
     errors.cep = 'CEP não encontrado ou erro na busca.';
+    lastSearchedCep.value = '';
   } finally {
     isSearchingCep.value = false;
   }
@@ -417,7 +430,7 @@ const handleCadastro = async () => {
   }
 
   if (errors.cep || errors.documento || errors.estado) {
-    alert('Corrija os erros nos campos antes de cadastrar.');
+    toast.warning('Existem erros pendentes nos campos do formulário. Corrija-os para continuar.', 'Formulário Incompleto');
     return;
   }
 
@@ -444,7 +457,9 @@ const handleCadastro = async () => {
     };
     await authStore.signup(signupPayload);
 
-    alert('Cadastro realizado com sucesso!');
+    toast.success('Sua conta foi criada com sucesso! Seja bem-vindo à nossa plataforma.', 'Cadastro Concluído', {
+      duration: 5000,
+    });
     router.push('/dashboard');
   } catch (error) {
     console.error('Erro no cadastro:', error);
@@ -455,7 +470,12 @@ const handleCadastro = async () => {
       error?.response?.data ||
       error?.message ||
       'Erro desconhecido';
-    alert(`Falha ao cadastrar. Detalhes: ${JSON.stringify(backendMessage)}`);
+      
+    const errorDetails = typeof backendMessage === 'object' 
+      ? JSON.stringify(backendMessage) 
+      : String(backendMessage);
+
+    toast.error(`Falha ao concluir seu cadastro. Detalhes: ${errorDetails}`, 'Falha no Cadastro');
   }
 };
 </script>
