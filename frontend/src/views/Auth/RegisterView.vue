@@ -231,6 +231,7 @@ const toast = useToast();
 const currentStep = ref(1);
 const isSearchingCep = ref(false);
 const isLoadingStates = ref(false);
+const lastSearchedCep = ref('');
 
 const form = reactive({
   name: '',
@@ -278,8 +279,14 @@ watch(() => form.tipo_documento, () => {
   form.documento = '';
 });
 
-watch(() => form.cep, () => {
+watch(() => form.cep, (newVal) => {
   errors.cep = '';
+  const cleanCep = newVal.replace(/\D/g, '');
+  if (cleanCep.length !== 8) {
+    lastSearchedCep.value = '';
+  } else if (cleanCep.length === 8 && !isSearchingCep.value) {
+    handleCepBlur();
+  }
 });
 
 watch(() => form.estado, () => {
@@ -365,10 +372,12 @@ const validateCep = () => {
 };
 
 const handleCepBlur = async () => {
+  const cep = form.cep.replace(/\D/g, '');
+  if (cep === lastSearchedCep.value) return;
+
   const isValid = validateCep();
   if (!isValid) return;
 
-  const cep = form.cep.replace(/\D/g, '');
   isSearchingCep.value = true;
   try {
     const data = await fetchAddressByCep(cep);
@@ -377,9 +386,11 @@ const handleCepBlur = async () => {
     form.cidade = data.city || '';
     form.estado = data.state || '';
     errors.cep = '';
+    lastSearchedCep.value = cep;
   } catch (error) {
     console.error('Erro ao buscar endereço:', error);
     errors.cep = 'CEP não encontrado ou erro na busca.';
+    lastSearchedCep.value = '';
   } finally {
     isSearchingCep.value = false;
   }
