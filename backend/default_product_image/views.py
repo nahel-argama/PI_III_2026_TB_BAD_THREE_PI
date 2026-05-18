@@ -49,8 +49,9 @@ class DefaultProductImageUploadView(APIView):
         serializer.is_valid(raise_exception=True)
 
         upload = serializer.validated_data["image"]
+        product_name = serializer.validated_data["product_name"]
 
-        default_image = self.store_new_image(product_external_key, upload)
+        default_image = self.store_new_image(product_name, product_external_key, upload)
 
         response_serializer = DefaultProductImageSerializer(
             default_image, context={"request": request}
@@ -58,11 +59,12 @@ class DefaultProductImageUploadView(APIView):
 
         return Response(response_serializer.data, status=status.HTTP_200_OK)
 
-    def store_new_image(self, product_external_key, upload):
+    def store_new_image(self, product_name, product_external_key, upload):
         with transaction.atomic():
-            default_image = DefaultProductImage.objects.filter(
+            default_image, _ = DefaultProductImage.objects.get_or_create(
                 product_external_key=product_external_key,
-            ).first()
+                defaults={"product_name": product_name}
+            )
 
             image = Image.objects.create(
                 blob=upload.read(),
@@ -74,9 +76,6 @@ class DefaultProductImageUploadView(APIView):
             default_image.save(update_fields=["image", "product_name"])
 
             if not old_image:
-                return
-
-            if old_image.default_product_images.exists():
                 return
 
             if old_image.product_images.exists():
