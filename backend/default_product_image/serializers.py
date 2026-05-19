@@ -31,4 +31,3 @@ class DefaultProductImageSerializer(serializers.ModelSerializer):
 
 class DefaultProductImageUploadSerializer(serializers.Serializer):
     image = serializers.FileField(write_only=True)
-    product_name = serializers.CharField(max_length=255, write_only=True)
