@@ -7,11 +7,7 @@
       @open-modal="openCreateModal"
     />
 
-    <ProductImagesGrid
-      :items="filteredProducts"
-      @edit="openEditModal"
-      @remove="removeProduct"
-    />
+    <ProductImagesGrid :items="filteredProducts" @edit="openEditModal" @remove="removeProduct" />
 
     <ProductImageFormModal
       v-model="isModalOpen"
@@ -24,7 +20,10 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue';
-import { listDefaultProductImages, uploadDefaultProductImage } from '@/services/defaultProductImages';
+import {
+  listDefaultProductImages,
+  uploadDefaultProductImage,
+} from '@/services/defaultProductImages';
 import ProductImageFormModal from './product-images/ProductImageFormModal.vue';
 import ProductImagesGrid from './product-images/ProductImagesGrid.vue';
 import ProductImagesHeader from './product-images/ProductImagesHeader.vue';
@@ -57,11 +56,12 @@ async function fetchProducts() {
     const results = data.results || data || [];
     products.value = results.map((item) => ({
       id: item.id,
+      product_external_key: item.product_external_key,
       name: item.product?.name || item.product_name || 'Produto',
       imageUrl: item.image || item.imageUrl,
     }));
-  } catch (err) {
-    console.error('Erro ao listar imagens padrão:', err);
+  } catch {
+    // Silently catch listing error
   }
 }
 
@@ -87,13 +87,12 @@ async function handleSubmit(payload) {
   try {
     await uploadDefaultProductImage(payload.productId, payload.imageUrl);
     await fetchProducts();
-  } catch (err) {
-    console.error('Erro ao enviar imagem padrão:', err);
+  } catch {
+    // Silently catch upload error
   }
 }
 
-function removeProduct(productId) {
+function removeProduct() {
   // Nota: Não há rota de remoção conforme especificação ("somente essas duas rotas")
-  console.warn('Remoção desabilitada para imagens padrão do sistema:', productId);
 }
 </script>
