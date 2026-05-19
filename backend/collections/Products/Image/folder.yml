@@ -1,7 +1,7 @@
 info:
-  name: Product Images
+  name: Image
   type: folder
-  seq: 11
+  seq: 5
 
 request:
   auth:

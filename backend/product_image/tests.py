@@ -129,3 +129,16 @@ class ProductImageTestCase(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_producer_can_delete_product_image(self):
+        self.client.force_authenticate(user=self.producer_user)
+        image = Image.objects.create(blob=b"image-data", mime_type="image/png")
+        product_image = ProductImage.objects.create(product=self.product, image=image)
+
+        response = self.client.delete(
+            f"/api/products/{self.product.id}/images/{product_image.id}/"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(ProductImage.objects.filter(id=product_image.id).exists())
+        self.assertFalse(Image.objects.filter(id=image.id).exists())

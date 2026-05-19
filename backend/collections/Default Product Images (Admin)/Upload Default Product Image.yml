@@ -5,7 +5,11 @@ info:
 
 http:
   method: POST
-  url: "{{host}}/api/default-product-images/108/image/"
+  url: "{{host}}/api/default-product-images/:external-id/image/"
+  params:
+    - name: external-id
+      value: ""
+      type: path
   body:
     type: multipart-form
     data:

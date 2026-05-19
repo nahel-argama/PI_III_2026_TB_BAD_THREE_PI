@@ -1,11 +1,15 @@
 info:
-  name: List Reviews
+  name: List Product Images
   type: http
   seq: 1
 
 http:
   method: GET
-  url: "{{host}}/api/reviews/"
+  url: "{{host}}/api/products/:product-id/images/"
+  params:
+    - name: product-id
+      value: ""
+      type: path
   auth: inherit
 
 settings:
