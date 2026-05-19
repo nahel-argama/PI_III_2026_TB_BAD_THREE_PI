@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
@@ -6,6 +8,7 @@ from rest_framework.test import APIClient
 
 from default_product_image.models import DefaultProductImage
 from image.models import Image
+from product.price_scrapper_client import ExternalServiceResponse
 
 User = get_user_model()
 
@@ -54,7 +57,16 @@ class DefaultProductImageAdminTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_upload_for_an_existent_default_image_entry(self):
+    @patch("default_product_image.views.price_scrapper_client.get_product_by_id")
+    def test_upload_for_an_existent_default_image_entry(self, mocked_get_product):
+        mocked_get_product.return_value = ExternalServiceResponse(
+            status=200,
+            data={
+                "id": "external-3",
+                "name": "External Three From Service",
+                "created_at": "2024-01-01T00:00:00Z",
+            },
+        )
         self.client.force_authenticate(user=self.admin_user)
         upload = SimpleUploadedFile(
             "image.png", b"image-data", content_type="image/png"
@@ -62,13 +74,13 @@ class DefaultProductImageAdminTestCase(TestCase):
 
         DefaultProductImage.objects.create(
             product_external_key="external-3",
-            product_name="External Three",
+            product_name="External Three From Service",
             image=None,
         )
 
         response = self.client.post(
             "/api/default-product-images/external-3/image/",
-            {"image": upload, "product_name": "External Three"},
+            {"image": upload},
             format="multipart",
         )
 
@@ -79,11 +91,20 @@ class DefaultProductImageAdminTestCase(TestCase):
             ).exists()
         )
         mapping = DefaultProductImage.objects.get(product_external_key="external-3")
-        self.assertEqual(mapping.product_name, "External Three")
+        self.assertEqual(mapping.product_name, "External Three From Service")
         self.assertIsNotNone(mapping.image)
         self.assertEqual(mapping.image.mime_type, "image/png")
 
-    def test_upload_for_a_non_existent_default_image_entry(self):
+    @patch("default_product_image.views.price_scrapper_client.get_product_by_id")
+    def test_upload_for_a_non_existent_default_image_entry(self, mocked_get_product):
+        mocked_get_product.return_value = ExternalServiceResponse(
+            status=200,
+            data={
+                "id": "external-4",
+                "name": "External Four From Service",
+                "created_at": "2024-01-01T00:00:00Z",
+            },
+        )
         self.client.force_authenticate(user=self.admin_user)
         upload = SimpleUploadedFile(
             "image.png", b"image-data", content_type="image/png"
@@ -91,7 +112,7 @@ class DefaultProductImageAdminTestCase(TestCase):
 
         response = self.client.post(
             "/api/default-product-images/external-4/image/",
-            {"image": upload, "product_name": "External Four"},
+            {"image": upload},
             format="multipart",
         )
 
@@ -102,6 +123,6 @@ class DefaultProductImageAdminTestCase(TestCase):
             ).exists()
         )
         mapping = DefaultProductImage.objects.get(product_external_key="external-4")
-        self.assertEqual(mapping.product_name, "External Four")
+        self.assertEqual(mapping.product_name, "External Four From Service")
         self.assertIsNotNone(mapping.image)
         self.assertEqual(mapping.image.mime_type, "image/png")
