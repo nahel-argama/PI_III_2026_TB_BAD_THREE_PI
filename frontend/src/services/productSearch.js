@@ -1,4 +1,5 @@
 import externalApi from './externalApi';
+import { capitalize } from '@/utils/string';
 
 export const productSearchService = {
   /**
@@ -12,6 +13,14 @@ export const productSearchService = {
     const response = await externalApi.get('/api/products/search', {
       params: { query: `"${query}"` },
     });
+    
+    if (Array.isArray(response.data)) {
+      return response.data.map(item => ({
+        ...item,
+        name: item.name ? capitalize(item.name) : '',
+      }));
+    }
+    
     return response.data;
   },
 };

@@ -7,11 +7,7 @@
       @open-modal="openCreateModal"
     />
 
-    <ProductImagesGrid
-      :items="filteredProducts"
-      @edit="openEditModal"
-      @remove="removeProduct"
-    />
+    <ProductImagesGrid :items="filteredProducts" @edit="openEditModal" @remove="removeProduct" />
 
     <ProductImageFormModal
       v-model="isModalOpen"
@@ -23,7 +19,11 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
+import {
+  listDefaultProductImages,
+  uploadDefaultProductImage,
+} from '@/services/defaultProductImages';
 import ProductImageFormModal from './product-images/ProductImageFormModal.vue';
 import ProductImagesGrid from './product-images/ProductImagesGrid.vue';
 import ProductImagesHeader from './product-images/ProductImagesHeader.vue';
@@ -32,27 +32,9 @@ const searchTerm = ref('');
 const isModalOpen = ref(false);
 const modalMode = ref('create');
 const selectedProductId = ref(null);
+const currentPage = ref(1);
 
-const products = ref([
-  {
-    id: 1,
-    name: 'Tomate Italiano',
-    imageUrl:
-      'https://images.unsplash.com/photo-1546094096-0df4bcaaa337?auto=format&fit=crop&w=900&q=80',
-  },
-  {
-    id: 2,
-    name: 'Alface Crespa',
-    imageUrl:
-      'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=900&q=80',
-  },
-  {
-    id: 3,
-    name: 'Banana Prata',
-    imageUrl:
-      'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=900&q=80',
-  },
-]);
+const products = ref([]);
 
 const filteredProducts = computed(() => {
   const query = searchTerm.value.trim().toLowerCase();
@@ -68,6 +50,25 @@ const selectedProduct = computed(() => {
   return products.value.find((product) => product.id === selectedProductId.value) || null;
 });
 
+async function fetchProducts() {
+  try {
+    const data = await listDefaultProductImages({ page: currentPage.value });
+    const results = data.results || data || [];
+    products.value = results.map((item) => ({
+      id: item.id,
+      product_external_key: item.product_external_key,
+      name: item.product?.name || item.product_name || 'Produto',
+      imageUrl: item.image_url || item.image || item.imageUrl,
+    }));
+  } catch {
+    // Silently catch listing error
+  }
+}
+
+onMounted(() => {
+  fetchProducts();
+});
+
 function openCreateModal() {
   selectedProductId.value = null;
   modalMode.value = 'create';
@@ -80,29 +81,18 @@ function openEditModal(productId) {
   isModalOpen.value = true;
 }
 
-function handleSubmit(payload) {
-  if (modalMode.value === 'edit' && selectedProductId.value) {
-    products.value = products.value.map((product) => {
-      if (product.id !== selectedProductId.value) {
-        return product;
-      }
+async function handleSubmit(payload) {
+  if (!payload.productId || !payload.imageUrl) return;
 
-      return {
-        ...product,
-        imageUrl: payload.imageUrl,
-      };
-    });
-    return;
+  try {
+    await uploadDefaultProductImage(payload.productId, payload.imageUrl);
+    await fetchProducts();
+  } catch {
+    // Silently catch upload error
   }
-
-  products.value.unshift({
-    id: Date.now(),
-    name: payload.name,
-    imageUrl: payload.imageUrl,
-  });
 }
 
-function removeProduct(productId) {
-  products.value = products.value.filter((product) => product.id !== productId);
+function removeProduct() {
+  // Nota: Não há rota de remoção conforme especificação ("somente essas duas rotas")
 }
 </script>

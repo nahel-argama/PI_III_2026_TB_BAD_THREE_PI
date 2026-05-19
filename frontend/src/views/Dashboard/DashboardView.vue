@@ -52,7 +52,6 @@ const dashboardViewRegistry = {
     'explorar-ofertas': ExploreOffersView,
     'lista-desejos': WishlistView,
     'historico-compra': PurchaseHistoryView,
-    'gerenciar-imagens-produtos': ProductImagesPlaceholderView,
     'meu-perfil': ProfileView,
   },
   ADMIN: {

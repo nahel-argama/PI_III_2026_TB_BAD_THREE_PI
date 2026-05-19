@@ -3,13 +3,13 @@
     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       <div>
         <p class="text-xs font-bold uppercase tracking-[0.28em] text-emerald-600">
-          Varejista
+          Administrador
         </p>
         <h2 class="mt-2 text-3xl font-black tracking-tight text-slate-900">
           Gerenciar Imagens de Produtos
         </h2>
         <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-          TODO: mover esta funcionalidade para ADMIN quando o backend suportar o novo tipo de usuário.
+          Gerencie as imagens padrões de produtos no sistema.
         </p>
       </div>
 

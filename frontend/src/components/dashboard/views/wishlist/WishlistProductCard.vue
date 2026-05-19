@@ -9,14 +9,14 @@
             Produto salvo
           </p>
           <h3 class="mt-2 truncate text-xl font-black tracking-tight text-slate-900">
-            {{ item.product_name }}
+            {{ capitalize(item.product_name) }}
           </h3>
         </div>
 
         <button
           type="button"
           class="rounded-2xl border border-slate-200 bg-white p-2.5 text-slate-500 transition hover:border-rose-200 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
-          :aria-label="`Remover ${item.product_name}`"
+          :aria-label="`Remover ${capitalize(item.product_name)}`"
           :disabled="isRemoving"
           @click="handleRemove"
         >

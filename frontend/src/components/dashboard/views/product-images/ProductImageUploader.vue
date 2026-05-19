@@ -1,6 +1,6 @@
 <template>
-  <div class="space-y-3">
-    <label class="block text-sm font-semibold text-slate-700">
+  <div class="space-y-2">
+    <label class="block text-xs font-bold tracking-wider text-slate-500 uppercase">
       {{ label }}
     </label>
 
@@ -12,32 +12,61 @@
       @change="handleChange"
     />
 
-    <button
-      type="button"
-      class="flex w-full flex-col items-center justify-center gap-3 rounded-[24px] border border-dashed border-slate-200 bg-slate-50 px-6 py-8 text-center transition hover:border-emerald-300 hover:bg-emerald-50/60"
-      @click="inputRef?.click()"
+    <!-- Horizontal Input Design -->
+    <div
+      class="flex items-center gap-3 w-full bg-slate-50/80 p-2 rounded-2xl border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/10 transition duration-200"
     >
-      <div
-        class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-300 shadow-sm"
+      <button
+        type="button"
+        class="shrink-0 flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition active:scale-[0.97]"
+        @click="inputRef?.click()"
       >
-        <ArrowUpTrayIcon class="h-7 w-7" />
+        <ArrowUpTrayIcon class="h-4 w-4" />
+        <span>{{ modelValue ? 'Trocar Imagem' : 'Escolher Arquivo' }}</span>
+      </button>
+
+      <div class="flex-1 flex items-center justify-between min-w-0 px-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <PhotoIcon class="h-4 w-4 shrink-0" :class="modelValue ? 'text-emerald-500' : 'text-slate-400'" />
+          <span
+            class="text-xs truncate"
+            :class="modelValue ? 'font-bold text-slate-700' : 'font-medium text-slate-400'"
+          >
+            {{ fileName || 'Nenhum arquivo selecionado' }}
+          </span>
+        </div>
+        
+        <span
+          v-if="fileExtension"
+          class="shrink-0 text-[10px] font-black uppercase text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md tracking-wider"
+        >
+          {{ fileExtension }}
+        </span>
+        <span
+          v-else
+          class="shrink-0 text-[9px] font-bold uppercase text-slate-400 bg-slate-200/60 px-1.5 py-0.5 rounded-md tracking-wider"
+        >
+          Sem Mídia
+        </span>
       </div>
 
-      <div>
-        <p class="text-sm font-semibold text-slate-700">
-          {{ fileLabel }}
-        </p>
-        <p class="mt-1 text-xs leading-5 text-slate-500">
-          JPG, PNG ou WebP.
-        </p>
-      </div>
-    </button>
+      <!-- Clear Button if file selected -->
+      <button
+        v-if="modelValue"
+        type="button"
+        class="shrink-0 p-1.5 text-slate-400 hover:text-rose-500 rounded-lg hover:bg-rose-50 transition"
+        title="Remover imagem"
+        @click="clearFile"
+      >
+        <XMarkIcon class="h-4 w-4" />
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, watch } from 'vue';
-import { ArrowUpTrayIcon } from '@heroicons/vue/24/outline';
+import { ArrowUpTrayIcon, PhotoIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
   modelValue: {
@@ -52,14 +81,47 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue']);
 const inputRef = ref(null);
-const previewUrl = ref('');
-const fileLabel = ref('Subir imagem');
+
+const fileName = ref('');
+const fileExtension = ref('');
 
 watch(
   () => props.modelValue,
   (nextValue) => {
-    previewUrl.value = nextValue;
-    fileLabel.value = nextValue ? 'Trocar imagem' : 'Subir imagem';
+    if (nextValue) {
+      if (nextValue.startsWith('data:image/')) {
+        // Extract from base64 MIME type if possible
+        const mimeMatch = nextValue.match(/data:(image\/[a-zA-Z+]+);base64,/);
+        const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+        fileExtension.value = mime.split('/')[1] || 'png';
+        if (!fileName.value) {
+          fileName.value = 'nova_imagem';
+        }
+      } else {
+        // Extract from URL
+        try {
+          let cleanUrl = nextValue.split('?')[0].split('#')[0];
+          if (cleanUrl.endsWith('/')) {
+            cleanUrl = cleanUrl.slice(0, -1);
+          }
+          const lastPart = cleanUrl.substring(cleanUrl.lastIndexOf('/') + 1) || 'imagem';
+          const dotParts = lastPart.split('.');
+          if (dotParts.length > 1) {
+            fileExtension.value = dotParts.pop().toLowerCase();
+            fileName.value = dotParts.join('.');
+          } else {
+            fileName.value = lastPart;
+            fileExtension.value = 'png';
+          }
+        } catch {
+          fileName.value = 'imagem_vinculada';
+          fileExtension.value = 'png';
+        }
+      }
+    } else {
+      fileName.value = '';
+      fileExtension.value = '';
+    }
   },
   { immediate: true },
 );
@@ -68,12 +130,31 @@ function handleChange(event) {
   const file = event.target.files?.[0];
   if (!file) return;
 
+  // Store name and extension from file object
+  const dotParts = file.name.split('.');
+  if (dotParts.length > 1) {
+    fileExtension.value = dotParts.pop().toLowerCase();
+    fileName.value = dotParts.join('.');
+  } else {
+    fileName.value = file.name;
+    fileExtension.value = 'png';
+  }
+
   const reader = new FileReader();
   reader.onload = () => {
-    previewUrl.value = String(reader.result || '');
-    emit('update:modelValue', previewUrl.value);
-    fileLabel.value = 'Trocar imagem';
+    emit('update:modelValue', String(reader.result || ''));
   };
   reader.readAsDataURL(file);
 }
+
+function clearFile() {
+  fileName.value = '';
+  fileExtension.value = '';
+  if (inputRef.value) {
+    inputRef.value.value = '';
+  }
+  emit('update:modelValue', '');
+}
 </script>
+
+<style scoped></style>
