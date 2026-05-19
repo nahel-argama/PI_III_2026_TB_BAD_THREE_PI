@@ -58,7 +58,7 @@ async function fetchProducts() {
       id: item.id,
       product_external_key: item.product_external_key,
       name: item.product?.name || item.product_name || 'Produto',
-      imageUrl: item.image || item.imageUrl,
+      imageUrl: item.image_url || item.image || item.imageUrl,
     }));
   } catch {
     // Silently catch listing error

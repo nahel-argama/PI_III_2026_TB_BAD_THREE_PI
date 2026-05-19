@@ -76,10 +76,10 @@
                 </label>
                 
                 <div class="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 h-64 flex items-center justify-center p-1">
-                  <img
+                  <AppSecureImage
                     :src="form.imageUrl"
                     alt="Prévia"
-                    class="h-full w-full object-contain rounded-lg"
+                    object-fit-class="object-contain rounded-lg"
                   />
                 </div>
               </div>
@@ -114,6 +114,7 @@
 import { reactive, ref, watch } from 'vue';
 import { XMarkIcon, SparklesIcon } from '@heroicons/vue/24/outline';
 import AppSelect from '@/components/ui/AppSelect.vue';
+import AppSecureImage from '@/components/ui/AppSecureImage.vue';
 import { useProductSearch } from '@/composables/useProductSearch';
 import ProductImageUploader from './ProductImageUploader.vue';
 

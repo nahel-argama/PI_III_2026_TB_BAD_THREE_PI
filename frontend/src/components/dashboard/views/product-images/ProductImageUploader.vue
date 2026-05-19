@@ -100,7 +100,10 @@ watch(
       } else {
         // Extract from URL
         try {
-          const cleanUrl = nextValue.split('?')[0].split('#')[0];
+          let cleanUrl = nextValue.split('?')[0].split('#')[0];
+          if (cleanUrl.endsWith('/')) {
+            cleanUrl = cleanUrl.slice(0, -1);
+          }
           const lastPart = cleanUrl.substring(cleanUrl.lastIndexOf('/') + 1) || 'imagem';
           const dotParts = lastPart.split('.');
           if (dotParts.length > 1) {

@@ -34,18 +34,11 @@
 
       <div class="mt-5 overflow-hidden rounded-[22px] border border-slate-200 bg-slate-50">
         <div class="aspect-[4/3] w-full">
-          <img
-            v-if="item.imageUrl"
+          <AppSecureImage
             :src="item.imageUrl"
             :alt="item.name"
-            class="h-full w-full object-cover"
+            object-fit-class="object-cover"
           />
-          <div
-            v-else
-            class="flex h-full w-full items-center justify-center bg-slate-100 text-slate-400"
-          >
-            <PhotoIcon class="h-10 w-10" />
-          </div>
         </div>
       </div>
     </div>
@@ -53,7 +46,8 @@
 </template>
 
 <script setup>
-import { PencilSquareIcon, PhotoIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import { PencilSquareIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import AppSecureImage from '@/components/ui/AppSecureImage.vue';
 
 defineProps({
   item: {
