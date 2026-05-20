@@ -41,6 +41,11 @@ class Product(models.Model):
 
     class Meta:
         db_table = 'product'
+        indexes = [
+            models.Index(fields=['is_active', 'price']),
+            models.Index(fields=['is_active', 'created_at']),
+            models.Index(fields=['name']),
+        ]
 
     @property
     def available_quantity(self):
