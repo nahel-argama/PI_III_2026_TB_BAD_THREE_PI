@@ -6,7 +6,7 @@
       <div>
         <h2 class="mt-2 text-3xl font-black tracking-tight text-slate-900">Lista de Desejos</h2>
         <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-          Gerencie seus produtos salvos ṕara facilitar a demanda dos fornecedores.
+          Gerencie seus produtos favoritos para facilitar a demanda dos fornecedores.
         </p>
       </div>
 
