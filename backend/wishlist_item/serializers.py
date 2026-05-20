@@ -1,8 +1,14 @@
 from django.urls import reverse
-from rest_framework import serializers
+from rest_framework import serializers, exceptions, status
 
 from default_product_image.models import DefaultProductImage
 from wishlist_item.models import WishlistItem
+
+
+class ConflictException(exceptions.APIException):
+    status_code = status.HTTP_409_CONFLICT
+    default_detail = "Conflict."
+    default_code = "conflict"
 
 
 class WishlistItemSerializer(serializers.ModelSerializer):
@@ -48,8 +54,8 @@ class WishlistItemSerializer(serializers.ModelSerializer):
         ).exists()
 
         if exists:
-            raise serializers.ValidationError(
-                "Wishlist item with this external key already exists."
+            raise ConflictException(
+                "O produto selecionado já existe na sua lista de desejos."
             )
 
         return value
