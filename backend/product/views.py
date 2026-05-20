@@ -16,10 +16,15 @@ class ProductViewSet(
     viewsets.GenericViewSet,
 ):
     serializer_class = ProductSerializer
-    queryset = Product.objects.select_related("producer", "category")
+    queryset = Product.objects.select_related(
+        "producer",
+        "producer__user",
+        "producer__user__address",
+        "category",
+    )
     filterset_class = ProductFilter
     filter_backends = [DjangoFilterBackend, OrderingFilter]
-    ordering_fields = ["price", "name"]
+    ordering_fields = ["price", "name", "created_at", "distance_km"]
 
     def get_permissions(self):
         permission_classes = [IsAuthenticated]
@@ -33,9 +38,9 @@ class ProductViewSet(
         user = self.request.user
 
         if user.user_type == "PRODUCER":
-            return Product.objects.filter(producer=user.producer).order_by('id')
+            return self.queryset.filter(producer=user.producer).order_by('id')
 
         if user.user_type == "RETAILER":
-            return Product.objects.filter(is_active=True).order_by('id')
+            return self.queryset.filter(is_active=True).order_by('id')
 
         return Product.objects.none()
