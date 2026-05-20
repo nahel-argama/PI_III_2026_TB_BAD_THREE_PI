@@ -12,8 +12,21 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 
+import environ
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+env = environ.Env(
+    DEBUG=(bool, True),
+    POSTGRES_DB=(str, "production_flow"),
+    POSTGRES_USER=(str, "postgres"),
+    POSTGRES_PASSWORD=(str, "postgres"),
+    POSTGRES_HOST=(str, "localhost"),
+    POSTGRES_PORT=(str, "5432"),
+    POSTGRES_CONN_MAX_AGE=(int, 60),
+)
+environ.Env.read_env(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
@@ -23,9 +36,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-z*(+5y#k!t11ee2*4ao6&m%o#8^3p9yh7ihqd=b-4bkwnbu4d$"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool("DEBUG")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 
 
 # Application definition
@@ -37,6 +50,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.postgres",
     "rest_framework",
     "drf_yasg",
     "django_filters",
@@ -129,8 +143,13 @@ WSGI_APPLICATION = "app.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": env.str("POSTGRES_DB"),
+        "USER": env.str("POSTGRES_USER"),
+        "PASSWORD": env.str("POSTGRES_PASSWORD"),
+        "HOST": env.str("POSTGRES_HOST"),
+        "PORT": env.str("POSTGRES_PORT"),
+        "CONN_MAX_AGE": env.int("POSTGRES_CONN_MAX_AGE"),
     }
 }
 
