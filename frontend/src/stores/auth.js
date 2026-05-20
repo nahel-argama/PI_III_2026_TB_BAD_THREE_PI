@@ -184,6 +184,18 @@ export const useAuthStore = defineStore('auth', () => {
     return response.data;
   };
 
+  const checkEmail = async (email) => {
+    const { default: api } = await import('@/services/api');
+    const response = await api.post('/auth/check-email/', { email });
+    return response.data;
+  };
+
+  const checkDocument = async (documento) => {
+    const { default: api } = await import('@/services/api');
+    const response = await api.post('/auth/check-document/', { documento });
+    return response.data;
+  };
+
   const logout = async () => {
     try {
       clearAuth();
@@ -281,6 +293,8 @@ export const useAuthStore = defineStore('auth', () => {
     initializeAuth,
     login,
     signup,
+    checkEmail,
+    checkDocument,
     logout,
     clearAuth,
     setTokenFromStorage,
