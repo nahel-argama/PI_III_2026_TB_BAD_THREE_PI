@@ -5,9 +5,6 @@
     <div class="p-5">
       <div class="flex items-start justify-between gap-4">
         <div class="min-w-0">
-          <p class="text-xs font-bold tracking-[0.26em] text-emerald-600 uppercase">
-            Produto salvo
-          </p>
           <h3 class="mt-2 truncate text-xl font-black tracking-tight text-slate-900">
             {{ capitalize(item.product_name) }}
           </h3>

@@ -33,6 +33,12 @@ import WishlistGrid from './wishlist/WishlistGrid.vue';
 import WishlistToolbar from './wishlist/WishlistToolbar.vue';
 import AppPagination from '@/components/ui/AppPagination.vue';
 import { listWishlistItems } from '@/services/wishlist';
+import { useToast } from '@/composables/useToast';
+import { capitalize } from '@/utils/string';
+
+// ── Composables ───────────────────────────────────────────────────────────────
+
+const toast = useToast();
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
@@ -75,10 +81,13 @@ function onSearch(value) {
 
 // ── Actions ───────────────────────────────────────────────────────────────────
 
-/** Chamado após o modal criar o item com sucesso — insere no topo da lista. */
+/** Chamado após o modal criar o item com sucesso — insere no final da lista e exibe um toast. */
 function onItemCreated(newItem) {
-  wishlistItems.value.unshift(newItem);
+  wishlistItems.value.push(newItem);
   totalItems.value++;
+
+  const productName = newItem.product_name ? capitalize(newItem.product_name) : 'Produto';
+  toast.success(`"${productName}" foi adicionado com sucesso!`, 'Adicionado');
 }
 
 async function removeProduct(itemId) {

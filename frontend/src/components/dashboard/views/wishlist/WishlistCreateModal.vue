@@ -13,15 +13,9 @@
             class="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5 sm:px-8"
           >
             <div>
-              <p class="text-xs font-bold tracking-[0.28em] text-emerald-600 uppercase">
-                Marketplace
-              </p>
               <h3 class="mt-2 text-2xl font-black tracking-tight text-slate-900">
                 Adicionar produto
               </h3>
-              <p class="mt-2 text-sm leading-6 text-slate-600">
-                Cadastro local e mockado apenas com o nome do produto.
-              </p>
             </div>
 
             <button
@@ -34,7 +28,7 @@
             </button>
           </div>
 
-          <form class="px-6 py-6 sm:px-8" @submit.prevent="handleSubmit">
+          <form class="px-6 pb-6 sm:px-8" @submit.prevent="handleSubmit">
             <AppSelect
               v-model="form.productId"
               label="Nome do produto"
@@ -66,7 +60,7 @@
               <button
                 type="submit"
                 :disabled="isSubmitting"
-                class="rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                class="rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {{ isSubmitting ? 'Salvando…' : 'Salvar produto' }}
               </button>
@@ -117,7 +111,12 @@ function resetForm() {
 
 // ── Product Search ────────────────────────────────────────────────────────────
 
-const { options: productOptions, isLoading: searchLoading, search: handleSearch, reset: resetSearch } = useProductSearch();
+const {
+  options: productOptions,
+  isLoading: searchLoading,
+  search: handleSearch,
+  reset: resetSearch,
+} = useProductSearch();
 
 // ── Modal Lifecycle ───────────────────────────────────────────────────────────
 
@@ -155,8 +154,7 @@ async function handleSubmit() {
     closeModal();
   } catch (err) {
     submitError.value =
-      err?.response?.data?.detail ??
-      'Não foi possível adicionar o produto. Tente novamente.';
+      err?.response?.data?.detail ?? 'Não foi possível adicionar o produto. Tente novamente.';
   } finally {
     isSubmitting.value = false;
   }
