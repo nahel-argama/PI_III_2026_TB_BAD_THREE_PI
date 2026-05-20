@@ -78,9 +78,20 @@ function onSearch(value) {
 /** Chamado após o modal criar o item com sucesso — insere no topo da lista. */
 function onItemCreated(newItem) {
   wishlistItems.value.unshift(newItem);
+  totalItems.value++;
 }
 
-function removeProduct(itemId) {
+async function removeProduct(itemId) {
+  // Remove otimisticamente do estado local
   wishlistItems.value = wishlistItems.value.filter((item) => item.id !== itemId);
+
+  // Se a página atual ficou vazia e não for a primeira página, voltamos para a página anterior
+  let targetPage = currentPage.value;
+  if (wishlistItems.value.length === 0 && currentPage.value > 1) {
+    targetPage = currentPage.value - 1;
+  }
+
+  // Recarrega os dados do backend para sincronizar a listagem e os totais de paginação
+  await fetchItems(searchTerm.value, targetPage);
 }
 </script>

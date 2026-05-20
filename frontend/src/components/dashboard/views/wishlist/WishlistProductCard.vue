@@ -25,6 +25,20 @@
       </div>
 
       <div
+        v-if="item.image_url || item.imageUrl"
+        class="mt-5 overflow-hidden rounded-[22px] border border-slate-200 bg-slate-50"
+      >
+        <div class="aspect-[4/3] w-full">
+          <AppSecureImage
+            :src="item.image_url || item.imageUrl"
+            :alt="capitalize(item.product_name)"
+            object-fit-class="object-cover"
+          />
+        </div>
+      </div>
+
+      <div
+        v-else
         class="mt-5 flex aspect-[4/3] items-center justify-center rounded-[22px] border border-dashed border-slate-200 bg-slate-50"
       >
         <div class="text-center">
@@ -33,7 +47,7 @@
           >
             <PhotoIcon class="h-7 w-7" />
           </div>
-          <p class="mt-3 text-sm font-semibold text-slate-500">Foto em breve</p>
+          <p class="mt-3 text-sm font-semibold text-slate-500">Imagem não disponível</p>
         </div>
       </div>
     </div>
@@ -43,6 +57,7 @@
 <script setup>
 import { ref } from 'vue';
 import { PhotoIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import AppSecureImage from '@/components/ui/AppSecureImage.vue';
 import { removeProductFromWishlist } from '@/services/wishlist';
 
 const props = defineProps({
