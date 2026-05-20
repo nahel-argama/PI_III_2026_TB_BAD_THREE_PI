@@ -76,7 +76,7 @@ class ProductFilter(django_filters.FilterSet):
         return self.apply_default_ordering(queryset, bool(search_term), has_geo)
 
     def get_search_term(self):
-        value = self.data.get("query") or self.data.get("name")
+        value = self.data.get("query")
         return value.strip() if value else ""
 
     def get_number_param(self, name, default=None):
