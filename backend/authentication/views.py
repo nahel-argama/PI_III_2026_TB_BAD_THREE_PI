@@ -54,3 +54,42 @@ class MeView(generics.RetrieveAPIView):
         data = serializer.data
 
         return Response(data)
+
+
+from django.contrib.auth import get_user_model
+from rest_framework.views import APIView
+from rest_framework import status
+
+User = get_user_model()
+
+
+class CheckEmailView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        if not email:
+            return Response({"detail": "E-mail é obrigatório."}, status=status.HTTP_400_BAD_REQUEST)
+
+        exists = User.objects.filter(email=email).exists()
+        return Response({"exists": exists}, status=status.HTTP_200_OK)
+
+
+class CheckDocumentView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        document = request.data.get("documento")
+        if not document:
+            return Response({"detail": "Documento é obrigatório."}, status=status.HTTP_400_BAD_REQUEST)
+
+        clean_doc = "".join(filter(str.isdigit, str(document)))
+
+        from producer.models import Producer
+        from retailer.models import Retailer
+
+        producer_exists = Producer.objects.filter(document_number=clean_doc).exists()
+        retailer_exists = Retailer.objects.filter(document_number=clean_doc).exists()
+
+        exists = producer_exists or retailer_exists
+        return Response({"exists": exists}, status=status.HTTP_200_OK)

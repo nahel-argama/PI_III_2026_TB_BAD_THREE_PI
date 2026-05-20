@@ -28,7 +28,7 @@ api.interceptors.request.use((config) => {
 });
 
 const isAuthEndpoint = (url = '') => {
-  return /\/auth\/(login|signup|refresh|verify)\//.test(url);
+  return /\/auth\/(login|signup|refresh|verify|check-email|check-document)\//.test(url);
 };
 
 /**

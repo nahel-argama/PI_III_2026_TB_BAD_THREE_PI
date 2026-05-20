@@ -33,7 +33,7 @@
         </div>
       </div>
 
-      <form @submit.prevent="currentStep < 3 ? nextStep() : handleCadastro()">
+      <form novalidate @submit.prevent="currentStep < 3 ? nextStep() : handleCadastro()">
         <!-- Step 1: basico -->
         <div v-if="currentStep === 1">
           <div class="mb-4">
@@ -42,8 +42,11 @@
               v-model="form.name"
               type="text"
               class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-green-800 focus:outline-none"
+              :class="{ 'border-red-500': errors.name }"
               required
+              @input="errors.name && validateName()"
             />
+            <p v-if="errors.name" class="mt-1 text-sm text-red-600">{{ errors.name }}</p>
           </div>
 
           <div class="mb-4">
@@ -52,8 +55,11 @@
               v-model="form.email"
               type="email"
               class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-green-800 focus:outline-none"
+              :class="{ 'border-red-500': errors.email }"
               required
+              @input="errors.email && validateEmail()"
             />
+            <p v-if="errors.email" class="mt-1 text-sm text-red-600">{{ errors.email }}</p>
           </div>
 
           <div class="mb-4">
@@ -75,8 +81,13 @@
               v-model="form.nome_fantasia"
               type="text"
               class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-green-800 focus:outline-none"
+              :class="{ 'border-red-500': errors.nome_fantasia }"
               required
+              @input="errors.nome_fantasia && validateNomeFantasia()"
             />
+            <p v-if="errors.nome_fantasia" class="mt-1 text-sm text-red-600">
+              {{ errors.nome_fantasia }}
+            </p>
           </div>
 
           <div class="mb-6">
@@ -85,8 +96,11 @@
               v-model="form.password"
               type="password"
               class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-green-800 focus:outline-none"
+              :class="{ 'border-red-500': errors.password }"
               required
+              @input="errors.password && validatePassword()"
             />
+            <p v-if="errors.password" class="mt-1 text-sm text-red-600">{{ errors.password }}</p>
           </div>
         </div>
 
@@ -110,11 +124,11 @@
               :value="form.documento"
               type="text"
               class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-green-800 focus:outline-none"
+              :class="{ 'border-red-500': errors.documento }"
               :placeholder="form.tipo_documento === 'CPF' ? '000.000.000-00' : '00.000.000/0000-00'"
               :maxlength="form.tipo_documento === 'CPF' ? 14 : 18"
               required
               @input="applyDocumentMask"
-              @blur="validateDocumento"
             />
             <p v-if="errors.documento" class="mt-1 text-sm text-red-600">{{ errors.documento }}</p>
           </div>
@@ -169,8 +183,11 @@
               v-model="form.rua"
               type="text"
               class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-green-800 focus:outline-none"
+              :class="{ 'border-red-500': errors.rua }"
               required
+              @input="errors.rua && validateRua()"
             />
+            <p v-if="errors.rua" class="mt-1 text-sm text-red-600">{{ errors.rua }}</p>
           </div>
 
           <div class="mb-4">
@@ -179,7 +196,11 @@
               v-model="form.numero"
               type="text"
               class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-green-800 focus:outline-none"
+              :class="{ 'border-red-500': errors.numero }"
+              required
+              @input="errors.numero && validateNumero()"
             />
+            <p v-if="errors.numero" class="mt-1 text-sm text-red-600">{{ errors.numero }}</p>
           </div>
 
           <div class="mb-4">
@@ -188,8 +209,11 @@
               v-model="form.bairro"
               type="text"
               class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-green-800 focus:outline-none"
+              :class="{ 'border-red-500': errors.bairro }"
               required
+              @input="errors.bairro && validateBairro()"
             />
+            <p v-if="errors.bairro" class="mt-1 text-sm text-red-600">{{ errors.bairro }}</p>
           </div>
 
           <div class="mb-4">
@@ -198,8 +222,11 @@
               v-model="form.cidade"
               type="text"
               class="w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-green-800 focus:outline-none"
+              :class="{ 'border-red-500': errors.cidade }"
               required
+              @input="errors.cidade && validateCidade()"
             />
+            <p v-if="errors.cidade" class="mt-1 text-sm text-red-600">{{ errors.cidade }}</p>
           </div>
 
           <div class="mb-4">
@@ -273,8 +300,16 @@ const form = reactive({
 });
 
 const errors = reactive({
-  cep: '',
+  name: '',
+  email: '',
+  nome_fantasia: '',
+  password: '',
   documento: '',
+  cep: '',
+  rua: '',
+  numero: '',
+  bairro: '',
+  cidade: '',
   estado: '',
 });
 
@@ -325,23 +360,57 @@ watch(
   },
 );
 
-const nextStep = () => {
-  if (currentStep.value === 2) {
-    validateDocumento();
-    if (errors.documento) {
+const nextStep = async () => {
+  if (currentStep.value === 1) {
+    if (!validateName()) {
+      toast.warning('O campo Nome Completo é obrigatório.', 'Nome Completo Inválido');
+      return;
+    }
+    if (!validateEmail()) {
+      toast.warning(errors.email, 'Email Inválido');
+      return;
+    }
+
+    // Verificar se o email já existe no backend
+    try {
+      const emailCheck = await authStore.checkEmail(form.email);
+      if (emailCheck.exists) {
+        errors.email = 'Este e-mail já está cadastrado.';
+        toast.warning(errors.email, 'Email já cadastrado');
+        return;
+      }
+    } catch {
+      toast.error('Erro ao verificar disponibilidade do e-mail.', 'Falha na Verificação');
+      return;
+    }
+
+    if (!validateNomeFantasia()) {
       toast.warning(
-        'Por favor, verifique os dígitos do documento CPF/CNPJ antes de prosseguir.',
-        'Documento Inválido',
+        'O campo Nome fantasia / Razão social é obrigatório.',
+        'Nome Fantasia Inválido',
       );
       return;
     }
-  } else if (currentStep.value === 3) {
-    validateCep();
-    if (errors.cep) {
-      toast.warning(
-        'O CEP informado está incompleto ou a busca automática falhou. Verifique os dados.',
-        'CEP Inválido',
-      );
+    if (!validatePassword()) {
+      toast.warning(errors.password, 'Senha Inválida');
+      return;
+    }
+  } else if (currentStep.value === 2) {
+    if (!validateDocumento()) {
+      toast.warning(errors.documento, 'Documento Inválido');
+      return;
+    }
+
+    // Verificar se o documento já existe no backend
+    try {
+      const docCheck = await authStore.checkDocument(form.documento);
+      if (docCheck.exists) {
+        errors.documento = 'Este documento já está cadastrado.';
+        toast.warning(errors.documento, 'Documento já cadastrado');
+        return;
+      }
+    } catch {
+      toast.error('Erro ao verificar disponibilidade do documento.', 'Falha na Verificação');
       return;
     }
   }
@@ -389,23 +458,29 @@ const applyDocumentMask = (event) => {
   } else {
     form.documento = maskCNPJ(value);
   }
+  if (errors.documento) {
+    validateDocumento();
+  }
 };
 
 const applyCepMask = (event) => {
   form.cep = maskCEP(event.target.value);
 };
 
-const validateCep = () => {
+const validateCep = (showError = true) => {
   const cep = form.cep.replace(/\D/g, '');
+  if (!cep) {
+    if (showError) errors.cep = 'O CEP é obrigatório.';
+    return false;
+  }
   if (cep.length !== 8) {
-    errors.cep = 'CEP invalido.';
+    if (showError) errors.cep = 'CEP inválido.';
     return false;
   }
-  // Se já houver um erro (como "CEP não encontrado"), não limpamos aqui
-  // Isso impede o envio se a busca falhou anteriormente
-  if (errors.cep) {
+  if (errors.cep && errors.cep !== 'CEP inválido.' && errors.cep !== 'O CEP é obrigatório.') {
     return false;
   }
+  if (showError) errors.cep = '';
   return true;
 };
 
@@ -413,7 +488,7 @@ const handleCepBlur = async () => {
   const cep = form.cep.replace(/\D/g, '');
   if (cep === lastSearchedCep.value) return;
 
-  const isValid = validateCep();
+  const isValid = validateCep(false);
   if (!isValid) return;
 
   isSearchingCep.value = true;
@@ -435,19 +510,125 @@ const handleCepBlur = async () => {
 
 const validateDocumento = () => {
   const doc = form.documento.replace(/\D/g, '');
+  if (!doc) {
+    errors.documento = 'O documento é obrigatório.';
+    return false;
+  }
   if (form.tipo_documento === 'CPF') {
     if (doc.length !== 11) {
-      errors.documento = 'CPF invalido.';
-    } else {
-      errors.documento = '';
+      errors.documento = 'CPF inválido.';
+      return false;
     }
   } else if (form.tipo_documento === 'CNPJ') {
     if (doc.length !== 14) {
-      errors.documento = 'CNPJ invalido.';
-    } else {
-      errors.documento = '';
+      errors.documento = 'CNPJ inválido.';
+      return false;
     }
   }
+  errors.documento = '';
+  return true;
+};
+
+const validatePassword = () => {
+  if (!form.password) {
+    errors.password = 'A senha é obrigatória.';
+    return false;
+  }
+  if (form.password.length < 8) {
+    errors.password = 'A senha deve ter pelo menos 8 caracteres.';
+    return false;
+  }
+  errors.password = '';
+  return true;
+};
+
+const validateName = () => {
+  if (!form.name || !form.name.trim()) {
+    errors.name = 'O nome completo é obrigatório.';
+    return false;
+  }
+  if (/\d/.test(form.name)) {
+    errors.name = 'O nome completo não pode conter números.';
+    return false;
+  }
+  errors.name = '';
+  return true;
+};
+
+const validateEmail = () => {
+  if (!form.email || !form.email.trim()) {
+    errors.email = 'O e-mail é obrigatório.';
+    return false;
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(form.email)) {
+    errors.email = 'Insira um e-mail válido.';
+    return false;
+  }
+  errors.email = '';
+  return true;
+};
+
+const validateNomeFantasia = () => {
+  if (!form.nome_fantasia || !form.nome_fantasia.trim()) {
+    errors.nome_fantasia = 'O nome fantasia / razão social é obrigatório.';
+    return false;
+  }
+  if (/\d/.test(form.nome_fantasia)) {
+    errors.nome_fantasia = 'O nome fantasia não pode conter números.';
+    return false;
+  }
+  errors.nome_fantasia = '';
+  return true;
+};
+
+const validateRua = () => {
+  if (!form.rua || !form.rua.trim()) {
+    errors.rua = 'A rua é obrigatória.';
+    return false;
+  }
+  errors.rua = '';
+  return true;
+};
+
+const validateNumero = () => {
+  if (!form.numero || !form.numero.trim()) {
+    errors.numero = 'O número é obrigatório.';
+    return false;
+  }
+  if (!/^\d+$/.test(form.numero)) {
+    errors.numero = 'O número deve conter apenas algarismos (números).';
+    return false;
+  }
+  errors.numero = '';
+  return true;
+};
+
+const validateBairro = () => {
+  if (!form.bairro || !form.bairro.trim()) {
+    errors.bairro = 'O bairro é obrigatório.';
+    return false;
+  }
+  errors.bairro = '';
+  return true;
+};
+
+const validateCidade = () => {
+  if (!form.cidade || !form.cidade.trim()) {
+    errors.cidade = 'A cidade é obrigatória.';
+    return false;
+  }
+  errors.cidade = '';
+  return true;
+};
+
+const validateEstado = () => {
+  if (!form.estado) {
+    errors.estado = 'Selecione um estado.';
+    return false;
+  }
+  errors.estado = '';
+  return true;
 };
 
 const handleCadastro = async () => {
@@ -456,21 +637,29 @@ const handleCadastro = async () => {
     await handleCepBlur();
   }
 
-  // Validar campos antes de enviar
-  validateCep();
-  validateDocumento();
-
-  if (!form.estado) {
-    errors.estado = 'Selecione um estado.';
-  } else {
-    errors.estado = '';
+  // Validar campos antes de enviar em ordem
+  if (!validateCep()) {
+    toast.warning(errors.cep, 'CEP Inválido');
+    return;
   }
-
-  if (errors.cep || errors.documento || errors.estado) {
-    toast.warning(
-      'Existem erros pendentes nos campos do formulário. Corrija-os para continuar.',
-      'Formulário Incompleto',
-    );
+  if (!validateRua()) {
+    toast.warning(errors.rua, 'Rua Inválida');
+    return;
+  }
+  if (!validateNumero()) {
+    toast.warning(errors.numero, 'Número Inválido');
+    return;
+  }
+  if (!validateBairro()) {
+    toast.warning(errors.bairro, 'Bairro Inválido');
+    return;
+  }
+  if (!validateCidade()) {
+    toast.warning(errors.cidade, 'Cidade Inválida');
+    return;
+  }
+  if (!validateEstado()) {
+    toast.warning(errors.estado, 'Estado Inválido');
     return;
   }
 
@@ -487,7 +676,7 @@ const handleCadastro = async () => {
       },
       address: {
         street: form.rua,
-        number: form.numero || 'S/N',
+        number: form.numero,
         complement: '',
         neighborhood: form.bairro,
         city: form.cidade,
