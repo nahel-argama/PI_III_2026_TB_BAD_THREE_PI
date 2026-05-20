@@ -2,10 +2,13 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
+from unittest.mock import patch
 
+from address.models import Address
 from category.models import Category
 from producer.models import Producer
 from product.models import Product
+from product.price_scrapper_client import ExternalServiceResponse
 from retailer.models import Retailer
 
 User = get_user_model()
@@ -28,7 +31,8 @@ class ProductAPITestCase(TestCase):
         self.producer = Producer.objects.create(
             user=self.producer_user,
             document_type='CPF',
-            document_number='12345678901'
+            document_number='12345678901',
+            trade_name='Producer One Farm'
         )
 
         self.other_producer_user = User.objects.create_user(
@@ -40,7 +44,32 @@ class ProductAPITestCase(TestCase):
         self.other_producer = Producer.objects.create(
             user=self.other_producer_user,
             document_type='CPF',
-            document_number='98765432101'
+            document_number='98765432101',
+            trade_name='Producer Two Farm'
+        )
+        Address.objects.create(
+            user=self.producer_user,
+            street='Farm Road',
+            number='10',
+            complement='',
+            neighborhood='Rural',
+            city='Sao Paulo',
+            state='SP',
+            postal_code='01001000',
+            latitude=-23.550520,
+            longitude=-46.633308
+        )
+        Address.objects.create(
+            user=self.other_producer_user,
+            street='Far Farm Road',
+            number='20',
+            complement='',
+            neighborhood='Rural',
+            city='Campinas',
+            state='SP',
+            postal_code='13010000',
+            latitude=-22.905560,
+            longitude=-47.060830
         )
 
         self.retailer_user = User.objects.create_user(
@@ -87,7 +116,7 @@ class ProductAPITestCase(TestCase):
     def product_payload(self, **overrides):
         payload = {
             'category': self.category.id,
-            'name': 'Organic Tomato',
+            'external_id': 'external-1',
             'description': 'Fresh tomato',
             'total_quantity': 40,
             'reserved_quantity': 0,
@@ -97,7 +126,19 @@ class ProductAPITestCase(TestCase):
         payload.update(overrides)
         return payload
 
-    def test_producer_can_create_product_for_self(self):
+    def external_product_response(self, name='Organic Tomato'):
+        return ExternalServiceResponse(
+            status=200,
+            data={
+                'id': 'external-1',
+                'name': name,
+                'created_at': '2026-05-20T00:00:00Z',
+            }
+        )
+
+    @patch('product.serializers.price_scrapper_client.get_product_by_id')
+    def test_producer_can_create_product_for_self(self, mock_get_product):
+        mock_get_product.return_value = self.external_product_response()
         self.client.force_authenticate(user=self.producer_user)
 
         response = self.client.post(
@@ -106,10 +147,38 @@ class ProductAPITestCase(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
-        self.assertEqual(response.data['producer'], self.producer.user.id)
+        self.assertEqual(response.data['producer'], self.producer.id)
+        self.assertEqual(response.data['name'], 'Organic Tomato')
 
         product = Product.objects.get(id=response.data['id'])
         self.assertEqual(product.producer, self.producer)
+
+    @patch('product.serializers.price_scrapper_client.get_product_by_id')
+    def test_create_product_uses_external_id_to_store_name(self, mock_get_product):
+        mock_get_product.return_value = self.external_product_response('External Tomato')
+        self.client.force_authenticate(user=self.producer_user)
+
+        response = self.client.post(
+            self.url,
+            self.product_payload(external_id='external-1')
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
+        mock_get_product.assert_called_once_with('external-1')
+        product = Product.objects.get(id=response.data['id'])
+        self.assertEqual(product.name, 'External Tomato')
+        self.assertEqual(response.data['name'], 'External Tomato')
+
+    def test_create_product_rejects_name_payload(self):
+        self.client.force_authenticate(user=self.producer_user)
+
+        response = self.client.post(
+            self.url,
+            self.product_payload(name='Should Not Be Accepted')
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('name', response.data)
 
     def test_retailer_cannot_create_product(self):
         self.client.force_authenticate(user=self.retailer_user)
@@ -158,12 +227,28 @@ class ProductAPITestCase(TestCase):
 
         response = self.client.patch(
             f'{self.url}{self.product.id}/',
-            {'price': '15.00', 'name': 'Premium Lettuce'}
+            {'price': '15.00'}
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
         self.assertEqual(response.data['price'], '15.00')
-        self.assertEqual(response.data['name'], 'Premium Lettuce')
+        self.assertEqual(response.data['name'], 'Green Lettuce')
+
+    @patch('product.serializers.price_scrapper_client.get_product_by_id')
+    def test_update_product_uses_external_id_to_store_name(self, mock_get_product):
+        mock_get_product.return_value = self.external_product_response('External Lettuce')
+        self.client.force_authenticate(user=self.producer_user)
+
+        response = self.client.patch(
+            f'{self.url}{self.product.id}/',
+            {'external_id': 'external-1'}
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+        mock_get_product.assert_called_once_with('external-1')
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.name, 'External Lettuce')
+        self.assertEqual(response.data['name'], 'External Lettuce')
 
     def test_retailer_can_filter_active_products(self):
         self.client.force_authenticate(user=self.retailer_user)
@@ -171,11 +256,11 @@ class ProductAPITestCase(TestCase):
         response = self.client.get(
             self.url,
             {
-                'name': 'red apple',
+                'query': 'red apple',
                 'price_min': '10',
                 'price_max': '25',
                 'category': self.other_category.id,
-                'producer': self.other_producer.user.id,
+                'producer': self.other_producer.id,
                 'ordering': 'price'
             }
         )
@@ -183,6 +268,23 @@ class ProductAPITestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
         self.assertEqual([item['id'] for item in response.data['results']], [self.other_product.id])
+
+    def test_retailer_can_filter_products_by_location_radius(self):
+        self.client.force_authenticate(user=self.retailer_user)
+
+        response = self.client.get(
+            self.url,
+            {
+                'latitude': '-23.550520',
+                'longitude': '-46.633308',
+                'radius_km': '10',
+            }
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['id'], self.product.id)
+        self.assertEqual(response.data['results'][0]['distance_km'], 0.0)
 
     def test_total_quantity_must_be_positive(self):
         self.client.force_authenticate(user=self.producer_user)

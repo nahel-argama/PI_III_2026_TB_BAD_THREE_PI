@@ -107,7 +107,7 @@ class OrderLifecycleWithNestedItemsTestCase(TestCase):
         producer = producer or self.producer
         return self.client.post(
             self.orders_url,
-            {'producer': producer.user.id}
+            {'producer': producer.id}
         )
 
     def order_items_url(self, order_id):
@@ -122,8 +122,8 @@ class OrderLifecycleWithNestedItemsTestCase(TestCase):
         self.assertEqual(order_response.status_code, status.HTTP_201_CREATED, order_response.data)
         order_id = order_response.data['id']
         self.assertEqual(order_response.data['status'], 'PENDING')
-        self.assertEqual(order_response.data['retailer'], self.retailer.user.id)
-        self.assertEqual(order_response.data['producer'], self.producer.user.id)
+        self.assertEqual(order_response.data['retailer'], self.retailer.id)
+        self.assertEqual(order_response.data['producer'], self.producer.id)
         self.assertEqual(order_response.data['items'], [])
 
         item_response = self.client.post(
@@ -196,7 +196,7 @@ class OrderLifecycleWithNestedItemsTestCase(TestCase):
         self.assertEqual(pending_orders.count(), 2)
         self.assertEqual(
             set(pending_orders.values_list('producer', flat=True)),
-            {self.producer.user.id, self.producer2.user.id}
+            {self.producer.id, self.producer2.id}
         )
 
     def test_retailer_cannot_create_duplicate_pending_order_for_same_producer(self):
@@ -580,7 +580,7 @@ class OrderListingTestCase(TestCase):
             self.orders_url,
             {
                 'status': 'PENDING',
-                'producer': self.producer2.user.id
+                'producer': self.producer2.id
             }
         )
 
