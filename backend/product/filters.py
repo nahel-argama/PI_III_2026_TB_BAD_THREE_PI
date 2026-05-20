@@ -1,5 +1,6 @@
 import django_filters
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import BooleanField, F, FloatField, Value
 from django.db.models.expressions import Func
 from django.db.models.functions import Cast
@@ -55,29 +56,23 @@ class ProductFilter(django_filters.FilterSet):
         if search_term:
             queryset = self.apply_search(queryset, search_term)
 
-        latitude = self.get_number_param("latitude")
-        longitude = self.get_number_param("longitude")
-        has_geo = latitude is not None and longitude is not None
-
+        has_geo = self.has_param("radius_km")
         if has_geo:
-            radius_km = min(
-                self.get_number_param("radius_km", default=DEFAULT_RADIUS_KM),
-                MAX_RADIUS_KM,
-            )
+            latitude, longitude = self.get_request_user_coordinates()
+            radius_km = self.get_number_param("radius_km", default=DEFAULT_RADIUS_KM)
+            if radius_km <= 0:
+                raise ValidationError({"radius_km": "Must be greater than zero."})
+            radius_km = min(radius_km, MAX_RADIUS_KM)
             queryset = self.apply_geo_filter(queryset, latitude, longitude, radius_km)
-        elif latitude is not None or longitude is not None:
-            raise ValidationError(
-                {
-                    "latitude": "Latitude and longitude must be provided together.",
-                    "longitude": "Latitude and longitude must be provided together.",
-                }
-            )
 
         return self.apply_default_ordering(queryset, bool(search_term), has_geo)
 
     def get_search_term(self):
         value = self.data.get("query")
         return value.strip() if value else ""
+
+    def has_param(self, name):
+        return name in self.data
 
     def get_number_param(self, name, default=None):
         value = self.data.get(name)
@@ -87,6 +82,25 @@ class ProductFilter(django_filters.FilterSet):
             return float(value)
         except (TypeError, ValueError) as exc:
             raise ValidationError({name: "Must be a valid number."}) from exc
+
+    def get_request_user_coordinates(self):
+        user = getattr(self.request, "user", None)
+        try:
+            address = getattr(user, "address", None)
+        except ObjectDoesNotExist:
+            address = None
+
+        if not address or address.latitude is None or address.longitude is None:
+            raise ValidationError(
+                {
+                    "radius_km": (
+                        "Retailer address must have latitude and longitude "
+                        "to filter products by distance."
+                    )
+                }
+            )
+
+        return float(address.latitude), float(address.longitude)
 
     def apply_search(self, queryset, value):
         vector = (

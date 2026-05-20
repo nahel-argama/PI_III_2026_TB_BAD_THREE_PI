@@ -83,6 +83,18 @@ class ProductAPITestCase(TestCase):
             document_type='CNPJ',
             document_number='12345678901234'
         )
+        Address.objects.create(
+            user=self.retailer_user,
+            street='Store Road',
+            number='30',
+            complement='',
+            neighborhood='Centro',
+            city='Sao Paulo',
+            state='SP',
+            postal_code='01001000',
+            latitude=-23.550520,
+            longitude=-46.633308
+        )
 
         self.product = Product.objects.create(
             category=self.category,
@@ -275,8 +287,6 @@ class ProductAPITestCase(TestCase):
         response = self.client.get(
             self.url,
             {
-                'latitude': '-23.550520',
-                'longitude': '-46.633308',
                 'radius_km': '10',
             }
         )
