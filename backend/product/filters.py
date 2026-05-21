@@ -8,7 +8,6 @@ from rest_framework.exceptions import ValidationError
 
 from .models import Product
 
-DEFAULT_RADIUS_KM = 25
 MAX_RADIUS_KM = 500
 
 
@@ -56,14 +55,11 @@ class ProductFilter(django_filters.FilterSet):
         if search_term:
             queryset = self.apply_search(queryset, search_term)
 
-        has_geo = self.has_param("radius_km")
+        has_geo = self.should_order_by_distance()
         if has_geo:
             latitude, longitude = self.get_request_user_coordinates()
-            radius_km = self.get_number_param("radius_km", default=DEFAULT_RADIUS_KM)
-            if radius_km <= 0:
-                raise ValidationError({"radius_km": "Must be greater than zero."})
-            radius_km = min(radius_km, MAX_RADIUS_KM)
-            queryset = self.apply_geo_filter(queryset, latitude, longitude, radius_km)
+            radius_km = self.get_optional_radius_km()
+            queryset = self.apply_geo_distance(queryset, latitude, longitude, radius_km)
 
         return self.apply_default_ordering(queryset, bool(search_term), has_geo)
 
@@ -71,8 +67,9 @@ class ProductFilter(django_filters.FilterSet):
         value = self.data.get("query")
         return value.strip() if value else ""
 
-    def has_param(self, name):
-        return name in self.data
+    def should_order_by_distance(self):
+        user = getattr(self.request, "user", None)
+        return getattr(user, "user_type", None) == "RETAILER"
 
     def get_number_param(self, name, default=None):
         value = self.data.get(name)
@@ -82,6 +79,15 @@ class ProductFilter(django_filters.FilterSet):
             return float(value)
         except (TypeError, ValueError) as exc:
             raise ValidationError({name: "Must be a valid number."}) from exc
+
+    def get_optional_radius_km(self):
+        if "radius_km" not in self.data:
+            return None
+
+        radius_km = self.get_number_param("radius_km")
+        if radius_km <= 0:
+            raise ValidationError({"radius_km": "Must be greater than zero."})
+        return min(radius_km, MAX_RADIUS_KM)
 
     def get_request_user_coordinates(self):
         user = getattr(self.request, "user", None)
@@ -93,9 +99,9 @@ class ProductFilter(django_filters.FilterSet):
         if not address or address.latitude is None or address.longitude is None:
             raise ValidationError(
                 {
-                    "radius_km": (
+                    "address": (
                         "Retailer address must have latitude and longitude "
-                        "to filter products by distance."
+                        "to order products by distance."
                     )
                 }
             )
@@ -116,7 +122,7 @@ class ProductFilter(django_filters.FilterSet):
             search_score=SearchRank(vector, query),
         ).filter(search_vector=query)
 
-    def apply_geo_filter(self, queryset, latitude, longitude, radius_km):
+    def apply_geo_distance(self, queryset, latitude, longitude, radius_km=None):
         queryset = queryset.filter(
             producer__user__address__latitude__isnull=False,
             producer__user__address__longitude__isnull=False,
@@ -130,13 +136,19 @@ class ProductFilter(django_filters.FilterSet):
             Value(latitude, output_field=FloatField()),
         )
 
+        queryset = queryset.annotate(
+            distance_km=STDistance(product_point, user_point) / Value(1000.0),
+        )
+
+        if radius_km is None:
+            return queryset
+
         return queryset.annotate(
             in_radius=STDWithin(
                 product_point,
                 user_point,
                 Value(radius_km * 1000, output_field=FloatField()),
-            ),
-            distance_km=STDistance(product_point, user_point) / Value(1000.0),
+            )
         ).filter(in_radius=True)
 
     def build_point(self, longitude, latitude):
@@ -144,10 +156,10 @@ class ProductFilter(django_filters.FilterSet):
 
     def apply_default_ordering(self, queryset, has_search, has_geo):
         ordering = []
-        if has_search:
-            ordering.append("-search_score")
         if has_geo:
             ordering.append("distance_km")
+        if has_search:
+            ordering.append("-search_score")
         if ordering:
             ordering.extend(["price", "id"])
             return queryset.order_by(*ordering)

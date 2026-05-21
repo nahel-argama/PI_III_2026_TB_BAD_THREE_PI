@@ -92,8 +92,8 @@ class ProductAPITestCase(TestCase):
             city='Sao Paulo',
             state='SP',
             postal_code='01001000',
-            latitude=-23.550520,
-            longitude=-46.633308
+            latitude=-23.551000,
+            longitude=-46.634000
         )
 
         self.product = Product.objects.create(
@@ -281,20 +281,37 @@ class ProductAPITestCase(TestCase):
         self.assertEqual(response.data['count'], 1)
         self.assertEqual([item['id'] for item in response.data['results']], [self.other_product.id])
 
-    def test_retailer_can_filter_products_by_location_radius(self):
+    def test_retailer_products_are_ordered_by_distance_from_address(self):
         self.client.force_authenticate(user=self.retailer_user)
 
-        response = self.client.get(
-            self.url,
-            {
-                'radius_km': '10',
-            }
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+
+        results_by_id = {
+            item['id']: item
+            for item in response.data['results']
+        }
+        near_distance = results_by_id[self.product.id]['distance_km']
+        far_distance = results_by_id[self.other_product.id]['distance_km']
+
+        self.assertGreater(near_distance, 0.0)
+        self.assertGreater(far_distance, near_distance)
+        self.assertEqual(
+            [item['id'] for item in response.data['results']],
+            [self.product.id, self.other_product.id]
         )
+
+    def test_retailer_can_filter_products_by_optional_radius(self):
+        self.client.force_authenticate(user=self.retailer_user)
+
+        response = self.client.get(self.url, {'radius_km': '10'})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(response.data['results'][0]['id'], self.product.id)
-        self.assertEqual(response.data['results'][0]['distance_km'], 0.0)
+        self.assertGreater(response.data['results'][0]['distance_km'], 0.0)
 
     def test_total_quantity_must_be_positive(self):
         self.client.force_authenticate(user=self.producer_user)
