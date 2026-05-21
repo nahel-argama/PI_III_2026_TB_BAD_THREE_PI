@@ -2,99 +2,59 @@
   <section class="space-y-6 pb-6">
     <OffersHeader
       :search="searchTerm"
-      :item-count="filteredOffers.length"
-      @update-search="searchTerm = $event"
+      @update-search="onSearch"
     />
 
     <OffersGrid
-      :items="filteredOffers"
+      :items="offers"
       empty-title="Nenhuma oferta encontrada"
       empty-description="Tente outro termo de busca."
+    />
+
+    <AppPagination
+      v-model="currentPage"
+      :total-items="totalItems"
+      @change="(page) => fetchOffers(searchTerm, page)"
     />
   </section>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import OffersGrid from './offers/OffersGrid.vue';
 import OffersHeader from './offers/OffersHeader.vue';
+import AppPagination from '@/components/ui/AppPagination.vue';
+import { listProducts } from '@/services/product';
 
 const searchTerm = ref('');
+const offers = ref([]);
+const isLoading = ref(false);
 
-const offers = ref([
-  {
-    id: 1,
-    productName: 'Tomate Italiano',
-    supplierName: 'Sítio Boa Vista',
-    supplierLocation: 'Valinhos - SP',
-    category: 'Hortaliças',
-    unit: 'caixa',
-    stock: '180 kg',
-    delivery: 'Entrega em 24h',
-    statusTone: 'emerald',
-  },
-  {
-    id: 2,
-    productName: 'Maçã Gala',
-    supplierName: 'Cooperativa Serra Fresca',
-    supplierLocation: 'Limeira - SP',
-    category: 'Frutas',
-    unit: 'fardo',
-    stock: '240 kg',
-    delivery: 'Entrega em 48h',
-    statusTone: 'blue',
-  },
-  {
-    id: 3,
-    productName: 'Alface Crespa',
-    supplierName: 'Horta Bela Aurora',
-    supplierLocation: 'Sorocaba - SP',
-    category: 'Folhosas',
-    unit: 'molho',
-    stock: '95 molhos',
-    delivery: 'Entrega hoje',
-    statusTone: 'amber',
-  },
-  {
-    id: 4,
-    productName: 'Banana Prata',
-    supplierName: 'Rancho Vale Verde',
-    supplierLocation: 'Mogi Mirim - SP',
-    category: 'Frutas',
-    unit: 'caixa',
-    stock: '210 kg',
-    delivery: 'Entrega em 72h',
-    statusTone: 'emerald',
-  },
-  {
-    id: 5,
-    productName: 'Cenoura Extra',
-    supplierName: 'Fazenda Horizonte',
-    supplierLocation: 'Itatiba - SP',
-    category: 'Hortaliças',
-    unit: 'saco',
-    stock: '130 kg',
-    delivery: 'Entrega em 24h',
-    statusTone: 'blue',
-  },
-]);
+const currentPage = ref(1);
+const totalItems = ref(0);
 
-const filteredOffers = computed(() => {
-  const query = searchTerm.value.trim().toLowerCase();
+async function fetchOffers(query = '', page = 1) {
+  isLoading.value = true;
+  currentPage.value = page;
+  try {
+    const data = await listProducts({ query, page });
+    offers.value = data.results;
+    totalItems.value = data.count || 0;
+  } catch {
+    offers.value = [];
+    totalItems.value = 0;
+  } finally {
+    isLoading.value = false;
+  }
+}
 
-  return offers.value.filter((offer) => {
-    const matchesSearch = [
-      offer.productName,
-      offer.supplierName,
-      offer.supplierLocation,
-      offer.category,
-      offer.delivery,
-    ]
-      .join(' ')
-      .toLowerCase()
-      .includes(query);
+onMounted(() => fetchOffers());
 
-    return matchesSearch;
-  });
-});
+let searchTimer = null;
+
+function onSearch(value) {
+  searchTerm.value = value;
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => fetchOffers(value.trim()), 400);
+}
 </script>
