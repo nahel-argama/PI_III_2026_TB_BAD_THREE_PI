@@ -35,10 +35,7 @@ defineProps({
     type: String,
     default: '',
   },
-  itemCount: {
-    type: Number,
-    default: 0,
-  },
+
 });
 
 defineEmits(['update-search']);
