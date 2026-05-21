@@ -5,8 +5,11 @@ info:
 
 http:
   method: PATCH
-  url: "{{host}}/api/order-items/:order_item_id/"
+  url: "{{host}}/api/orders/:order_id/items/:order_item_id/"
   params:
+    - name: order_id
+      value: "1"
+      type: path
     - name: order_item_id
       value: "1"
       type: path

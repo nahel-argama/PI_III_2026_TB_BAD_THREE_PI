@@ -5,7 +5,32 @@ info:
 
 http:
   method: GET
-  url: "{{host}}/api/products/"
+  url: "{{host}}/api/products/?query=&price_min=&price_max=&category=&producer=&is_active=&radius_km=&ordering="
+  params:
+    - name: query
+      value: ""
+      type: query
+    - name: price_min
+      value: ""
+      type: query
+    - name: price_max
+      value: ""
+      type: query
+    - name: category
+      value: ""
+      type: query
+    - name: producer
+      value: ""
+      type: query
+    - name: is_active
+      value: ""
+      type: query
+    - name: radius_km
+      value: ""
+      type: query
+    - name: ordering
+      value: ""
+      type: query
   auth: inherit
 
 settings:

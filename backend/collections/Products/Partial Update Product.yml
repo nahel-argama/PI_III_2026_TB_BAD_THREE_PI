@@ -1,10 +1,10 @@
 info:
-  name: Update Product
+  name: Partial Update Product
   type: http
-  seq: 4
+  seq: 5
 
 http:
-  method: PUT
+  method: PATCH
   url: "{{host}}/api/products/:product_id/"
   params:
     - name: product_id
@@ -15,11 +15,7 @@ http:
     type: json
     data: |
       {
-        "category": 1,
         "external_id": "updated-external-product-id",
-        "description": "Premium organic tomato",
-        "total_quantity": 150.0,
-        "reserved_quantity": 20.0,
         "price": 3.0,
         "is_active": true
       }
