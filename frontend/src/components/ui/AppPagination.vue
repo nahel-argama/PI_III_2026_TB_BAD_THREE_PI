@@ -198,6 +198,7 @@ function changePage(page) {
   if (page < 1 || page > totalPages.value || page === props.modelValue) return;
   emit('update:modelValue', page);
   emit('change', page);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>
 
