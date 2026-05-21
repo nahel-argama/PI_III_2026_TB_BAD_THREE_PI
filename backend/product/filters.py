@@ -57,9 +57,25 @@ class ProductFilter(django_filters.FilterSet):
 
         has_geo = self.should_order_by_distance()
         if has_geo:
-            latitude, longitude = self.get_request_user_coordinates()
+            latitude, longitude = self.get_request_user_coordinates(required=False)
             radius_km = self.get_optional_radius_km()
-            queryset = self.apply_geo_distance(queryset, latitude, longitude, radius_km)
+            has_coordinates = latitude is not None and longitude is not None
+
+            if has_coordinates:
+                queryset = self.apply_geo_distance(
+                    queryset, latitude, longitude, radius_km
+                )
+            elif radius_km is not None:
+                raise ValidationError(
+                    {
+                        "radius_km": (
+                            "Retailer address must have latitude and longitude "
+                            "to filter products by distance."
+                        )
+                    }
+                )
+            else:
+                has_geo = False
 
         return self.apply_default_ordering(queryset, bool(search_term), has_geo)
 
@@ -89,7 +105,7 @@ class ProductFilter(django_filters.FilterSet):
             raise ValidationError({"radius_km": "Must be greater than zero."})
         return min(radius_km, MAX_RADIUS_KM)
 
-    def get_request_user_coordinates(self):
+    def get_request_user_coordinates(self, required=True):
         user = getattr(self.request, "user", None)
         try:
             address = getattr(user, "address", None)
@@ -97,6 +113,9 @@ class ProductFilter(django_filters.FilterSet):
             address = None
 
         if not address or address.latitude is None or address.longitude is None:
+            if not required:
+                return None, None
+
             raise ValidationError(
                 {
                     "address": (

@@ -313,6 +313,29 @@ class ProductAPITestCase(TestCase):
         self.assertEqual(response.data['results'][0]['id'], self.product.id)
         self.assertGreater(response.data['results'][0]['distance_km'], 0.0)
 
+    def test_retailer_without_coordinates_can_list_products_without_radius(self):
+        self.client.force_authenticate(user=self.retailer_user)
+        self.retailer_user.address.latitude = None
+        self.retailer_user.address.longitude = None
+        self.retailer_user.address.save()
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+        self.assertIsNone(response.data['results'][0]['distance_km'])
+
+    def test_retailer_without_coordinates_cannot_filter_products_by_radius(self):
+        self.client.force_authenticate(user=self.retailer_user)
+        self.retailer_user.address.latitude = None
+        self.retailer_user.address.longitude = None
+        self.retailer_user.address.save()
+
+        response = self.client.get(self.url, {'radius_km': '10'})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('radius_km', response.data)
+
     def test_total_quantity_must_be_positive(self):
         self.client.force_authenticate(user=self.producer_user)
 

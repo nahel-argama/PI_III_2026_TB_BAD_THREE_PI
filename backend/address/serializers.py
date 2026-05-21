@@ -59,7 +59,9 @@ class AddressSerializer(serializers.ModelSerializer):
         result = nominatim_client.geocode_address(address_data or target_data)
 
         if isinstance(result, GeocodingError):
-            raise serializers.ValidationError({"address": result.message})
+            target_data["latitude"] = None
+            target_data["longitude"] = None
+            return
 
         target_data["latitude"] = result.latitude
         target_data["longitude"] = result.longitude
