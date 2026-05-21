@@ -21,63 +21,7 @@ import OffersHeader from './offers/OffersHeader.vue';
 
 const searchTerm = ref('');
 
-const offers = ref([
-  {
-    id: 1,
-    productName: 'Tomate Italiano',
-    supplierName: 'Sítio Boa Vista',
-    supplierLocation: 'Valinhos - SP',
-    category: 'Hortaliças',
-    unit: 'caixa',
-    stock: '180 kg',
-    delivery: 'Entrega em 24h',
-    statusTone: 'emerald',
-  },
-  {
-    id: 2,
-    productName: 'Maçã Gala',
-    supplierName: 'Cooperativa Serra Fresca',
-    supplierLocation: 'Limeira - SP',
-    category: 'Frutas',
-    unit: 'fardo',
-    stock: '240 kg',
-    delivery: 'Entrega em 48h',
-    statusTone: 'blue',
-  },
-  {
-    id: 3,
-    productName: 'Alface Crespa',
-    supplierName: 'Horta Bela Aurora',
-    supplierLocation: 'Sorocaba - SP',
-    category: 'Folhosas',
-    unit: 'molho',
-    stock: '95 molhos',
-    delivery: 'Entrega hoje',
-    statusTone: 'amber',
-  },
-  {
-    id: 4,
-    productName: 'Banana Prata',
-    supplierName: 'Rancho Vale Verde',
-    supplierLocation: 'Mogi Mirim - SP',
-    category: 'Frutas',
-    unit: 'caixa',
-    stock: '210 kg',
-    delivery: 'Entrega em 72h',
-    statusTone: 'emerald',
-  },
-  {
-    id: 5,
-    productName: 'Cenoura Extra',
-    supplierName: 'Fazenda Horizonte',
-    supplierLocation: 'Itatiba - SP',
-    category: 'Hortaliças',
-    unit: 'saco',
-    stock: '130 kg',
-    delivery: 'Entrega em 24h',
-    statusTone: 'blue',
-  },
-]);
+const offers = ref([]);
 
 const filteredOffers = computed(() => {
   const query = searchTerm.value.trim().toLowerCase();
