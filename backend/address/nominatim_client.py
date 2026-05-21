@@ -22,13 +22,7 @@ class GeocodingError:
 
 
 def build_address_query(address_data: dict[str, Any]) -> str:
-    street = address_data.get("street")
-    number = address_data.get("number")
-    street_line = " ".join(str(value).strip() for value in [street, number] if value)
-
     parts = [
-        street_line,
-        address_data.get("neighborhood"),
         address_data.get("city"),
         address_data.get("state"),
         "Brasil",

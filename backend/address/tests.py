@@ -13,7 +13,7 @@ User = get_user_model()
 
 
 class NominatimClientTestCase(TestCase):
-    def test_build_address_query_uses_address_parts_and_brazil(self):
+    def test_build_address_query_uses_city_state_and_brazil(self):
         query = build_address_query(
             {
                 "street": "Rua 1",
@@ -24,7 +24,7 @@ class NominatimClientTestCase(TestCase):
             }
         )
 
-        self.assertEqual(query, "Rua 1 10 Centro Rio Claro SP Brasil")
+        self.assertEqual(query, "Rio Claro SP Brasil")
 
     @patch("address.nominatim_client.requests.get")
     def test_geocode_address_returns_error_when_nominatim_returns_empty_list(self, mock_get):

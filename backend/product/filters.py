@@ -1,7 +1,7 @@
 import django_filters
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import BooleanField, F, FloatField, Value
+from django.db.models import Case, F, FloatField, Q, Value, When
 from django.db.models.expressions import Func
 from django.db.models.functions import Cast
 from rest_framework.exceptions import ValidationError
@@ -29,11 +29,6 @@ class STSetSRID(Func):
 class STDistance(Func):
     function = "ST_Distance"
     output_field = FloatField()
-
-
-class STDWithin(Func):
-    function = "ST_DWithin"
-    output_field = BooleanField()
 
 
 class ProductFilter(django_filters.FilterSet):
@@ -64,15 +59,6 @@ class ProductFilter(django_filters.FilterSet):
             if has_coordinates:
                 queryset = self.apply_geo_distance(
                     queryset, latitude, longitude, radius_km
-                )
-            elif radius_km is not None:
-                raise ValidationError(
-                    {
-                        "radius_km": (
-                            "Retailer address must have latitude and longitude "
-                            "to filter products by distance."
-                        )
-                    }
                 )
             else:
                 has_geo = False
@@ -142,10 +128,6 @@ class ProductFilter(django_filters.FilterSet):
         ).filter(search_vector=query)
 
     def apply_geo_distance(self, queryset, latitude, longitude, radius_km=None):
-        queryset = queryset.filter(
-            producer__user__address__latitude__isnull=False,
-            producer__user__address__longitude__isnull=False,
-        )
         product_point = self.build_point(
             Cast(F("producer__user__address__longitude"), FloatField()),
             Cast(F("producer__user__address__latitude"), FloatField()),
@@ -155,20 +137,26 @@ class ProductFilter(django_filters.FilterSet):
             Value(latitude, output_field=FloatField()),
         )
 
+        distance_expression = STDistance(product_point, user_point) / Value(1000.0)
+
         queryset = queryset.annotate(
-            distance_km=STDistance(product_point, user_point) / Value(1000.0),
+            distance_km=Case(
+                When(
+                    producer__user__address__latitude__isnull=False,
+                    producer__user__address__longitude__isnull=False,
+                    then=distance_expression,
+                ),
+                default=Value(None),
+                output_field=FloatField(),
+            ),
         )
 
         if radius_km is None:
             return queryset
 
-        return queryset.annotate(
-            in_radius=STDWithin(
-                product_point,
-                user_point,
-                Value(radius_km * 1000, output_field=FloatField()),
-            )
-        ).filter(in_radius=True)
+        return queryset.filter(
+            Q(distance_km__lte=radius_km) | Q(distance_km__isnull=True)
+        )
 
     def build_point(self, longitude, latitude):
         return Geography(STSetSRID(STMakePoint(longitude, latitude), Value(4326)))
@@ -176,7 +164,7 @@ class ProductFilter(django_filters.FilterSet):
     def apply_default_ordering(self, queryset, has_search, has_geo):
         ordering = []
         if has_geo:
-            ordering.append("distance_km")
+            ordering.append(F("distance_km").asc(nulls_last=True))
         if has_search:
             ordering.append("-search_score")
         if ordering:
