@@ -93,7 +93,6 @@ function getStatusView(status) {
     return {
       label: 'Confirmada',
       tone: 'emerald',
-      note: 'Pedido confirmado com sucesso.',
     };
   }
 
@@ -101,7 +100,6 @@ function getStatusView(status) {
     return {
       label: 'Entregue',
       tone: 'blue',
-      note: 'Pedido entregue ao varejista.',
     };
   }
 
@@ -109,14 +107,12 @@ function getStatusView(status) {
     return {
       label: 'Cancelada',
       tone: 'red',
-      note: 'Pedido cancelado.',
     };
   }
 
   return {
     label: status || 'Desconhecido',
     tone: 'amber',
-    note: 'Status em atualização.',
   };
 }
 
@@ -155,7 +151,6 @@ function buildHistoryItem(order) {
 
   return {
     id: order.id,
-    contractCode: `CP-${String(order.id).padStart(6, '0')}`,
     contractTitle: `Pedido #${order.id}`,
     partyName: producerName,
     partyDocument:
@@ -167,8 +162,6 @@ function buildHistoryItem(order) {
     partyEmail: producerData.email || 'Contato não disponível',
     date: formatDate(createdAt),
     status: statusView.label,
-    note: statusView.note,
-    validity: '-',
     statusTone: statusView.tone,
     payment: {
       method: 'Método não informado',
@@ -211,13 +204,11 @@ const filteredPurchases = computed(() => {
 
   return purchases.value.filter((purchase) => {
     return [
-      purchase.contractCode,
       purchase.contractTitle,
       purchase.partyName,
       purchase.partyContact,
       purchase.status,
       purchase.date,
-      purchase.note,
       purchase.payment.method,
     ]
       .join(' ')
