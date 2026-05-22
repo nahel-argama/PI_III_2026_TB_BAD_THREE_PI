@@ -12,7 +12,16 @@
         :key="item.id"
         class="flex gap-4 border-b border-slate-200 pb-6 last:border-0"
       >
-        <div class="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-xs font-bold text-slate-500">
+        <img
+          v-if="item.imageUrl"
+          :src="item.imageUrl"
+          :alt="item.name"
+          class="h-20 w-20 flex-shrink-0 rounded-lg border border-slate-200 object-cover"
+        />
+        <div
+          v-else
+          class="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-xs font-bold text-slate-500"
+        >
           #{{ item.productId }}
         </div>
         <div class="flex-1">

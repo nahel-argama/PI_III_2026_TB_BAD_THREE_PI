@@ -89,6 +89,7 @@ import CheckoutValuesSummary from '@/components/checkout/CheckoutValuesSummary.v
 import CheckoutFooter from '@/components/checkout/CheckoutFooter.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
 import { getOrder } from '@/services/ordersService';
+import { getProductById } from '@/services/product';
 import { useCartStore } from '@/stores/cart';
 import { useToast } from '@/composables/useToast';
 
@@ -104,6 +105,7 @@ const pageError = ref('');
 const selectedPaymentId = ref(1);
 const isErrorDialogOpen = ref(false);
 const confirmErrorMessage = ref('');
+const productDetailsMap = ref({});
 
 const orderId = computed(() => {
   const rawValue = route.query.order_id;
@@ -117,14 +119,18 @@ const orderId = computed(() => {
 const checkoutItems = computed(() => {
   const items = Array.isArray(order.value?.items) ? order.value.items : [];
   return items.map((item) => {
+    const productId = Number(item?.product);
+    const productDetails = productDetailsMap.value[productId] || null;
     const unitPrice = Number(item?.unit_price || 0);
+
     return {
       id: item.id,
-      name: `Produto #${item.product}`,
+      name: productDetails?.name || `Produto #${item.product}`,
       productId: item.product,
       quantity: Number(item.quantity || 0),
       pricePerKg: unitPrice,
       lineTotal: Number(item.quantity || 0) * unitPrice,
+      imageUrl: productDetails?.images?.[0]?.image || null,
     };
   });
 });
@@ -173,16 +179,42 @@ async function loadOrder() {
   isLoading.value = true;
   pageError.value = '';
   order.value = null;
+  productDetailsMap.value = {};
 
   try {
     const fetchedOrder = await getOrder(orderId.value);
     order.value = fetchedOrder;
     cartStore.setPendingOrder(fetchedOrder);
+    await loadProductDetails(fetchedOrder);
   } catch (error) {
     pageError.value = error?.message || 'Não foi possível carregar o pedido.';
   } finally {
     isLoading.value = false;
   }
+}
+
+async function loadProductDetails(orderData) {
+  const items = Array.isArray(orderData?.items) ? orderData.items : [];
+  const uniqueProductIds = [...new Set(items.map((item) => Number(item?.product)).filter(Boolean))];
+
+  if (!uniqueProductIds.length) {
+    productDetailsMap.value = {};
+    return;
+  }
+
+  const results = await Promise.allSettled(uniqueProductIds.map((productId) => getProductById(productId)));
+  const nextMap = {};
+
+  results.forEach((result, index) => {
+    if (result.status !== 'fulfilled') {
+      return;
+    }
+
+    const productId = uniqueProductIds[index];
+    nextMap[productId] = result.value;
+  });
+
+  productDetailsMap.value = nextMap;
 }
 
 async function handleConfirmOrder() {
