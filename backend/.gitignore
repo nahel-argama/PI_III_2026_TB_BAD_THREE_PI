@@ -6,3 +6,4 @@ venv
 
 .env
 postgres_data
+compose.yml
