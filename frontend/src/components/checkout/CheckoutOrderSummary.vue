@@ -2,35 +2,29 @@
   <div class="rounded-2xl border border-slate-300 bg-white p-8">
     <h2 class="mb-6 text-xl font-extrabold text-slate-900">Resumo do Pedido</h2>
 
-    <div class="space-y-6">
+    <div v-if="!items.length" class="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+      Este pedido não possui itens.
+    </div>
+
+    <div v-else class="space-y-6">
       <div
         v-for="item in items"
         :key="item.id"
         class="flex gap-4 border-b border-slate-200 pb-6 last:border-0"
       >
-        <img
-          :src="item.image"
-          :alt="item.name"
-          class="h-20 w-20 flex-shrink-0 rounded-lg object-cover"
-        />
+        <div class="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-xs font-bold text-slate-500">
+          #{{ item.productId }}
+        </div>
         <div class="flex-1">
           <h3 class="font-bold text-slate-900">{{ item.name }}</h3>
-          <p class="text-sm text-slate-600">Produtor: {{ item.producer }}</p>
 
           <div class="mt-3 space-y-1 text-xs text-slate-600">
             <div>
-              Quantidade: <span class="font-semibold text-slate-900">{{ item.quantity }} kg</span>
+              Quantidade: <span class="font-semibold text-slate-900">{{ item.quantity }}</span>
             </div>
             <div>
-              Preço/kg:
+              Preço unitário:
               <span class="font-semibold text-slate-900">R$ {{ item.pricePerKg.toFixed(2) }}</span>
-            </div>
-            <div>
-              Distância: <span class="font-semibold text-slate-900">{{ item.distance }} km</span>
-            </div>
-            <div v-if="item.inStock" class="flex items-center gap-2 text-green-700">
-              <div class="h-2 w-2 rounded-full bg-green-600"></div>
-              <span class="font-semibold">Disponibilidade: Pronta Entrega</span>
             </div>
           </div>
         </div>
