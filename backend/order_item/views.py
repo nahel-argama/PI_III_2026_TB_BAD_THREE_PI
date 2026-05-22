@@ -33,7 +33,13 @@ class OrderItemViewSet(
 
     def get_queryset(self):
         user = self.request.user
-        queryset = OrderItem.objects.all().order_by('id')
+        queryset = OrderItem.objects.select_related(
+            'product',
+            'product__category',
+            'product__producer',
+            'product__producer__user',
+            'order',
+        ).order_by('id')
 
         order_id = self.kwargs.get('order_pk')
         if order_id:

@@ -3,12 +3,14 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Prefetch
 
 from .serializers import OrderSerializer
 from users.permissions import IsRetailer
 from .filters import OrderFilter
 from .models import Order
 from .services import confirm_order_with_stock
+from order_item.models import OrderItem
 
 
 class OrderViewSet(
@@ -21,6 +23,15 @@ class OrderViewSet(
     serializer_class = OrderSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = OrderFilter
+    order_items_prefetch = Prefetch(
+        'items',
+        queryset=OrderItem.objects.select_related(
+            'product',
+            'product__category',
+            'product__producer',
+            'product__producer__user',
+        ).order_by('id'),
+    )
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'confirm', 'cancel']:
@@ -33,12 +44,30 @@ class OrderViewSet(
         if user.user_type == 'RETAILER':
             return Order.objects.filter(
                 retailer=user.retailer
-            ).prefetch_related('items').order_by('id')
+            ).select_related(
+                'producer',
+                'producer__user',
+                'producer__user__address',
+                'retailer',
+                'retailer__user',
+                'retailer__user__address',
+            ).prefetch_related(
+                self.order_items_prefetch
+            ).order_by('id')
 
         if user.user_type == 'PRODUCER':
             return Order.objects.filter(
                 producer=user.producer
-            ).prefetch_related('items').order_by('id')
+            ).select_related(
+                'producer',
+                'producer__user',
+                'producer__user__address',
+                'retailer',
+                'retailer__user',
+                'retailer__user__address',
+            ).prefetch_related(
+                self.order_items_prefetch
+            ).order_by('id')
 
         return Order.objects.none()
 

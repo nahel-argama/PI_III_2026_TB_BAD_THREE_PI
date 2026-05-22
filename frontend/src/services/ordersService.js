@@ -64,6 +64,15 @@ export async function listPendingOrders(page = 1) {
   }
 }
 
+export async function listOrders(params = {}) {
+  try {
+    const response = await api.get('/orders/', { params });
+    return response.data;
+  } catch (error) {
+    throw buildOrdersServiceError(error, 'Unable to list orders.');
+  }
+}
+
 export async function createOrder(producerId) {
   try {
     const response = await api.post('/orders/', { producer: producerId });

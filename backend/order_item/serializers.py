@@ -1,11 +1,23 @@
 from .models import OrderItem
 from rest_framework import serializers
 from order.services import validate_item_stock
+from product.models import Product
+
+
+class ProductSummarySerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    producer_trade_name = serializers.CharField(source='producer.trade_name', read_only=True)
+
+    class Meta:
+        model = Product
+        fields = ['id', 'name', 'category', 'category_name', 'producer', 'producer_trade_name']
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    product_data = ProductSummarySerializer(source='product', read_only=True)
+
     class Meta:
         model = OrderItem
-        fields = ['id', 'order', 'product', 'quantity', 'unit_price']
+        fields = ['id', 'order', 'product', 'product_data', 'quantity', 'unit_price']
         read_only_fields = ['id', 'order', 'unit_price']
 
     def get_extra_kwargs(self):
