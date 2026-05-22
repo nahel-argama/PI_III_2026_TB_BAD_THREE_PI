@@ -216,6 +216,22 @@ class OrderItemNestedRouteTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(OrderItem.objects.filter(id=self.item.id).exists())
+        self.assertFalse(Order.objects.filter(id=self.order.id).exists())
+
+    def test_delete_item_keeps_order_when_other_items_exist(self):
+        another_item = OrderItem.objects.create(
+            order=self.order,
+            product=self.second_product,
+            quantity=1,
+            unit_price='20.00'
+        )
+
+        response = self.client.delete(self.order_item_detail_url())
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(OrderItem.objects.filter(id=self.item.id).exists())
+        self.assertTrue(Order.objects.filter(id=self.order.id).exists())
+        self.assertTrue(OrderItem.objects.filter(id=another_item.id).exists())
 
     def test_item_from_another_order_is_not_available_in_nested_detail(self):
         response = self.client.get(self.order_item_detail_url(self.other_order_item))

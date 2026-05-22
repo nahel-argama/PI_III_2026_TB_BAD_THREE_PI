@@ -111,7 +111,14 @@ class OrderItemViewSet(
 
         serializer.save()
 
+    @transaction.atomic
     def perform_destroy(self, instance):
-        if instance.order.status != 'PENDING':
+        order = Order.objects.select_for_update().get(pk=instance.order_id)
+
+        if order.status != 'PENDING':
             raise ValidationError("Cannot delete item from non-pending order")
+
         instance.delete()
+
+        if not OrderItem.objects.filter(order_id=order.id).exists():
+            order.delete()
