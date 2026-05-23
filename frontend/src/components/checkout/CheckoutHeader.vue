@@ -1,22 +1,23 @@
 <template>
   <nav class="sticky top-0 z-50 border-b border-slate-100 bg-white/80 backdrop-blur-md">
     <div class="container mx-auto flex h-20 items-center justify-between px-6">
-      <div class="flex items-center gap-2">
-        <div
-          class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-600 text-xl font-bold text-white"
-        >
-          π
-        </div>
-        <span class="text-xl font-extrabold tracking-tight text-slate-900">
-          Culti<span class="text-2xl text-green-600">va</span>
-        </span>
-      </div>
+      <button 
+        type="button" 
+        @click="$emit('cancel')" 
+        class="flex w-24 items-center gap-2 text-slate-500 transition hover:text-slate-900"
+      >
+        <ArrowLeftIcon class="h-5 w-5" />
+        <span class="text-sm font-bold">Voltar</span>
+      </button>
       <h1 class="text-lg font-black text-slate-900">Finalizar Compra</h1>
-      <div class="w-20"></div>
+      <div class="w-24"></div>
     </div>
   </nav>
 </template>
 
-<script setup></script>
+<script setup>
+import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
+defineEmits(['cancel']);
+</script>
 
 <style scoped></style>

@@ -13,11 +13,14 @@ from .services import confirm_order_with_stock
 from order_item.models import OrderItem
 
 
+from rest_framework.exceptions import ValidationError
+
 class OrderViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
     viewsets.GenericViewSet
 ):
     serializer_class = OrderSerializer
@@ -34,9 +37,14 @@ class OrderViewSet(
     )
 
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'confirm', 'cancel']:
+        if self.action in ['create', 'update', 'partial_update', 'confirm', 'cancel', 'destroy']:
             return [IsAuthenticated(), IsRetailer()]
         return [IsAuthenticated()]
+
+    def perform_destroy(self, instance):
+        if instance.status != 'PENDING':
+            raise ValidationError("Cannot delete non-pending order")
+        instance.delete()
 
     def get_queryset(self):
         user = self.request.user

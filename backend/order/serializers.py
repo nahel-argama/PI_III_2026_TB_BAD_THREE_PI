@@ -84,11 +84,13 @@ class OrderSerializer(serializers.ModelSerializer):
             'producer',
             'producer_data',
             'status',
+            'subtotal_value',
+            'fee_value',
             'total_value',
             'items',
             'created_at',
         ]
-        read_only_fields = ['id', 'retailer', 'total_value', 'created_at', 'items']
+        read_only_fields = ['id', 'retailer', 'subtotal_value', 'fee_value', 'total_value', 'created_at', 'items']
 
     def validate(self, data):
         if not self.instance:

@@ -1,6 +1,6 @@
 <template>
   <div class="checkout-container min-h-screen bg-white">
-    <CheckoutHeader />
+    <CheckoutHeader @cancel="isCancelDialogOpen = true" />
 
     <div class="bg-white py-12">
       <div class="container mx-auto px-6">
@@ -19,7 +19,10 @@
           </button>
         </div>
 
-        <div v-else-if="isLoading" class="rounded-2xl border border-slate-200 bg-white p-8 text-center">
+        <div
+          v-else-if="isLoading"
+          class="rounded-2xl border border-slate-200 bg-white p-8 text-center"
+        >
           <p class="text-sm font-semibold text-slate-700">Carregando pedido...</p>
         </div>
 
@@ -33,7 +36,10 @@
             </div>
 
             <CheckoutOrderSummary :items="checkoutItems" />
-            <CheckoutProducersInfo :producer="checkoutProducer" :order-status="order?.status || null" />
+            <CheckoutProducersInfo
+              :producer="checkoutProducer"
+              :order-status="order?.status || null"
+            />
             <CheckoutDelivery />
           </div>
 
@@ -66,6 +72,17 @@
     </div>
 
     <AppDialog
+      v-model="isCancelDialogOpen"
+      variant="danger"
+      title="Descartar pedido?"
+      message="Ao voltar, este pedido será descartado e os itens serão removidos do seu carrinho. Deseja continuar?"
+      confirm-label="Sim, descartar pedido"
+      cancel-label="Não, continuar compra"
+      :show-cancel="true"
+      @confirm="executeCancelOrder"
+    />
+
+    <AppDialog
       v-model="isErrorDialogOpen"
       variant="warning"
       title="Não foi possível confirmar o pedido"
@@ -88,7 +105,7 @@ import CheckoutDelivery from '@/components/checkout/CheckoutDelivery.vue';
 import CheckoutValuesSummary from '@/components/checkout/CheckoutValuesSummary.vue';
 import CheckoutFooter from '@/components/checkout/CheckoutFooter.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
-import { getOrder } from '@/services/ordersService';
+import { getOrder, deleteOrder as deleteOrderApi } from '@/services/ordersService';
 import { getProductById } from '@/services/product';
 import { useCartStore } from '@/stores/cart';
 import { useToast } from '@/composables/useToast';
@@ -103,6 +120,7 @@ const isLoading = ref(false);
 const isConfirming = ref(false);
 const pageError = ref('');
 const selectedPaymentId = ref(1);
+const isCancelDialogOpen = ref(false);
 const isErrorDialogOpen = ref(false);
 const confirmErrorMessage = ref('');
 const productDetailsMap = ref({});
@@ -148,10 +166,16 @@ const isPending = computed(() => order.value?.status === 'PENDING');
 const isReadOnly = computed(() => !isPending.value || !hasItems.value);
 
 const subtotal = computed(() => {
+  const apiSub = Number(order.value?.subtotal_value || 0);
+  if (apiSub > 0) return apiSub;
   return checkoutItems.value.reduce((sum, item) => sum + Number(item.lineTotal || 0), 0);
 });
 
-const platformFee = computed(() => 0);
+const platformFee = computed(() => {
+  const apiFee = Number(order.value?.fee_value || 0);
+  if (apiFee > 0) return apiFee;
+  return subtotal.value * 0.05;
+});
 
 const total = computed(() => {
   const apiTotal = Number(order.value?.total_value || 0);
@@ -202,7 +226,9 @@ async function loadProductDetails(orderData) {
     return;
   }
 
-  const results = await Promise.allSettled(uniqueProductIds.map((productId) => getProductById(productId)));
+  const results = await Promise.allSettled(
+    uniqueProductIds.map((productId) => getProductById(productId)),
+  );
   const nextMap = {};
 
   results.forEach((result, index) => {
@@ -235,13 +261,31 @@ async function handleConfirmOrder() {
     });
   } catch (error) {
     confirmErrorMessage.value =
-      error?.message ||
-      'O estoque foi alterado. Revise as quantidades antes de tentar novamente.';
+      error?.message || 'O estoque foi alterado. Revise as quantidades antes de tentar novamente.';
     isErrorDialogOpen.value = true;
 
     await loadOrder();
   } finally {
     isConfirming.value = false;
+  }
+}
+
+async function executeCancelOrder() {
+  if (!orderId.value) return;
+  isCancelDialogOpen.value = false;
+  isLoading.value = true;
+
+  try {
+    await deleteOrderApi(orderId.value);
+    const producerId = checkoutProducer.value.id;
+    if (producerId) {
+      cartStore.removePendingOrderByProducer(producerId);
+    }
+    toast.info('Pedido descartado e removido do carrinho.', 'Compra descartada');
+    router.push('/dashboard');
+  } catch (error) {
+    toast.error(error?.message || 'Não foi possível descartar o pedido.', 'Erro ao descartar');
+    isLoading.value = false;
   }
 }
 

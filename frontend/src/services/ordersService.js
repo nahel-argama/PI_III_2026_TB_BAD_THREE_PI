@@ -140,3 +140,12 @@ export async function removeItemFromOrder(orderId, itemId) {
     throw buildOrdersServiceError(error, 'Unable to remove item from order.');
   }
 }
+
+export async function deleteOrder(orderId) {
+  try {
+    const response = await api.delete(`/orders/${orderId}/`);
+    return response.data ?? null;
+  } catch (error) {
+    throw buildOrdersServiceError(error, 'Unable to delete order.');
+  }
+}

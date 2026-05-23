@@ -102,8 +102,18 @@
                 </article>
               </div>
 
-              <div class="mt-4 border-t border-slate-100 pt-4">
-                <div class="flex items-center justify-between">
+              <div class="mt-4 space-y-2 border-t border-slate-100 pt-4">
+                <div class="flex items-center justify-between text-sm text-slate-500">
+                  <p>Subtotal (Produtos)</p>
+                  <p>R$ {{ formatMoney(getOrderSubtotal(order)) }}</p>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm text-slate-500">
+                  <p>Taxa da Plataforma (5%)</p>
+                  <p>R$ {{ formatMoney(getOrderFee(order)) }}</p>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-slate-50">
                   <p class="text-sm font-semibold text-slate-600">Total do pedido</p>
                   <p class="text-lg font-black text-emerald-700">
                     R$ {{ formatMoney(getOrderTotal(order)) }}
@@ -177,13 +187,28 @@ function getLineTotal(item) {
   return toNumber(item?.quantity) * toNumber(item?.unit_price);
 }
 
+function getOrderSubtotal(order) {
+  const apiSubtotal = toNumber(order?.subtotal_value);
+  if (apiSubtotal > 0) {
+    return apiSubtotal;
+  }
+  return getOrderItems(order).reduce((sum, item) => sum + getLineTotal(item), 0);
+}
+
+function getOrderFee(order) {
+  const apiFee = toNumber(order?.fee_value);
+  if (apiFee > 0) {
+    return apiFee;
+  }
+  return getOrderSubtotal(order) * 0.05;
+}
+
 function getOrderTotal(order) {
   const apiTotal = toNumber(order?.total_value);
   if (apiTotal > 0) {
     return apiTotal;
   }
-
-  return getOrderItems(order).reduce((sum, item) => sum + getLineTotal(item), 0);
+  return getOrderSubtotal(order) + getOrderFee(order);
 }
 
 function getLoadingKey(orderId, itemId) {

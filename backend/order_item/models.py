@@ -4,10 +4,16 @@ from order.models import Order
 from product.models import Product
 
 def update_total(order):
-    total = order.items.aggregate(
+    from decimal import Decimal
+    subtotal = order.items.aggregate(
         total=Sum(F('quantity') * F('unit_price'))
-    )['total'] or 0
+    )['total'] or Decimal('0.00')
 
+    fee = subtotal * Decimal('0.05')
+    total = subtotal + fee
+
+    order.subtotal_value = subtotal
+    order.fee_value = fee
     order.total_value = total
     order.save()
 
