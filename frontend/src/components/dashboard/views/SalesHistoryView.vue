@@ -33,6 +33,7 @@ import HistoryToolbar from './history/HistoryToolbar.vue';
 import AppPagination from '@/components/ui/AppPagination.vue';
 import { listOrders } from '@/services/ordersService';
 import { useToast } from '@/composables/useToast';
+import { formatDocument, formatPostalCode } from '@/utils/formatters';
 
 const searchTerm = ref('');
 const sales = ref([]);
@@ -65,28 +66,12 @@ function formatAddress(address) {
 
   const mainLine = [address.street, address.number].filter(Boolean).join(', ');
   const extraLine = [address.neighborhood, address.city, address.state].filter(Boolean).join(' • ');
-  const postalCode = address.postal_code ? `CEP ${address.postal_code}` : '';
+  const postalCode = address.postal_code ? `CEP ${formatPostalCode(address.postal_code)}` : '';
 
   return [mainLine, extraLine, postalCode].filter(Boolean).join(' • ') || 'Endereço não disponível';
 }
 
-function formatDocument(documentType, documentNumber) {
-  const digits = String(documentNumber || '').replace(/\D/g, '');
 
-  if (!digits) {
-    return 'Documento não disponível';
-  }
-
-  if (documentType === 'CPF' && digits.length === 11) {
-    return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-  }
-
-  if (documentType === 'CNPJ' && digits.length === 14) {
-    return digits.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-  }
-
-  return documentNumber;
-}
 
 function getStatusView(status) {
   if (status === 'CONFIRMED') {
@@ -154,9 +139,9 @@ function buildHistoryItem(order) {
     contractTitle: `Pedido #${order.id}`,
     partyName: retailerName,
     partyDocument:
-      retailerData.document_type && retailerDocument !== 'Documento não disponível'
+      retailerData.document_type && retailerDocument
         ? `${retailerData.document_type} ${retailerDocument}`
-        : retailerDocument,
+        : retailerDocument || 'Documento não disponível',
     partyLocation: formatAddress(retailerData.address),
     partyContact: retailerData.name || retailerName,
     partyEmail: retailerData.email || 'Contato não disponível',

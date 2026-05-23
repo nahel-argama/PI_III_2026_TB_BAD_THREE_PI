@@ -10,7 +10,7 @@
       {{ buttonLabel }}
       <span class="text-xl">→</span>
     </button>
-    <p class="text-center text-xs text-slate-600">{{ helperMessage }}</p>
+    <p v-if="helperMessage" class="text-center text-xs text-slate-600">{{ helperMessage }}</p>
   </div>
 </template>
 
@@ -47,7 +47,7 @@ const buttonLabel = computed(() => {
 const helperMessage = computed(() => {
   if (!props.hasItems) return 'Adicione itens ao pedido para confirmar.';
   if (props.readonly) return 'Pedido já confirmado/cancelado. Confirmação bloqueada.';
-  return '🔒 Transação criptografada de ponta a ponta';
+  return '';
 });
 
 const buttonClass = computed(() => {
