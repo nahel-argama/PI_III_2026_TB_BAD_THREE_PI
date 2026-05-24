@@ -1,12 +1,12 @@
-from rest_framework import exceptions, status
+from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAdminUser
-from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.http import StreamingHttpResponse
 from django.db import transaction
 
-from product import price_scrapper_client
-from product.price_scrapper_client import ExternalServiceError
+from product import price_scrapper_client as product_client
 from default_product_image.models import DefaultProductImage
 from default_product_image.serializers import (
     DefaultProductImageSerializer,
@@ -14,6 +14,9 @@ from default_product_image.serializers import (
 )
 from image.models import Image
 from default_product_image.filters import DefaultProductImageFilter
+from default_product_image import image_generation
+import config.settings as settings
+from default_product_image.throttles import DefaultProductImageGenerationThrottle
 
 
 class DefaultProductImageListView(APIView):
@@ -51,8 +54,10 @@ class DefaultProductImageUploadView(APIView):
         serializer.is_valid(raise_exception=True)
 
         upload = serializer.validated_data["image"]
-        external_response = self.get_product_by_external_key(product_external_key)
-        product_name = external_response["name"]
+        external_response = product_client.get_product_by_id_validated(
+            product_external_key
+        )
+        product_name = external_response.data["name"]
 
         default_image = self.store_new_image(product_name, product_external_key, upload)
 
@@ -66,7 +71,7 @@ class DefaultProductImageUploadView(APIView):
         with transaction.atomic():
             default_image, was_created = DefaultProductImage.objects.get_or_create(
                 product_external_key=product_external_key,
-                defaults={"product_name": product_name}
+                defaults={"product_name": product_name},
             )
 
             image = Image.objects.create(
@@ -88,18 +93,35 @@ class DefaultProductImageUploadView(APIView):
 
         return default_image
 
-    def get_product_by_external_key(self, product_external_key):
-        response = price_scrapper_client.get_product_by_id(product_external_key)
 
-        if isinstance(response, ExternalServiceError):
-            raise exceptions.APIException(
-                detail=response.message, code=status.HTTP_502_BAD_GATEWAY
+class DefaultProductImageGenerateView(APIView):
+    permission_classes = [IsAdminUser]
+    throttle_classes = [DefaultProductImageGenerationThrottle]
+
+    def get(self, request, product_external_key):
+        if not settings.ENABLE_DEFAULT_IMAGE_GENERATION:
+            return Response(
+                {"detail": "External product image generation is disabled."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
 
-        if response.status != 200:
-            raise exceptions.APIException(
-                detail="Failed to retrieve product information from external service.",
-                code=status.HTTP_502_BAD_GATEWAY,
+        product = product_client.get_product_by_id_validated(product_external_key)
+
+        image = image_generation.generate_product_image(product.data["name"])
+
+        if isinstance(image, image_generation.ImageGenerationFailure):
+            return Response(
+                {"detail": "Failed to generate image."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        return response.data
+        file_name = f"{product_external_key}.{image.format.lower()}"
+
+        return StreamingHttpResponse(
+            streaming_content=[image.image_bytes],
+            content_type=image.mime_type,
+            headers={
+                "Content-Disposition": f'attachment; filename="{file_name}"',
+                "Content-Length": str(image.size),
+            },
+        )

@@ -6,8 +6,7 @@ from rest_framework import exceptions
 from django.db.models import Count
 from django.db import transaction
 
-from product import price_scrapper_client
-from product.price_scrapper_client import ExternalServiceError
+from product import price_scrapper_client as product_client
 from retailer.models import Retailer
 from users.permissions import IsProducer, IsRetailer
 from wishlist_item.filters import WishlistItemFilter
@@ -74,9 +73,11 @@ class WishlistItemListCreateView(BaseWishlistItemView):
         serializer.is_valid(raise_exception=True)
 
         product_external_key = serializer.validated_data["product_external_key"]
-        external_response = self.get_product_by_external_key(product_external_key)
+        external_response = product_client.get_product_by_id_validated(
+            product_external_key
+        )
 
-        product_name = external_response["name"]
+        product_name = external_response.data["name"]
 
         with transaction.atomic():
             DefaultProductImage.objects.get_or_create(
@@ -91,22 +92,6 @@ class WishlistItemListCreateView(BaseWishlistItemView):
         )
 
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
-
-    def get_product_by_external_key(self, product_external_key):
-        response = price_scrapper_client.get_product_by_id(product_external_key)
-
-        if isinstance(response, ExternalServiceError):
-            raise exceptions.APIException(
-                detail=response.message, code=status.HTTP_502_BAD_GATEWAY
-            )
-
-        if response.status != 200:
-            raise exceptions.APIException(
-                detail="Failed to retrieve product information from external service.",
-                code=status.HTTP_502_BAD_GATEWAY,
-            )
-
-        return response.data
 
 
 class WhishlistItemDeleteView(BaseWishlistItemView):
