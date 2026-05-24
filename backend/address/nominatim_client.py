@@ -22,13 +22,7 @@ class GeocodingError:
 
 
 def build_address_query(address_data: dict[str, Any]) -> str:
-    street = address_data.get("street")
-    number = address_data.get("number")
-    street_line = " ".join(str(value).strip() for value in [street, number] if value)
-
     parts = [
-        street_line,
-        address_data.get("neighborhood"),
         address_data.get("city"),
         address_data.get("state"),
         "Brasil",
@@ -62,14 +56,16 @@ def geocode_address(address_data: dict[str, Any]) -> Coordinates | GeocodingErro
     except ValueError:
         return GeocodingError("Geocoding response was not valid JSON.")
 
-    if not results:
+    if not isinstance(results, list) or not results:
         return GeocodingError("Address could not be geocoded.")
 
     first_result = results[0]
+    if not isinstance(first_result, dict):
+        return GeocodingError("Geocoding response did not include valid coordinates.")
 
     try:
         latitude = Decimal(str(first_result["lat"])).quantize(COORDINATE_PRECISION)
         longitude = Decimal(str(first_result["lon"])).quantize(COORDINATE_PRECISION)
         return Coordinates(latitude=latitude, longitude=longitude)
-    except (KeyError, InvalidOperation):
+    except (KeyError, InvalidOperation, TypeError):
         return GeocodingError("Geocoding response did not include valid coordinates.")
