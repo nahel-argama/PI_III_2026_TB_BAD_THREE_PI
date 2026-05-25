@@ -18,4 +18,4 @@ Plataforma B2B que conecta pequenos produtores rurais ao varejo por meio de busc
 ## Anexos
 
 - [Documentação](https://docs.google.com/document/d/1Sj4P5nEl6HJOt2TKL23mWR1x7BN8BgVgE_t_16QcDfk/edit?usp=sharing)
-- [Resumo Público](https://docs.google.com/document/d/1c46PPiSXLvZXhN2419GLFrY_eVwUOp5QGuLh87kANck/edit?usp=sharing)
+- [Publicação no reposítório da Fundação Hermínio Ometto (FHO)](https://courseware.fho.edu.br/repositorio-publico/eyJpdiI6Ik03ZllXYWNuMndmWEVEdk5HNlcvNFE9PSIsInZhbHVlIjoiUHdWeGplQnVoQ1pnY0RHWUFhZzU3QT09IiwibWFjIjoiNjM5ODk3Yjc3NDM2NmY2ODYwMGZjMTMwMjc4YTY2NTRhY2IxOGZiMDU4NzNmYzc3MmE2ZmQwZDZiNDNhN2M0MiIsInRhZyI6IiJ9?search=escoamento)
