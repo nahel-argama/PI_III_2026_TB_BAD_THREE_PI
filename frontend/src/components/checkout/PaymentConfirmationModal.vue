@@ -43,7 +43,7 @@
 
             <div class="pm-actions">
               <button type="button" class="pm-btn pm-btn--cancel" @click="onClose">
-                {{ cancelLabel }}
+                {{ props.cancelLabel || 'Cancelar' }}
               </button>
               <button type="button" class="pm-btn pm-btn--confirm" @click="onConfirm">
                 Confirmar pagamento
