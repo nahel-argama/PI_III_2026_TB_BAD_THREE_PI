@@ -8,6 +8,9 @@
         v-for="item in items"
         :key="item.id"
         :item="item"
+        :cart-quantity="Number(cartQuantities[item.id] || 0)"
+        :is-adding="Number(addingProductId) === Number(item.id)"
+        @add-to-cart="$emit('add-to-cart', $event)"
       />
     </div>
 
@@ -44,5 +47,15 @@ defineProps({
     type: String,
     required: true,
   },
+  cartQuantities: {
+    type: Object,
+    default: () => ({}),
+  },
+  addingProductId: {
+    type: [Number, String],
+    default: null,
+  },
 });
+
+defineEmits(['add-to-cart']);
 </script>

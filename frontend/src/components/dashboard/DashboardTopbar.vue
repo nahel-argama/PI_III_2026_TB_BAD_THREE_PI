@@ -26,6 +26,22 @@
 
     <div ref="menuRef" class="relative flex items-center justify-end gap-2 sm:gap-3">
       <button
+        v-if="showCartButton"
+        type="button"
+        class="relative flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50"
+        @click="toggleCart"
+      >
+        <ShoppingCartIcon class="h-5 w-5 text-emerald-600" />
+        <span class="hidden sm:inline">Carrinho</span>
+        <span
+          v-if="cartItemsCount > 0"
+          class="inline-flex min-w-6 items-center justify-center rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-black text-white"
+        >
+          {{ cartItemsCount }}
+        </span>
+      </button>
+
+      <button
         class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50"
         type="button"
         @click="toggleMenu"
@@ -53,27 +69,79 @@
         </button>
       </div>
     </div>
+
+    <CartDrawer v-model="isCartOpen" @checkout-order="goToOrderCheckout" />
   </div>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import {
   ArrowRightOnRectangleIcon,
   Bars3Icon,
   ChevronDownIcon,
+  ShoppingCartIcon,
   UserCircleIcon,
 } from '@heroicons/vue/24/outline';
 import { useAuth } from '@/composables/useAuth';
+import { useCartStore } from '@/stores/cart';
+import CartDrawer from '@/components/dashboard/cart/CartDrawer.vue';
 
 const router = useRouter();
 const auth = useAuth();
+const cartStore = useCartStore();
 const showMenu = ref(false);
 const menuRef = ref(null);
+const isCartOpen = ref(false);
+
+const userType = computed(() => String(auth.userType?.value || '').toUpperCase());
+const showCartButton = computed(() => {
+  return userType.value === 'VAREJISTA' || userType.value === 'RETAILER';
+});
+
+const cartItemsCount = computed(() => {
+  const uniqueProducts = new Set();
+
+  cartStore.pendingOrdersList.forEach((order) => {
+    const items = Array.isArray(order?.items) ? order.items : [];
+
+    items.forEach((item) => {
+      if (item?.product !== undefined && item?.product !== null) {
+        uniqueProducts.add(String(item.product));
+      }
+    });
+  });
+
+  return uniqueProducts.size;
+});
 
 function toggleMenu() {
   showMenu.value = !showMenu.value;
+}
+
+async function toggleCart() {
+  if (!showCartButton.value) {
+    return;
+  }
+
+  isCartOpen.value = !isCartOpen.value;
+
+  if (isCartOpen.value) {
+    try {
+      await cartStore.syncPendingOrders();
+    } catch {
+      // Erro exibido em fluxo de interação do carrinho
+    }
+  }
+}
+
+async function goToOrderCheckout(orderId) {
+  isCartOpen.value = false;
+  await router.push({
+    path: '/checkout',
+    query: { order_id: String(orderId) },
+  });
 }
 
 function onDocumentClick(event) {
@@ -99,6 +167,14 @@ async function handleLogout() {
 
 onMounted(() => {
   document.addEventListener('click', onDocumentClick);
+
+  if (!showCartButton.value) {
+    return;
+  }
+
+  cartStore.syncPendingOrders().catch(() => {
+    // Ignora falha inicial silenciosamente
+  });
 });
 
 onUnmounted(() => {

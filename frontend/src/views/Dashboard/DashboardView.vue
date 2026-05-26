@@ -28,6 +28,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import DashboardShell from '@/components/dashboard/DashboardShell.vue';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar.vue';
@@ -42,6 +43,7 @@ import ProfileView from '@/components/dashboard/views/ProfileView.vue';
 import ProductImagesPlaceholderView from '@/components/dashboard/views/ProductImagesPlaceholderView.vue';
 
 const authStore = useAuthStore();
+const route = useRoute();
 const dashboardViewRegistry = {
   PRODUTOR: {
     'meu-estoque': StockView,
@@ -78,12 +80,32 @@ const activeViewComponent = computed(() => {
   return dashboardViewRegistry[currentRole.value]?.[activeItemId.value] || dashboardViewRegistry[currentRole.value]?.[defaultActiveItemId.value];
 });
 
+function hasNavItem(itemId) {
+  return profile.value.navItems.some((item) => item.id === itemId);
+}
+
 function handleSelect(itemId) {
   activeItemId.value = itemId;
   sidebarOpen.value = false;
 }
 
 watch(defaultActiveItemId, (nextDefaultItemId) => {
-  activeItemId.value = nextDefaultItemId;
+  if (!hasNavItem(activeItemId.value)) {
+    activeItemId.value = nextDefaultItemId;
+  }
 }, { immediate: true });
+
+watch(
+  () => route.query.tab,
+  (tabFromQuery) => {
+    if (typeof tabFromQuery !== 'string') {
+      return;
+    }
+
+    if (hasNavItem(tabFromQuery)) {
+      activeItemId.value = tabFromQuery;
+    }
+  },
+  { immediate: true },
+);
 </script>

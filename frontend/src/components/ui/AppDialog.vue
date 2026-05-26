@@ -287,15 +287,21 @@ function onBackdropClick() {
 /* ── Actions ──────────────────────────────────────────────────────────────── */
 
 .app-dialog-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 0.625rem;
   width: 100%;
   margin-top: 0.5rem;
 }
 
-.app-dialog-actions--single {
-  grid-template-columns: 1fr;
+@media (min-width: 480px) {
+  .app-dialog-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .app-dialog-actions--single {
+    grid-template-columns: 1fr;
+  }
 }
 
 .app-dialog-btn {
@@ -314,8 +320,9 @@ function onBackdropClick() {
     box-shadow 0.15s ease,
     opacity 0.15s ease,
     transform 0.1s ease;
-  line-height: 1;
-  white-space: nowrap;
+  line-height: 1.2;
+  white-space: normal;
+  text-align: center;
 }
 
 .app-dialog-btn:active:not(:disabled) {

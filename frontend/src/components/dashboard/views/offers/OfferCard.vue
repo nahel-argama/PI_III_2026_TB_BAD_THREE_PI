@@ -59,12 +59,62 @@
           </p>
         </div>
       </div>
+
+      <div class="mt-5 space-y-3">
+        <div
+          v-if="cartQuantity > 0"
+          class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700"
+        >
+          No carrinho: {{ cartQuantity }}
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            :disabled="isAdding || selectedQuantity <= 1 || availableQuantity <= 0"
+            @click="decrementQuantity"
+          >
+            -
+          </button>
+
+          <label class="sr-only" :for="`offer-quantity-${item.id}`">Quantidade</label>
+          <input
+            :id="`offer-quantity-${item.id}`"
+            v-model.number="selectedQuantity"
+            type="number"
+            min="1"
+            :max="availableQuantity > 0 ? availableQuantity : 1"
+            class="w-20 rounded-xl border border-slate-200 bg-white px-3 py-2 text-center text-sm font-bold text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+            :disabled="isAdding || availableQuantity <= 0"
+            @blur="normalizeQuantity"
+          />
+
+          <button
+            type="button"
+            class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            :disabled="isAdding || availableQuantity <= 0 || selectedQuantity >= availableQuantity"
+            @click="incrementQuantity"
+          >
+            +
+          </button>
+        </div>
+
+        <button
+          type="button"
+          class="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-extrabold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+          :disabled="!canAddToCart"
+          @click="handleAddToCart"
+        >
+          {{ isAdding ? 'Adicionando...' : 'Adicionar ao Carrinho' }}
+        </button>
+      </div>
     </div>
   </article>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { PhotoIcon } from '@heroicons/vue/24/outline';
 import AppSecureImage from '@/components/ui/AppSecureImage.vue';
 import { capitalize } from '@/utils/string';
@@ -74,7 +124,18 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  cartQuantity: {
+    type: Number,
+    default: 0,
+  },
+  isAdding: {
+    type: Boolean,
+    default: false,
+  },
 });
+
+const emit = defineEmits(['add-to-cart']);
+const selectedQuantity = ref(1);
 
 const imageUrl = computed(() => {
   return props.item.images?.[0]?.image || null;
@@ -84,5 +145,63 @@ const availableQuantity = computed(() => {
   const total = Number(props.item.total_quantity || 0);
   const reserved = Number(props.item.reserved_quantity || 0);
   return Math.max(0, total - reserved);
+});
+
+const canAddToCart = computed(() => {
+  return (
+    !props.isAdding &&
+    availableQuantity.value > 0 &&
+    selectedQuantity.value > 0 &&
+    selectedQuantity.value <= availableQuantity.value
+  );
+});
+
+function normalizeQuantity() {
+  const nextValue = Number(selectedQuantity.value || 0);
+
+  if (!Number.isFinite(nextValue) || nextValue < 1) {
+    selectedQuantity.value = 1;
+    return;
+  }
+
+  if (nextValue > availableQuantity.value && availableQuantity.value > 0) {
+    selectedQuantity.value = availableQuantity.value;
+  }
+}
+
+function incrementQuantity() {
+  if (availableQuantity.value <= 0) {
+    return;
+  }
+
+  selectedQuantity.value = Math.min(selectedQuantity.value + 1, availableQuantity.value);
+}
+
+function decrementQuantity() {
+  selectedQuantity.value = Math.max(1, selectedQuantity.value - 1);
+}
+
+function handleAddToCart() {
+  normalizeQuantity();
+
+  if (!canAddToCart.value) {
+    return;
+  }
+
+  emit('add-to-cart', {
+    product: props.item,
+    quantity: selectedQuantity.value,
+  });
+}
+
+watch(availableQuantity, (nextAvailable) => {
+  if (nextAvailable <= 0) {
+    selectedQuantity.value = 1;
+    return;
+  }
+
+  if (selectedQuantity.value > nextAvailable) {
+    selectedQuantity.value = nextAvailable;
+  }
 });
 </script>

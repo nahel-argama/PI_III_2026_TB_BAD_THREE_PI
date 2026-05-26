@@ -9,7 +9,7 @@
       <div class="min-w-0 flex-1">
         <div class="flex flex-wrap items-center gap-2">
           <p class="text-xs font-bold uppercase tracking-[0.26em] text-emerald-600">
-            {{ itemKindLabel }} • Contrato {{ item.contractCode }}
+            {{ itemKindLabel }}
           </p>
           <span
             class="rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em]"
@@ -67,24 +67,13 @@
               </p>
             </div>
 
-            <div class="grid gap-3 sm:grid-cols-2">
-              <div class="rounded-[22px] bg-slate-50 px-4 py-3">
-                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-                  Data do contrato
-                </p>
-                <p class="mt-1 text-base font-bold text-slate-900">
-                  {{ item.date }}
-                </p>
-              </div>
-
-              <div class="rounded-[22px] bg-slate-50 px-4 py-3">
-                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-                  Validade
-                </p>
-                <p class="mt-1 text-base font-bold text-slate-900">
-                  {{ item.validity }}
-                </p>
-              </div>
+            <div class="rounded-[22px] bg-slate-50 px-4 py-3">
+              <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+                Data do contrato
+              </p>
+              <p class="mt-1 text-base font-bold text-slate-900">
+                {{ item.date }}
+              </p>
             </div>
           </div>
         </div>
@@ -139,14 +128,6 @@
               </p>
             </div>
 
-            <div class="rounded-[22px] bg-slate-50 px-4 py-3">
-              <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-                Observação
-              </p>
-              <p class="mt-1 text-sm font-medium leading-6 text-slate-700">
-                {{ item.note }}
-              </p>
-            </div>
           </div>
         </div>
       </div>

@@ -41,6 +41,10 @@ class ProductViewSet(
             return self.queryset.filter(producer=user.producer).order_by('id')
 
         if user.user_type == "RETAILER":
-            return self.queryset.filter(is_active=True).order_by('id')
+            from django.db.models import F
+            return self.queryset.filter(
+                is_active=True,
+                total_quantity__gt=F('reserved_quantity')
+            ).order_by('id')
 
         return Product.objects.none()

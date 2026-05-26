@@ -3,146 +3,212 @@
     <HistoryToolbar
       eyebrow="Varejista"
       title="Histórico de Compra"
-      description="Lista mockada das compras do varejista, em uma lista expansível."
+      description="Compras reais feitas pelo varejista via pedidos da API."
       :search="searchTerm"
       :item-count="filteredPurchases.length"
       action-label="compras"
-      @update-search="searchTerm = $event"
+      @update-search="onSearch"
     />
 
     <HistoryList
-      :items="filteredPurchases"
+      :items="paginatedPurchases"
       empty-title="Nenhuma compra encontrada"
-      empty-description="Tente outro termo de busca ou altere os mocks desta aba."
+      empty-description="Não há pedidos confirmados/cancelados/entregues para exibir."
       item-kind-label="Compra"
+    />
+
+    <AppPagination
+      v-if="filteredPurchases.length > 0"
+      v-model="currentPage"
+      :total-items="filteredPurchases.length"
+      :items-per-page="itemsPerPage"
     />
   </section>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import HistoryList from './history/HistoryList.vue';
 import HistoryToolbar from './history/HistoryToolbar.vue';
+import AppPagination from '@/components/ui/AppPagination.vue';
+import { listOrders } from '@/services/ordersService';
+import { useToast } from '@/composables/useToast';
+import { formatDocument, formatPostalCode } from '@/utils/formatters';
 
 const searchTerm = ref('');
+const purchases = ref([]);
+const currentPage = ref(1);
+const itemsPerPage = 10;
+const toast = useToast();
 
-const purchaseHistory = ref([
-  {
-    id: 1,
-    contractCode: 'CP-2026-011',
-    contractTitle: 'Compra de Tomate Italiano',
-    partyName: 'Sítio Boa Vista',
-    partyDocument: 'CPF/CNPJ 123.456.789-00',
-    partyLocation: 'Valinhos - SP',
-    partyContact: 'Sérgio Martins',
-    partyEmail: 'sergio@sitioboavista.com.br',
-    date: '07/05/2026',
-    status: 'Recebida',
-    note: 'Entrega confirmada e conferida no estoque',
-    validity: 'até 08/05/2026',
-    statusTone: 'emerald',
+function onSearch(value) {
+  searchTerm.value = value;
+  currentPage.value = 1;
+}
+
+function formatDate(value) {
+  if (!value) return '-';
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return '-';
+  return new Intl.DateTimeFormat('pt-BR').format(parsed);
+}
+
+function formatMoney(value) {
+  const amount = Number(value || 0);
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(amount);
+}
+
+function formatAddress(address) {
+  if (!address) return 'Endereço não disponível';
+
+  const mainLine = [address.street, address.number].filter(Boolean).join(', ');
+  const extraLine = [address.neighborhood, address.city, address.state].filter(Boolean).join(' • ');
+  const postalCode = address.postal_code ? `CEP ${formatPostalCode(address.postal_code)}` : '';
+
+  return [mainLine, extraLine, postalCode].filter(Boolean).join(' • ') || 'Endereço não disponível';
+}
+
+
+
+function getStatusView(status) {
+  if (status === 'CONFIRMED') {
+    return {
+      label: 'Confirmada',
+      tone: 'emerald',
+    };
+  }
+
+  if (status === 'DELIVERED') {
+    return {
+      label: 'Entregue',
+      tone: 'blue',
+    };
+  }
+
+  if (status === 'CANCELED') {
+    return {
+      label: 'Cancelada',
+      tone: 'red',
+    };
+  }
+
+  return {
+    label: status || 'Desconhecido',
+    tone: 'amber',
+  };
+}
+
+async function fetchAllOrders() {
+  const allOrders = [];
+  let currentPage = 1;
+  let hasNextPage = true;
+
+  while (hasNextPage) {
+    const payload = await listOrders({ page: currentPage });
+    const pageOrders = Array.isArray(payload) ? payload : (payload?.results ?? []);
+    allOrders.push(...pageOrders);
+
+    if (Array.isArray(payload)) {
+      hasNextPage = false;
+      continue;
+    }
+
+    hasNextPage = Boolean(payload?.next);
+    currentPage += 1;
+  }
+
+  return allOrders;
+}
+
+function buildHistoryItem(order) {
+  const statusView = getStatusView(order?.status);
+  const createdAt = order?.created_at;
+  const items = Array.isArray(order?.items) ? order.items : [];
+  const producerData = order?.producer_data || {};
+  const producerName = producerData.trade_name || producerData.name || `Produtor #${order.producer}`;
+  const producerDocument = formatDocument(
+    producerData.document_type,
+    producerData.document_number,
+  );
+
+  return {
+    id: order.id,
+    contractTitle: `Pedido #${order.id}`,
+    partyName: producerName,
+    partyDocument:
+      producerData.document_type && producerDocument
+        ? `${producerData.document_type} ${producerDocument}`
+        : producerDocument || 'Documento não disponível',
+    partyLocation: formatAddress(producerData.address),
+    partyContact: producerData.name || producerName,
+    partyEmail: producerData.email || 'Contato não disponível',
+    date: formatDate(createdAt),
+    status: statusView.label,
+    statusTone: statusView.tone,
     payment: {
-      method: 'PIX na entrega',
-      details: 'Pagamento feito após conferência dos volumes',
-      total: 'R$ 8.420,00',
+      method: 'Método não informado',
+      details: 'Dados de pagamento não retornados pela API de pedidos.',
+      total: formatMoney(order?.total_value),
     },
-    items: [
-      { name: 'Tomate Italiano', quantity: '180 kg', unit: 'caixa', category: 'Hortaliças' },
-      { name: 'Manjericão fresco', quantity: '30 unidades', unit: 'maço', category: 'Ervas' },
-    ],
-  },
-  {
-    id: 2,
-    contractCode: 'CP-2026-012',
-    contractTitle: 'Compra de Maçã Gala',
-    partyName: 'Cooperativa Serra Fresca',
-    partyDocument: 'CNPJ 234.567.890/0001-00',
-    partyLocation: 'Limeira - SP',
-    partyContact: 'Camila Rocha',
-    partyEmail: 'camila@serrafresca.com.br',
-    date: '04/05/2026',
-    status: 'Em trânsito',
-    note: 'Saiu para entrega no início da tarde',
-    validity: 'até 09/05/2026',
-    statusTone: 'blue',
-    payment: {
-      method: 'Boleto faturado',
-      details: 'Liquidação prevista em 14 dias',
-      total: 'R$ 6.150,00',
-    },
-    items: [
-      { name: 'Maçã Gala', quantity: '240 kg', unit: 'fardo', category: 'Frutas' },
-    ],
-  },
-  {
-    id: 3,
-    contractCode: 'CP-2026-013',
-    contractTitle: 'Compra de Cenoura Extra',
-    partyName: 'Fazenda Horizonte',
-    partyDocument: 'CPF/CNPJ 345.678.901-11',
-    partyLocation: 'Itatiba - SP',
-    partyContact: 'Aline Prado',
-    partyEmail: 'aline@fazendahorizonte.com.br',
-    date: '01/05/2026',
-    status: 'Recebida',
-    note: 'Compra concluída sem pendências',
-    validity: 'até 03/05/2026',
-    statusTone: 'emerald',
-    payment: {
-      method: 'Transferência bancária',
-      details: 'Pagamento em duas parcelas',
-      total: 'R$ 4.280,00',
-    },
-    items: [
-      { name: 'Cenoura Extra', quantity: '130 kg', unit: 'saco', category: 'Hortaliças' },
-    ],
-  },
-  {
-    id: 4,
-    contractCode: 'CP-2026-014',
-    contractTitle: 'Compra de Banana Prata',
-    partyName: 'Rancho Vale Verde',
-    partyDocument: 'CPF/CNPJ 456.789.012-22',
-    partyLocation: 'Mogi Mirim - SP',
-    partyContact: 'Thiago Alves',
-    partyEmail: 'thiago@valeverde.com.br',
-    date: '29/04/2026',
-    status: 'Pendente',
-    note: 'Aguardando confirmação final',
-    validity: 'até 06/05/2026',
-    statusTone: 'amber',
-    payment: {
-      method: 'Cartão faturado',
-      details: 'Compra aprovada aguardando emissão',
-      total: 'R$ 5.860,00',
-    },
-    items: [
-      { name: 'Banana Prata', quantity: '210 kg', unit: 'caixa', category: 'Frutas' },
-    ],
-  },
-]);
+    items: items.map((item) => {
+      const productId = Number(item?.product);
+      const productData = item?.product_data || {};
+      return {
+        name: productData?.name || `Produto #${productId}`,
+        quantity: String(item?.quantity ?? 0),
+        unit: `R$ ${Number(item?.unit_price || 0).toFixed(2)} un.`,
+        category: productData?.category_name || 'Sem categoria',
+      };
+    }),
+  };
+}
+
+async function loadPurchaseHistory() {
+  try {
+    const orders = await fetchAllOrders();
+    const completedOrders = orders.filter((order) => order?.status !== 'PENDING');
+
+    purchases.value = completedOrders
+      .map((order) => buildHistoryItem(order))
+      .sort((a, b) => b.id - a.id);
+  } catch (error) {
+    purchases.value = [];
+    toast.error(error?.message || 'Não foi possível carregar histórico de compras.', 'Erro');
+  }
+}
 
 const filteredPurchases = computed(() => {
   const query = searchTerm.value.trim().toLowerCase();
 
   if (!query) {
-    return purchaseHistory.value;
+    return purchases.value;
   }
 
-  return purchaseHistory.value.filter((purchase) => {
+  return purchases.value.filter((purchase) => {
     return [
-      purchase.contractCode,
       purchase.contractTitle,
       purchase.partyName,
       purchase.partyContact,
       purchase.status,
       purchase.date,
-      purchase.note,
       purchase.payment.method,
     ]
       .join(' ')
       .toLowerCase()
       .includes(query);
   });
+});
+
+const paginatedPurchases = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return filteredPurchases.value.slice(start, end);
+});
+
+onMounted(async () => {
+  await loadPurchaseHistory();
 });
 </script>

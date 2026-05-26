@@ -1,5 +1,5 @@
 <template>
-  <section class="bg-white py-24">
+  <section id="por-que-escolher" class="bg-white py-24">
     <div class="container mx-auto px-6">
       <div class="mb-16 flex flex-col items-end justify-between gap-8 md:flex-row">
         <div class="max-w-2xl">

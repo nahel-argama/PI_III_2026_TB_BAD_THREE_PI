@@ -71,6 +71,7 @@ import ProfileInfoCard from './profile/ProfileInfoCard.vue';
 import ProfileSkeleton from './profile/ProfileSkeleton.vue';
 
 import { fetchCurrentUserProfile } from '@/services/profile';
+import { formatDocument, formatPostalCode } from '@/utils/formatters';
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -111,25 +112,7 @@ const DOCUMENT_TYPE_LABEL = {
   CNPJ: 'CNPJ',
 };
 
-/** Formata número de documento com máscara CPF ou CNPJ. */
-function formatDocument(type, number) {
-  if (!number) return null;
-  const digits = number.replace(/\D/g, '');
-  if (type === 'CPF' && digits.length === 11) {
-    return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-  }
-  if (type === 'CNPJ' && digits.length === 14) {
-    return digits.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-  }
-  return number;
-}
 
-/** Formata CEP */
-function formatPostalCode(cep) {
-  if (!cep) return null;
-  const digits = cep.replace(/\D/g, '');
-  return digits.length === 8 ? digits.replace(/(\d{5})(\d{3})/, '$1-$2') : cep;
-}
 
 const profileFields = computed(() => {
   const p = profile.value;

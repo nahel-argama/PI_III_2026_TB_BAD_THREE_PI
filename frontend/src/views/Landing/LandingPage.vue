@@ -14,4 +14,8 @@ import Processes from '@/components/landingPage/Processes.vue';
 import ValueProp from '@/components/landingPage/ValueProp.vue';
 </script>
 
-<style scoped></style>
+<style>
+html {
+  scroll-behavior: smooth;
+}
+</style>

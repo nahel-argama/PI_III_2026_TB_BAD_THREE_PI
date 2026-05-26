@@ -6,14 +6,18 @@
       <label
         v-for="method in availableMethods"
         :key="method.id"
-        class="flex cursor-pointer items-start gap-4 rounded-xl border-2 border-slate-300 p-4 transition hover:border-green-500"
-        :class="{ 'border-green-600 bg-green-50': selectedPaymentId === method.id }"
+        class="flex items-start gap-4 rounded-xl border-2 border-slate-300 p-4 transition"
+        :class="[
+          disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-green-500',
+          selectedPaymentId === method.id ? 'border-green-600 bg-green-50' : '',
+        ]"
       >
         <input
           type="radio"
           :value="method.id"
           :checked="selectedPaymentId === method.id"
           class="mt-1 h-5 w-5 accent-green-600"
+          :disabled="disabled"
           @change="onSelectPaymentMethod(method.id)"
         />
         <div>
@@ -89,6 +93,10 @@ const props = defineProps({
   onSelectPaymentMethod: {
     type: Function,
     required: true,
+  },
+  disabled: {
+    type: Boolean,
+    default: false,
   },
 });
 

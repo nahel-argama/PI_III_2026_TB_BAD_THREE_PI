@@ -33,7 +33,13 @@ class OrderItemViewSet(
 
     def get_queryset(self):
         user = self.request.user
-        queryset = OrderItem.objects.all().order_by('id')
+        queryset = OrderItem.objects.select_related(
+            'product',
+            'product__category',
+            'product__producer',
+            'product__producer__user',
+            'order',
+        ).order_by('id')
 
         order_id = self.kwargs.get('order_pk')
         if order_id:
@@ -111,7 +117,14 @@ class OrderItemViewSet(
 
         serializer.save()
 
+    @transaction.atomic
     def perform_destroy(self, instance):
-        if instance.order.status != 'PENDING':
+        order = Order.objects.select_for_update().get(pk=instance.order_id)
+
+        if order.status != 'PENDING':
             raise ValidationError("Cannot delete item from non-pending order")
+
         instance.delete()
+
+        if not OrderItem.objects.filter(order_id=order.id).exists():
+            order.delete()

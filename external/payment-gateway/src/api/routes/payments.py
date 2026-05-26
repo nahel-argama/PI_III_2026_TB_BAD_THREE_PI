@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import APIRouter
 from src.schemas import PaymentRequestSchema, PaymentResponseSchema, PaymentStatus
 from src.services.payment_validators import validate_payment_rules
@@ -16,6 +17,9 @@ router = APIRouter()
         )
 
 async def create_payment(payload: PaymentRequestSchema):
+    # Simula delay de processamento do gateway (mesmo em caso de falha)
+    await asyncio.sleep(3)
+
     validate_payment_rules(payload)
 
     return PaymentResponseSchema(
