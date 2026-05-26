@@ -21,7 +21,7 @@
 
       <!-- Mensagem de erro -->
       <div v-if="errorMessage" class="mb-4 rounded-lg bg-red-50 p-4">
-        <p class="text-sm font-medium text-red-800">{{ errorMessage }}</p>
+        <p class="text-center text-sm font-medium text-red-800">{{ errorMessage }}</p>
       </div>
 
       <form @submit.prevent="handleLogin">
