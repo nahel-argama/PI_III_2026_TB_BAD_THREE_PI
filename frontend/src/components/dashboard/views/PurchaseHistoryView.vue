@@ -15,6 +15,7 @@
       empty-title="Nenhuma compra encontrada"
       empty-description="Não há pedidos confirmados/cancelados/entregues para exibir."
       item-kind-label="Compra"
+      @download-invoice="onDownloadInvoice"
     />
 
     <AppPagination
@@ -34,6 +35,7 @@ import AppPagination from '@/components/ui/AppPagination.vue';
 import { listOrders } from '@/services/ordersService';
 import { useToast } from '@/composables/useToast';
 import { formatDocument, formatPostalCode } from '@/utils/formatters';
+import { downloadInvoice } from '@/utils/invoiceGenerator';
 
 const searchTerm = ref('');
 const purchases = ref([]);
@@ -136,6 +138,7 @@ function buildHistoryItem(order) {
 
   return {
     id: order.id,
+    rawOrder: order,
     contractTitle: `Pedido #${order.id}`,
     partyName: producerName,
     partyDocument:
@@ -178,6 +181,10 @@ async function loadPurchaseHistory() {
     purchases.value = [];
     toast.error(error?.message || 'Não foi possível carregar histórico de compras.', 'Erro');
   }
+}
+
+function onDownloadInvoice(item) {
+  downloadInvoice(item.rawOrder);
 }
 
 const filteredPurchases = computed(() => {

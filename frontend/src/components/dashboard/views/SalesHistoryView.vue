@@ -15,6 +15,7 @@
       empty-title="Nenhuma venda encontrada"
       empty-description="Não há pedidos confirmados/cancelados/entregues para exibir."
       item-kind-label="Venda"
+      @download-invoice="onDownloadInvoice"
     />
 
     <AppPagination
@@ -34,6 +35,7 @@ import AppPagination from '@/components/ui/AppPagination.vue';
 import { listOrders } from '@/services/ordersService';
 import { useToast } from '@/composables/useToast';
 import { formatDocument, formatPostalCode } from '@/utils/formatters';
+import { downloadInvoice } from '@/utils/invoiceGenerator';
 
 const searchTerm = ref('');
 const sales = ref([]);
@@ -136,6 +138,7 @@ function buildHistoryItem(order) {
 
   return {
     id: order.id,
+    rawOrder: order,
     contractTitle: `Pedido #${order.id}`,
     partyName: retailerName,
     partyDocument:
@@ -178,6 +181,10 @@ async function loadSalesHistory() {
     sales.value = [];
     toast.error(error?.message || 'Não foi possível carregar histórico de vendas.', 'Erro');
   }
+}
+
+function onDownloadInvoice(item) {
+  downloadInvoice(item.rawOrder);
 }
 
 const filteredSales = computed(() => {
