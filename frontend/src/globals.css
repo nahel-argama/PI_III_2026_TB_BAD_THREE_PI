@@ -6,3 +6,9 @@
   --color-light-primary: #359c35;
   --color-secondary: #055a05;
 }
+
+@layer base {
+  button {
+    cursor: pointer;
+  }
+}
