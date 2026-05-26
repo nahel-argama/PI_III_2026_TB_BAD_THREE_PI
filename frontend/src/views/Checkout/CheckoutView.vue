@@ -284,6 +284,7 @@ async function onPaymentModalConfirm() {
         const producerId = checkoutProducer.value?.id;
         if (producerId) cartStore.removePendingOrderByProducer(producerId);
       } catch (cancelError) {
+        // eslint-disable-next-line no-console
         console.error('Falha ao cancelar pedido após rejeição do gateway:', cancelError);
       }
       paymentModalError.value = error.message || 'Pagamento recusado pelo gateway.';

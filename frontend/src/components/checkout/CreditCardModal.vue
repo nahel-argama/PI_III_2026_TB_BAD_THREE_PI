@@ -178,7 +178,7 @@
 </template>
 
 <script setup>
-import { reactive, computed, watch } from 'vue';
+import { reactive, computed } from 'vue';
 
 const props = defineProps({
   /** Controla a visibilidade — use com v-model */
@@ -283,23 +283,6 @@ const isValid = computed(() => {
 });
 
 // ─── Ações ────────────────────────────────────────────────────────────────────
-
-function resetForm() {
-  Object.assign(form, {
-    number: '',
-    holder_name: '',
-    expiry_month: null,
-    expiry_year: null,
-    cvv: '',
-  });
-  Object.assign(errors, {
-    number: '',
-    holder_name: '',
-    expiry_month: '',
-    expiry_year: '',
-    cvv: '',
-  });
-}
 
 function onConfirm() {
   validateAll();

@@ -16,7 +16,8 @@
           <template v-if="currentState === 'idle'">
             <div class="pm-header">
               <div class="pm-header-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                <svg
+xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" stroke-width="2" stroke-linecap="round"
                   stroke-linejoin="round" aria-hidden="true">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
@@ -58,7 +59,8 @@
                 <div class="pm-pulse-ring__outer" />
                 <div class="pm-pulse-ring__middle" />
                 <div class="pm-pulse-ring__inner">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                  <svg
+xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
                     stroke-linejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
@@ -75,9 +77,11 @@
             <div class="pm-state-container">
               <div class="pm-anim-check" aria-hidden="true">
                 <svg class="pm-anim-check__svg" viewBox="0 0 52 52">
-                  <circle class="pm-anim-check__circle" cx="26" cy="26" r="24"
+                  <circle
+class="pm-anim-check__circle" cx="26" cy="26" r="24"
                     fill="none" stroke-width="2.5"/>
-                  <polyline class="pm-anim-check__tick" points="14,27 22,35 38,19"
+                  <polyline
+class="pm-anim-check__tick" points="14,27 22,35 38,19"
                     fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </div>
@@ -94,11 +98,14 @@
             <div class="pm-state-container">
               <div class="pm-anim-error" aria-hidden="true">
                 <svg class="pm-anim-error__svg" viewBox="0 0 52 52">
-                  <circle class="pm-anim-error__circle" cx="26" cy="26" r="24"
+                  <circle
+class="pm-anim-error__circle" cx="26" cy="26" r="24"
                     fill="none" stroke-width="2.5"/>
-                  <line class="pm-anim-error__x1" x1="17" y1="17" x2="35" y2="35"
+                  <line
+class="pm-anim-error__x1" x1="17" y1="17" x2="35" y2="35"
                     stroke-width="3" stroke-linecap="round"/>
-                  <line class="pm-anim-error__x2" x1="35" y1="17" x2="17" y2="35"
+                  <line
+class="pm-anim-error__x2" x1="35" y1="17" x2="17" y2="35"
                     stroke-width="3" stroke-linecap="round"/>
                 </svg>
               </div>
@@ -204,10 +211,6 @@ function onConfirm() {
   if (currentState.value !== 'idle') return;
   currentState.value = 'loading';
   emit('confirm');
-}
-
-function onRetry() {
-  emit('retry');
 }
 
 function onSuccessClose() {
