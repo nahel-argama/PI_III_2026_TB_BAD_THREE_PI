@@ -12,7 +12,7 @@ http:
     data: |
       {
         "category": 1,
-        "name": "Tomato",
+        "external_id": "external-product-id",
         "description": "Fresh organic tomato",
         "total_quantity": 100.0,
         "reserved_quantity": 0.0,

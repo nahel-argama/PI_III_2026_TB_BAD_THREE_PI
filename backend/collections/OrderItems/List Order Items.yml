@@ -5,11 +5,11 @@ info:
 
 http:
   method: GET
-  url: "{{host}}/api/order-items/?order=&quantity_min=&quantity_max=&price_min=&price_max="
+  url: "{{host}}/api/orders/:order_id/items/?quantity_min=&quantity_max=&price_min=&price_max="
   params:
-    - name: order
-      value: ""
-      type: query
+    - name: order_id
+      value: "1"
+      type: path
     - name: quantity_min
       value: ""
       type: query

@@ -1,7 +1,7 @@
 import django_filters
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import BooleanField, F, FloatField, Value
+from django.db.models import Case, F, FloatField, Q, Value, When
 from django.db.models.expressions import Func
 from django.db.models.functions import Cast
 from rest_framework.exceptions import ValidationError
@@ -31,11 +31,6 @@ class STDistance(Func):
     output_field = FloatField()
 
 
-class STDWithin(Func):
-    function = "ST_DWithin"
-    output_field = BooleanField()
-
-
 class ProductFilter(django_filters.FilterSet):
     price_min = django_filters.NumberFilter(field_name="price", lookup_expr="gte")
     price_max = django_filters.NumberFilter(field_name="price", lookup_expr="lte")
@@ -57,9 +52,16 @@ class ProductFilter(django_filters.FilterSet):
 
         has_geo = self.should_order_by_distance()
         if has_geo:
-            latitude, longitude = self.get_request_user_coordinates()
+            latitude, longitude = self.get_request_user_coordinates(required=False)
             radius_km = self.get_optional_radius_km()
-            queryset = self.apply_geo_distance(queryset, latitude, longitude, radius_km)
+            has_coordinates = latitude is not None and longitude is not None
+
+            if has_coordinates:
+                queryset = self.apply_geo_distance(
+                    queryset, latitude, longitude, radius_km
+                )
+            else:
+                has_geo = False
 
         return self.apply_default_ordering(queryset, bool(search_term), has_geo)
 
@@ -89,7 +91,7 @@ class ProductFilter(django_filters.FilterSet):
             raise ValidationError({"radius_km": "Must be greater than zero."})
         return min(radius_km, MAX_RADIUS_KM)
 
-    def get_request_user_coordinates(self):
+    def get_request_user_coordinates(self, required=True):
         user = getattr(self.request, "user", None)
         try:
             address = getattr(user, "address", None)
@@ -97,6 +99,9 @@ class ProductFilter(django_filters.FilterSet):
             address = None
 
         if not address or address.latitude is None or address.longitude is None:
+            if not required:
+                return None, None
+
             raise ValidationError(
                 {
                     "address": (
@@ -123,10 +128,6 @@ class ProductFilter(django_filters.FilterSet):
         ).filter(search_vector=query)
 
     def apply_geo_distance(self, queryset, latitude, longitude, radius_km=None):
-        queryset = queryset.filter(
-            producer__user__address__latitude__isnull=False,
-            producer__user__address__longitude__isnull=False,
-        )
         product_point = self.build_point(
             Cast(F("producer__user__address__longitude"), FloatField()),
             Cast(F("producer__user__address__latitude"), FloatField()),
@@ -136,20 +137,26 @@ class ProductFilter(django_filters.FilterSet):
             Value(latitude, output_field=FloatField()),
         )
 
+        distance_expression = STDistance(product_point, user_point) / Value(1000.0)
+
         queryset = queryset.annotate(
-            distance_km=STDistance(product_point, user_point) / Value(1000.0),
+            distance_km=Case(
+                When(
+                    producer__user__address__latitude__isnull=False,
+                    producer__user__address__longitude__isnull=False,
+                    then=distance_expression,
+                ),
+                default=Value(None),
+                output_field=FloatField(),
+            ),
         )
 
         if radius_km is None:
             return queryset
 
-        return queryset.annotate(
-            in_radius=STDWithin(
-                product_point,
-                user_point,
-                Value(radius_km * 1000, output_field=FloatField()),
-            )
-        ).filter(in_radius=True)
+        return queryset.filter(
+            Q(distance_km__lte=radius_km) | Q(distance_km__isnull=True)
+        )
 
     def build_point(self, longitude, latitude):
         return Geography(STSetSRID(STMakePoint(longitude, latitude), Value(4326)))
@@ -157,7 +164,7 @@ class ProductFilter(django_filters.FilterSet):
     def apply_default_ordering(self, queryset, has_search, has_geo):
         ordering = []
         if has_geo:
-            ordering.append("distance_km")
+            ordering.append(F("distance_km").asc(nulls_last=True))
         if has_search:
             ordering.append("-search_score")
         if ordering:
