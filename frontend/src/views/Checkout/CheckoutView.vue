@@ -82,14 +82,31 @@
       @confirm="executeCancelOrder"
     />
 
-    <AppDialog
-      v-model="isErrorDialogOpen"
-      variant="warning"
-      title="Não foi possível confirmar o pedido"
-      :message="confirmErrorMessage"
-      confirm-label="Ok, revisar pedido"
-      :show-cancel="false"
-      @confirm="isErrorDialogOpen = false"
+    <CreditCardModal
+      v-model="isCreditCardModalOpen"
+      :disabled="isConfirming"
+      @confirm="onCreditCardConfirm"
+      @cancel="isCreditCardModalOpen = false"
+    />
+
+    <PaymentConfirmationModal
+      ref="paymentModalRef"
+      v-model="isPaymentModalOpen"
+      :amount="formattedTotal"
+      :payment-method="paymentMethodLabel"
+      :error-message="
+        paymentModalError || 'Ocorreu um erro ao processar seu pagamento. O pedido foi cancelado.'
+      "
+      :cancel-label="selectedPaymentId === 3 ? 'Voltar' : 'Cancelar'"
+      :closable="!isConfirming"
+      :persistent="isConfirming"
+      :auto-close="true"
+      :auto-close-delay="3000"
+      size="md"
+      @confirm="onPaymentModalConfirm"
+      @success="onPaymentModalSuccess"
+      @close="onPaymentModalClose"
+      @retry="onPaymentModalClose"
     />
   </div>
 </template>
@@ -105,7 +122,10 @@ import CheckoutDelivery from '@/components/checkout/CheckoutDelivery.vue';
 import CheckoutValuesSummary from '@/components/checkout/CheckoutValuesSummary.vue';
 import CheckoutFooter from '@/components/checkout/CheckoutFooter.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
-import { getOrder, deleteOrder as deleteOrderApi } from '@/services/ordersService';
+import CreditCardModal from '@/components/checkout/CreditCardModal.vue';
+import PaymentConfirmationModal from '@/components/checkout/PaymentConfirmationModal.vue';
+import { getOrder, deleteOrder as deleteOrderApi, cancelOrder } from '@/services/ordersService';
+import { processPayment } from '@/services/paymentGatewayService';
 import { useCartStore } from '@/stores/cart';
 import { useToast } from '@/composables/useToast';
 
@@ -120,8 +140,10 @@ const isConfirming = ref(false);
 const pageError = ref('');
 const selectedPaymentId = ref(1);
 const isCancelDialogOpen = ref(false);
-const isErrorDialogOpen = ref(false);
-const confirmErrorMessage = ref('');
+const isCreditCardModalOpen = ref(false);
+const isPaymentModalOpen = ref(false);
+const pendingCardData = ref(null);
+const paymentModalError = ref('');
 
 const orderId = computed(() => {
   const rawValue = route.query.order_id;
@@ -186,6 +208,16 @@ const total = computed(() => {
   return subtotal.value + platformFee.value;
 });
 
+const PAYMENT_METHOD_LABELS = { 1: 'PIX', 2: 'Boleto Bancário', 3: 'Cartão de Crédito' };
+
+const formattedTotal = computed(() => {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total.value);
+});
+
+const paymentMethodLabel = computed(
+  () => PAYMENT_METHOD_LABELS[selectedPaymentId.value] ?? 'Desconhecido',
+);
+
 function selectPaymentMethod(paymentId) {
   selectedPaymentId.value = paymentId;
 }
@@ -216,33 +248,94 @@ async function loadOrder() {
   }
 }
 
-
-
-async function handleConfirmOrder() {
-  if (!orderId.value || isReadOnly.value || isConfirming.value) {
-    return;
+function buildPaymentPayload(card = null) {
+  const payload = {
+    selectedPaymentId: selectedPaymentId.value,
+    price: total.value,
+  };
+  if (selectedPaymentId.value === 3 && card) {
+    payload.card = card;
   }
+  return payload;
+}
 
+// Chamado quando o usuário clica "Confirmar pagamento" no PaymentConfirmationModal
+const paymentModalRef = ref(null);
+
+async function onPaymentModalConfirm() {
   isConfirming.value = true;
+  paymentModalError.value = '';
 
   try {
+    // PASSO 1: Gateway de pagamento
+    await processPayment(buildPaymentPayload(pendingCardData.value));
+
+    // PASSO 2: Pagamento aprovado → confirmar pedido no backend
     const confirmedOrder = await cartStore.confirmOrder(orderId.value);
     order.value = confirmedOrder;
 
+    paymentModalRef.value?.setState('success');
     toast.success('Pedido confirmado com sucesso.', 'Compra finalizada');
-    await router.push({
-      path: '/dashboard',
-      query: { tab: 'historico-compra' },
-    });
   } catch (error) {
-    confirmErrorMessage.value =
-      error?.message || 'O estoque foi alterado. Revise as quantidades antes de tentar novamente.';
-    isErrorDialogOpen.value = true;
-
-    await loadOrder();
+    if (error.name === 'PaymentGatewayError') {
+      // PASSO 3: Gateway recusou → cancelar pedido no backend
+      try {
+        await cancelOrder(orderId.value);
+        const producerId = checkoutProducer.value?.id;
+        if (producerId) cartStore.removePendingOrderByProducer(producerId);
+      } catch (cancelError) {
+        console.error('Falha ao cancelar pedido após rejeição do gateway:', cancelError);
+      }
+      paymentModalError.value = error.message || 'Pagamento recusado pelo gateway.';
+    } else {
+      paymentModalError.value =
+        error?.message || 'O estoque foi alterado. Revise as quantidades e tente novamente.';
+      await loadOrder();
+    }
+    paymentModalRef.value?.setState('error');
   } finally {
     isConfirming.value = false;
+    pendingCardData.value = null;
   }
+}
+
+function onPaymentModalSuccess() {
+  // Apenas aguarda o fechamento (manual ou automático)
+}
+
+function onPaymentModalClose() {
+  const finalState = paymentModalRef.value?.state;
+  isPaymentModalOpen.value = false;
+
+  if (finalState === 'success' || finalState === 'error') {
+    pendingCardData.value = null;
+    router.push({ path: '/dashboard', query: { tab: 'historico-compra' } });
+  } else if (selectedPaymentId.value === 3) {
+    // Se o usuário apenas cancelou (idle) e o método era cartão, "volta" pro modal do cartão
+    isCreditCardModalOpen.value = true;
+  } else {
+    pendingCardData.value = null;
+  }
+}
+
+async function handleConfirmOrder() {
+  if (!orderId.value || isReadOnly.value || isConfirming.value) return;
+
+  // Cartão de crédito: coletar dados primeiro, depois abrir modal de pagamento
+  if (selectedPaymentId.value === 3) {
+    isCreditCardModalOpen.value = true;
+    return;
+  }
+
+  // PIX / Boleto: abrir modal de confirmação direto
+  pendingCardData.value = null;
+  isPaymentModalOpen.value = true;
+}
+
+async function onCreditCardConfirm(cardData) {
+  isCreditCardModalOpen.value = false;
+  pendingCardData.value = cardData;
+  isPaymentModalOpen.value = true;
 }
 
 async function executeCancelOrder() {
