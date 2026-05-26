@@ -29,45 +29,24 @@
 
     <!-- Conteúdo do perfil -->
     <template v-else-if="profile">
-      <!-- Header com avatar e nome -->
-      <ProfileHeader
+      <ProfileBanner
         :name="profile.name"
-        :email="profile.email"
-        :user-type="profile.user_type"
-        :role-label="roleLabel"
+        :user-type="userTypeLabel"
+        :location="cityStateLabel"
+        :banner-src="BANNER_IMAGE"
       />
 
-      <!-- Cards de informação -->
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <!-- Dados do perfil -->
-        <ProfileInfoCard
-          title="Dados da conta"
-          :icon="IdentificationIcon"
-          :fields="profileFields"
-        />
-
-        <!-- Endereço -->
-        <ProfileInfoCard
-          title="Endereço"
-          :icon="MapPinIcon"
-          :fields="addressFields"
-        />
-      </div>
+      <AccountInfoCard title="Informações da Conta" :sections="accountSections" />
     </template>
   </section>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import {
-  ExclamationTriangleIcon,
-  ArrowPathIcon,
-  IdentificationIcon,
-  MapPinIcon,
-} from '@heroicons/vue/24/outline';
+import { ExclamationTriangleIcon, ArrowPathIcon } from '@heroicons/vue/24/outline';
 
-import ProfileHeader from './profile/ProfileHeader.vue';
-import ProfileInfoCard from './profile/ProfileInfoCard.vue';
+import ProfileBanner from './profile/ProfileBanner.vue';
+import AccountInfoCard from './profile/AccountInfoCard.vue';
 import ProfileSkeleton from './profile/ProfileSkeleton.vue';
 
 import { fetchCurrentUserProfile } from '@/services/profile';
@@ -75,7 +54,7 @@ import { formatDocument, formatPostalCode } from '@/utils/formatters';
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
-defineProps({
+const props = defineProps({
   roleLabel: {
     type: String,
     required: true,
@@ -112,9 +91,48 @@ const DOCUMENT_TYPE_LABEL = {
   CNPJ: 'CNPJ',
 };
 
+const USER_TYPE_LABEL = {
+  PRODUTOR: 'Produtor',
+  VAREJISTA: 'Varejista',
+  ADMIN: 'Administrador',
+};
 
+const BANNER_IMAGE = '/Hero_image.jpg';
 
-const profileFields = computed(() => {
+const userTypeLabel = computed(() => {
+  const p = profile.value;
+  if (!p) return props.roleLabel;
+  return USER_TYPE_LABEL[p.user_type] || props.roleLabel;
+});
+
+const cityStateLabel = computed(() => {
+  const addr = profile.value?.address;
+  if (!addr) return 'Localização não informada';
+
+  const cityState = [addr.city, addr.state].filter(Boolean).join(', ');
+  return cityState || 'Localização não informada';
+});
+
+const fullAddressLabel = computed(() => {
+  const addr = profile.value?.address;
+  if (!addr) return null;
+
+  const street = [addr.street, addr.number].filter(Boolean).join(', ') || null;
+  const neighborhood = addr.neighborhood || null;
+  const cityState = [addr.city, addr.state].filter(Boolean).join(' / ') || null;
+  const postalCode = formatPostalCode(addr.postal_code);
+
+  const parts = [
+    street,
+    addr.complement || null,
+    [neighborhood, cityState].filter(Boolean).join(' • ') || null,
+    postalCode ? `CEP ${postalCode}` : null,
+  ];
+
+  return parts.filter(Boolean).join(' — ');
+});
+
+const accountSections = computed(() => {
   const p = profile.value;
   if (!p) return [];
 
@@ -122,27 +140,28 @@ const profileFields = computed(() => {
   const docNumber = formatDocument(docType, p.profile?.document_number);
 
   return [
-    { label: 'Nome', value: p.name },
-    { label: 'E-mail', value: p.email, full: false },
-    { label: DOCUMENT_TYPE_LABEL[docType] ?? 'Documento', value: docNumber },
-    { label: 'Nome fantasia', value: p.profile?.trade_name },
-  ];
-});
-
-const addressFields = computed(() => {
-  const addr = profile.value?.address;
-  if (!addr) return [{ label: 'Endereço', value: null, full: true }];
-
-  const street = [addr.street, addr.number].filter(Boolean).join(', ');
-  const neighborhood = addr.neighborhood || null;
-  const cityState = [addr.city, addr.state].filter(Boolean).join(' - ');
-  const postalCode = formatPostalCode(addr.postal_code);
-
-  return [
-    { label: 'Logradouro', value: street },
-    { label: 'Bairro', value: neighborhood },
-    { label: 'Cidade / Estado', value: cityState },
-    { label: 'CEP', value: postalCode },
+    {
+      title: 'Dados Básicos',
+      fields: [
+        { label: 'Email', value: p.email },
+        { label: 'Tipo de Usuário', value: userTypeLabel.value },
+      ],
+    },
+    {
+      title: 'Endereço',
+      fields: [{ label: 'Endereço Completo', value: fullAddressLabel.value, full: true }],
+    },
+    {
+      title: 'Informações adicionais',
+      fields: [
+        {
+          label: 'Tipo de Documento',
+          value: DOCUMENT_TYPE_LABEL[docType] ?? docType,
+        },
+        { label: 'Número do Documento', value: docNumber || p.profile?.document_number },
+        { label: 'Nome Fantasia', value: p.profile?.trade_name, full: true },
+      ],
+    },
   ];
 });
 </script>

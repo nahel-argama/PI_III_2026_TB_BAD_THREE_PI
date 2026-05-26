@@ -3,8 +3,8 @@
     <div class="container mx-auto flex h-20 items-center justify-between px-6">
       <button 
         type="button" 
-        @click="$emit('cancel')" 
-        class="flex w-24 items-center gap-2 text-slate-500 transition hover:text-slate-900"
+        class="flex w-24 items-center gap-2 text-slate-500 transition hover:text-slate-900" 
+        @click="$emit('cancel')"
       >
         <ArrowLeftIcon class="h-5 w-5" />
         <span class="text-sm font-bold">Voltar</span>
