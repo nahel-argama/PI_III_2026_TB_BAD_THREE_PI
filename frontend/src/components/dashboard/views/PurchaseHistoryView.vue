@@ -3,10 +3,8 @@
     <HistoryToolbar
       eyebrow="Varejista"
       title="Histórico de Compra"
-      description="Compras reais feitas pelo varejista via pedidos da API."
+      description="Confira as compras realizadas por você."
       :search="searchTerm"
-      :item-count="filteredPurchases.length"
-      action-label="compras"
       @update-search="onSearch"
     />
 

@@ -32,6 +32,7 @@
         </label>
 
         <div
+          v-if="actionLabel"
           class="inline-flex items-center gap-2 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700"
         >
           <ClockIcon class="h-5 w-5" />
@@ -68,7 +69,7 @@ defineProps({
   },
   actionLabel: {
     type: String,
-    required: true,
+    default: '',
   },
 });
 
