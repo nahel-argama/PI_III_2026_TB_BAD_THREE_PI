@@ -282,7 +282,7 @@
 
 <script setup>
 import { reactive, ref, watch, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { fetchAddressByCep, fetchStates } from '@/services/brasilApi';
 import AppSelect from '@/components/ui/AppSelect.vue';
@@ -297,10 +297,14 @@ const isLoadingStates = ref(false);
 const isLoading = ref(false);
 const lastSearchedCep = ref('');
 
+const route = useRoute();
+
+const initialType = ['PRODUCER', 'RETAILER'].includes(route.query.type) ? route.query.type : 'PRODUCER';
+
 const form = reactive({
   name: '',
   email: '',
-  type: 'PRODUCER',
+  type: initialType,
   password: '',
   tipo_documento: 'CPF',
   documento: '',
