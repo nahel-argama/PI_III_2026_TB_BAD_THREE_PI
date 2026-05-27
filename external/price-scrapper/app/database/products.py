@@ -51,7 +51,6 @@ def fts_product_search(query: str, limit: int = 100) -> list[dict]:
 
 def jaro_winkler_similarity_search(query: str, limit: int = 100) -> list[dict]:
     conn = get_db()
-    print(f"Query: {query}, Limit: {limit}")
     try:
         result = conn.execute(
             """
