@@ -306,8 +306,6 @@ function onCancel() {
 function onBackdropClick() {
   if (!props.disabled) onCancel();
 }
-
-
 </script>
 
 <style scoped>

@@ -1,10 +1,10 @@
 <template>
-  <header class="rounded-[28px] border border-white/70 bg-white/90 p-5 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur sm:p-6">
+  <header
+    class="rounded-[28px] border border-white/70 bg-white/90 p-5 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur sm:p-6"
+  >
     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       <div>
-        <p class="text-xs font-bold uppercase tracking-[0.28em] text-emerald-600">
-          Administrador
-        </p>
+        <p class="text-xs font-bold tracking-[0.28em] text-emerald-600 uppercase">Administrador</p>
         <h2 class="mt-2 text-3xl font-black tracking-tight text-slate-900">
           Gerenciar Imagens de Produtos
         </h2>
@@ -20,11 +20,13 @@
             id="product-images-search"
             :value="search"
             type="text"
-            class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-11 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
+            class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-11 text-sm text-slate-900 transition outline-none placeholder:text-slate-400 focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
             placeholder="Buscar produto..."
             @input="$emit('update-search', $event.target.value)"
           />
-          <MagnifyingGlassIcon class="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+          <MagnifyingGlassIcon
+            class="pointer-events-none absolute top-1/2 right-4 h-5 w-5 -translate-y-1/2 text-slate-400"
+          />
         </label>
 
         <button
@@ -38,9 +40,7 @@
       </div>
     </div>
 
-    <p class="mt-4 text-sm font-medium text-slate-500">
-      {{ itemCount }} produto(s) na tela
-    </p>
+    <p class="mt-4 text-sm font-medium text-slate-500">{{ itemCount }} produto(s) na tela</p>
   </header>
 </template>
 

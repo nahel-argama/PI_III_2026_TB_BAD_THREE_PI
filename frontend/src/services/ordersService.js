@@ -8,11 +8,7 @@ function extractErrorMessage(error, fallbackMessage) {
   }
 
   return (
-    data?.error ||
-    data?.detail ||
-    data?.message ||
-    data?.non_field_errors?.[0] ||
-    fallbackMessage
+    data?.error || data?.detail || data?.message || data?.non_field_errors?.[0] || fallbackMessage
   );
 }
 

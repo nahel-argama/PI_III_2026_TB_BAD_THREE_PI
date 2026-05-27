@@ -198,7 +198,9 @@ function getFieldError(field) {
 
 function validateAll() {
   const fields = ['number', 'holder_name', 'expiry_month', 'expiry_year', 'cvv'];
-  fields.forEach((f) => { errors[f] = getFieldError(f); });
+  fields.forEach((f) => {
+    errors[f] = getFieldError(f);
+  });
 }
 
 // ─── Computed: cartão válido ──────────────────────────────────────────────────
@@ -225,14 +227,21 @@ function emitState() {
 }
 
 // Emite sempre que o form muda (para manter o pai sincronizado)
-watch(form, () => {
-  emitState();
-}, { deep: true });
+watch(
+  form,
+  () => {
+    emitState();
+  },
+  { deep: true },
+);
 
 // Valida tudo quando o componente é desabilitado (ex: processando pagamento)
-watch(() => props.disabled, (val) => {
-  if (!val) validateAll();
-});
+watch(
+  () => props.disabled,
+  (val) => {
+    if (!val) validateAll();
+  },
+);
 </script>
 
 <style scoped>

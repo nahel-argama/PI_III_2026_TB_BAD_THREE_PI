@@ -7,7 +7,7 @@
         @click.self="closeModal"
       >
         <section
-          class="w-full max-w-2xl overflow-y-auto max-h-[90vh] rounded-[28px] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.22)]"
+          class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[28px] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.22)]"
         >
           <div
             class="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5 sm:px-8"
@@ -28,7 +28,7 @@
             </button>
           </div>
 
-          <form class="px-6 py-6 sm:px-8 flex flex-col gap-4" @submit.prevent="handleSubmit">
+          <form class="flex flex-col gap-4 px-6 py-6 sm:px-8" @submit.prevent="handleSubmit">
             <AppSelect
               v-model="form.external_id"
               label="Nome do Produto"
@@ -68,7 +68,9 @@
             </div>
 
             <div>
-              <label for="total_quantity" class="mb-2 block text-sm font-bold text-slate-700">Quantidade Total</label>
+              <label for="total_quantity" class="mb-2 block text-sm font-bold text-slate-700"
+                >Quantidade Total</label
+              >
               <input
                 id="total_quantity"
                 v-model.number="form.total_quantity"
@@ -80,7 +82,9 @@
             </div>
 
             <div>
-              <label for="description" class="mb-2 block text-sm font-bold text-slate-700">Descrição (Opcional)</label>
+              <label for="description" class="mb-2 block text-sm font-bold text-slate-700"
+                >Descrição (Opcional)</label
+              >
               <textarea
                 id="description"
                 v-model="form.description"
@@ -134,7 +138,13 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'submit']);
 
-const INITIAL_FORM = { external_id: null, category: null, price: '', total_quantity: '', description: '' };
+const INITIAL_FORM = {
+  external_id: null,
+  category: null,
+  price: '',
+  total_quantity: '',
+  description: '',
+};
 const form = reactive({ ...INITIAL_FORM });
 
 const selectedProduct = ref(null);
@@ -203,7 +213,7 @@ async function handleSubmit() {
       reserved_quantity: 0,
       description: form.description || '',
     };
-    
+
     const item = await createProduct(data);
     emit('submit', item);
     closeModal();

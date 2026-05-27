@@ -189,10 +189,7 @@ export const useCartStore = defineStore('cart', () => {
 
       return await refreshOrder(order.id);
     } catch (requestError) {
-      const formattedError = normalizeCartError(
-        requestError,
-        'Unable to add product to cart.',
-      );
+      const formattedError = normalizeCartError(requestError, 'Unable to add product to cart.');
       error.value = formattedError;
       throw formattedError;
     } finally {
@@ -262,10 +259,7 @@ export const useCartStore = defineStore('cart', () => {
       setPendingOrder(confirmedOrder);
       return confirmedOrder;
     } catch (requestError) {
-      const formattedError = normalizeCartError(
-        requestError,
-        'Unable to confirm order.',
-      );
+      const formattedError = normalizeCartError(requestError, 'Unable to confirm order.');
       error.value = formattedError;
       throw formattedError;
     } finally {
@@ -311,10 +305,7 @@ export const useCartStore = defineStore('cart', () => {
       pendingOrders.value = nextPendingOrders;
       return pendingOrdersList.value;
     } catch (requestError) {
-      const formattedError = normalizeCartError(
-        requestError,
-        'Unable to sync pending orders.',
-      );
+      const formattedError = normalizeCartError(requestError, 'Unable to sync pending orders.');
       error.value = formattedError;
       throw formattedError;
     } finally {

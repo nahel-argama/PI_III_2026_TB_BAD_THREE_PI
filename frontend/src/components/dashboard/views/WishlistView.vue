@@ -7,11 +7,7 @@
       @open-modal="isCreateModalOpen = true"
     />
 
-    <WishlistGrid
-      :items="wishlistItems"
-      :loading="isLoading"
-      @remove="removeProduct"
-    />
+    <WishlistGrid :items="wishlistItems" :loading="isLoading" @remove="removeProduct" />
 
     <AppPagination
       v-model="currentPage"
@@ -19,10 +15,7 @@
       @change="(page) => fetchItems(searchTerm, page)"
     />
 
-    <WishlistCreateModal
-      v-model="isCreateModalOpen"
-      @submit="onItemCreated"
-    />
+    <WishlistCreateModal v-model="isCreateModalOpen" @submit="onItemCreated" />
   </section>
 </template>
 

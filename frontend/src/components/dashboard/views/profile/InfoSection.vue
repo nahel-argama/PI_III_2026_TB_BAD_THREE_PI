@@ -1,6 +1,6 @@
 <template>
   <section>
-    <h4 class="text-sm font-bold uppercase tracking-[0.16em] text-slate-500">{{ title }}</h4>
+    <h4 class="text-sm font-bold tracking-[0.16em] text-slate-500 uppercase">{{ title }}</h4>
     <dl class="mt-3 grid grid-cols-1 gap-x-10 gap-y-4 md:grid-cols-2">
       <InfoField
         v-for="field in fields"

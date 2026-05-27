@@ -1,9 +1,9 @@
 <template>
   <nav class="sticky top-0 z-50 border-b border-slate-100 bg-white/80 backdrop-blur-md">
     <div class="container mx-auto flex h-20 items-center justify-between px-6">
-      <button 
-        type="button" 
-        class="flex w-24 items-center gap-2 text-slate-500 transition hover:text-slate-900" 
+      <button
+        type="button"
+        class="flex w-24 items-center gap-2 text-slate-500 transition hover:text-slate-900"
         @click="$emit('cancel')"
       >
         <ArrowLeftIcon class="h-5 w-5" />

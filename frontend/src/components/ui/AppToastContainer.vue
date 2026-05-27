@@ -6,11 +6,7 @@
       :key="position"
       :class="['app-toast-container', `app-toast-container--${position}`]"
     >
-      <TransitionGroup
-        name="app-toast-list"
-        tag="div"
-        class="app-toast-container__stack"
-      >
+      <TransitionGroup name="app-toast-list" tag="div" class="app-toast-container__stack">
         <AppToast
           v-for="toast in toastsByPosition[position]"
           :id="toast.id"
@@ -63,7 +59,7 @@ const toastsByPosition = computed(() => {
 /** Lists coordinate keys that actively contain one or more notifications */
 const activePositions = computed(() => {
   return Object.keys(toastsByPosition.value).filter(
-    (pos) => toastsByPosition.value[pos].length > 0
+    (pos) => toastsByPosition.value[pos].length > 0,
   );
 });
 </script>
@@ -135,7 +131,9 @@ const activePositions = computed(() => {
 }
 
 .app-toast-list-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease; /* Transição suave de fade e escala na saída, sem bounce */
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease; /* Transição suave de fade e escala na saída, sem bounce */
 }
 
 /* Standard opacity and dynamic transforms based on location */

@@ -1,15 +1,18 @@
 <template>
-  <article class="group flex flex-col h-full overflow-hidden rounded-[24px] border border-white/70 bg-white/90 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-lg">
-    <div class="p-5 flex-1 flex flex-col">
+  <article
+    class="group flex h-full flex-col overflow-hidden rounded-[24px] border border-white/70 bg-white/90 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-lg"
+  >
+    <div class="flex flex-1 flex-col p-5">
       <div class="flex items-start justify-between gap-4">
         <div class="min-w-0">
-          <p class="text-xs font-bold uppercase tracking-[0.26em] text-emerald-600">
-            Oferta
-          </p>
+          <p class="text-xs font-bold tracking-[0.26em] text-emerald-600 uppercase">Oferta</p>
           <h3 class="mt-2 truncate text-xl font-black tracking-tight text-slate-900">
             {{ capitalize(item.name || '') }}
           </h3>
-          <p v-if="item.distance_km !== null && item.distance_km !== undefined" class="mt-2 truncate text-sm text-slate-500">
+          <p
+            v-if="item.distance_km !== null && item.distance_km !== undefined"
+            class="mt-2 truncate text-sm text-slate-500"
+          >
             A {{ item.distance_km }} km de distância
           </p>
         </div>
@@ -28,32 +31,28 @@
         </div>
       </div>
       <div v-else class="mt-5 rounded-[22px] border border-dashed border-slate-200 bg-slate-50 p-4">
-        <div class="flex aspect-[4/3] items-center justify-center rounded-[18px] border border-slate-200 bg-white text-slate-300">
+        <div
+          class="flex aspect-[4/3] items-center justify-center rounded-[18px] border border-slate-200 bg-white text-slate-300"
+        >
           <div class="text-center">
-            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-300">
+            <div
+              class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-300"
+            >
               <PhotoIcon class="h-7 w-7" />
             </div>
-            <p class="mt-3 text-sm font-semibold text-slate-500">
-              Sem foto
-            </p>
+            <p class="mt-3 text-sm font-semibold text-slate-500">Sem foto</p>
           </div>
         </div>
       </div>
 
-      <div class="mt-auto pt-5 grid gap-3 text-sm sm:grid-cols-2">
+      <div class="mt-auto grid gap-3 pt-5 text-sm sm:grid-cols-2">
         <div class="rounded-2xl bg-slate-50 px-4 py-3">
-          <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-            Preço
-          </p>
-          <p class="mt-1 text-base font-bold text-slate-900">
-            R$ {{ item.price }}
-          </p>
+          <p class="text-xs font-semibold tracking-[0.24em] text-slate-400 uppercase">Preço</p>
+          <p class="mt-1 text-base font-bold text-slate-900">R$ {{ item.price }}</p>
         </div>
 
         <div class="rounded-2xl bg-slate-50 px-4 py-3">
-          <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-            Qtd. Disp.
-          </p>
+          <p class="text-xs font-semibold tracking-[0.24em] text-slate-400 uppercase">Qtd. Disp.</p>
           <p class="mt-1 text-base font-bold text-slate-900">
             {{ availableQuantity }}
           </p>
@@ -85,7 +84,7 @@
             type="number"
             min="1"
             :max="availableQuantity > 0 ? availableQuantity : 1"
-            class="w-20 rounded-xl border border-slate-200 bg-white px-3 py-2 text-center text-sm font-bold text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+            class="w-20 rounded-xl border border-slate-200 bg-white px-3 py-2 text-center text-sm font-bold text-slate-900 transition outline-none focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
             :disabled="isAdding || availableQuantity <= 0"
             @blur="normalizeQuantity"
           />

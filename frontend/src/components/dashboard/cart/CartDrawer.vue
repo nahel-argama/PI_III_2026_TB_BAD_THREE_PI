@@ -8,7 +8,7 @@
       >
         <header class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
           <div>
-            <p class="text-xs font-bold uppercase tracking-[0.24em] text-emerald-600">Carrinho</p>
+            <p class="text-xs font-bold tracking-[0.24em] text-emerald-600 uppercase">Carrinho</p>
             <h2 class="mt-1 text-xl font-black tracking-tight text-slate-900">Pedidos pendentes</h2>
           </div>
           <button
@@ -21,7 +21,10 @@
         </header>
 
         <div class="flex-1 overflow-y-auto p-5">
-          <div v-if="!orders.length" class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+          <div
+            v-if="!orders.length"
+            class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center"
+          >
             <p class="text-sm font-semibold text-slate-700">Carrinho vazio</p>
             <p class="mt-2 text-xs text-slate-500">Adicione produtos em “Explorar Ofertas”.</p>
           </div>
@@ -34,7 +37,7 @@
             >
               <div class="flex items-start justify-between gap-3">
                 <div>
-                  <p class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-600">
+                  <p class="text-xs font-bold tracking-[0.22em] text-emerald-600 uppercase">
                     Produtor
                   </p>
                   <h3 class="mt-1 text-base font-black text-slate-900">
@@ -107,13 +110,13 @@
                   <p>Subtotal (Produtos)</p>
                   <p>R$ {{ formatMoney(getOrderSubtotal(order)) }}</p>
                 </div>
-                
+
                 <div class="flex items-center justify-between text-sm text-slate-500">
                   <p>Taxa da Plataforma (5%)</p>
                   <p>R$ {{ formatMoney(getOrderFee(order)) }}</p>
                 </div>
 
-                <div class="flex items-center justify-between pt-2 border-t border-slate-50">
+                <div class="flex items-center justify-between border-t border-slate-50 pt-2">
                   <p class="text-sm font-semibold text-slate-600">Total do pedido</p>
                   <p class="text-lg font-black text-emerald-700">
                     R$ {{ formatMoney(getOrderTotal(order)) }}

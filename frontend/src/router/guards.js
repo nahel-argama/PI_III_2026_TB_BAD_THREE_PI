@@ -84,7 +84,10 @@ export const requireRole = (requiredRoles) => {
       return;
     }
 
-    const userRole = authStore.getCurrentUserType || authStore.getCurrentUser?.user_type || authStore.getCurrentUser?.type;
+    const userRole =
+      authStore.getCurrentUserType ||
+      authStore.getCurrentUser?.user_type ||
+      authStore.getCurrentUser?.type;
     const roles = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles];
 
     if (!roles.length || !requiredRoles) {

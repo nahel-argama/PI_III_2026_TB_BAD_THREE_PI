@@ -4,47 +4,44 @@
       {{ label }}
     </label>
 
-    <input
-      ref="inputRef"
-      type="file"
-      accept="image/*"
-      class="hidden"
-      @change="handleChange"
-    />
+    <input ref="inputRef" type="file" accept="image/*" class="hidden" @change="handleChange" />
 
     <!-- Horizontal Input Design -->
     <div
-      class="flex items-center gap-3 w-full bg-slate-50/80 p-2 rounded-2xl border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/10 transition duration-200"
+      class="flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-2 transition duration-200 hover:border-emerald-400 hover:bg-emerald-50/10"
     >
       <button
         type="button"
-        class="shrink-0 flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition active:scale-[0.97]"
+        class="flex shrink-0 items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800 active:scale-[0.97]"
         @click="inputRef?.click()"
       >
         <ArrowUpTrayIcon class="h-4 w-4" />
         <span>{{ modelValue ? 'Trocar Imagem' : 'Escolher Arquivo' }}</span>
       </button>
 
-      <div class="flex-1 flex items-center justify-between min-w-0 px-2">
-        <div class="flex items-center gap-2 min-w-0">
-          <PhotoIcon class="h-4 w-4 shrink-0" :class="modelValue ? 'text-emerald-500' : 'text-slate-400'" />
+      <div class="flex min-w-0 flex-1 items-center justify-between px-2">
+        <div class="flex min-w-0 items-center gap-2">
+          <PhotoIcon
+            class="h-4 w-4 shrink-0"
+            :class="modelValue ? 'text-emerald-500' : 'text-slate-400'"
+          />
           <span
-            class="text-xs truncate"
+            class="truncate text-xs"
             :class="modelValue ? 'font-bold text-slate-700' : 'font-medium text-slate-400'"
           >
             {{ fileName || 'Nenhum arquivo selecionado' }}
           </span>
         </div>
-        
+
         <span
           v-if="fileExtension"
-          class="shrink-0 text-[10px] font-black uppercase text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md tracking-wider"
+          class="shrink-0 rounded-md bg-emerald-100 px-2 py-0.5 text-[10px] font-black tracking-wider text-emerald-700 uppercase"
         >
           {{ fileExtension }}
         </span>
         <span
           v-else
-          class="shrink-0 text-[9px] font-bold uppercase text-slate-400 bg-slate-200/60 px-1.5 py-0.5 rounded-md tracking-wider"
+          class="shrink-0 rounded-md bg-slate-200/60 px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-slate-400 uppercase"
         >
           Sem Mídia
         </span>
@@ -54,7 +51,7 @@
       <button
         v-if="modelValue"
         type="button"
-        class="shrink-0 p-1.5 text-slate-400 hover:text-rose-500 rounded-lg hover:bg-rose-50 transition"
+        class="shrink-0 rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
         title="Remover imagem"
         @click="clearFile"
       >

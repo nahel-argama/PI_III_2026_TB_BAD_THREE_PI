@@ -247,8 +247,6 @@ async function loadOrder() {
   }
 }
 
-
-
 // Chamado quando o usuário clica "Confirmar pagamento" no PaymentConfirmationModal
 const paymentModalRef = ref(null);
 

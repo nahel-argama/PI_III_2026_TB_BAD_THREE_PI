@@ -1,9 +1,6 @@
 <template>
   <section class="space-y-6 pb-6">
-    <OffersHeader
-      :search="searchTerm"
-      @update-search="onSearch"
-    />
+    <OffersHeader :search="searchTerm" @update-search="onSearch" />
 
     <OffersGrid
       :items="offers"
@@ -118,7 +115,10 @@ async function handleAddToCart(payload) {
     const productName = capitalize(product.name || 'Produto');
     const producerLabel = getProducerLabel(product);
 
-    toast.success(`${productName} adicionado ao pedido do ${producerLabel}.`, 'Carrinho atualizado');
+    toast.success(
+      `${productName} adicionado ao pedido do ${producerLabel}.`,
+      'Carrinho atualizado',
+    );
   } catch (error) {
     toast.error(
       error?.message || 'Não foi possível adicionar o produto ao carrinho.',
