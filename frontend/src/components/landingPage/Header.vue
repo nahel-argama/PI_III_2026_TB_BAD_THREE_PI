@@ -8,7 +8,7 @@
           π
         </div>
         <span class="text-xl font-extrabold tracking-tight text-slate-900">
-          Culti<span class="text-2xl text-green-600">va</span>
+          Cultiva
         </span>
       </div>
 
