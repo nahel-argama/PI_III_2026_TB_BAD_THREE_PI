@@ -149,3 +149,16 @@ export async function deleteOrder(orderId) {
     throw buildOrdersServiceError(error, 'Unable to delete order.');
   }
 }
+
+export async function payOrder(orderId, { payment_method, card }) {
+  try {
+    const payload = { payment_method };
+    if (payment_method === 'credit_card' && card) {
+      payload.card = card;
+    }
+    const response = await api.post(`/orders/${orderId}/pay/`, payload);
+    return response.data;
+  } catch (error) {
+    throw buildOrdersServiceError(error, 'Não foi possível processar o pagamento.');
+  }
+}

@@ -11,6 +11,7 @@
         :item-kind-label="itemKindLabel"
         :is-open="openItemId === item.id"
         @toggle="toggleItem"
+        @download-invoice="$emit('download-invoice', $event)"
       />
     </div>
 
@@ -55,6 +56,8 @@ defineProps({
 });
 
 const openItemId = ref(null);
+
+defineEmits(['download-invoice']);
 
 function toggleItem(itemId) {
   openItemId.value = openItemId.value === itemId ? null : itemId;

@@ -1,8 +1,8 @@
 <template>
   <footer class="border-t border-slate-800 bg-slate-900 py-16 text-slate-300">
     <div class="container mx-auto px-6">
-      <div class="mb-12 grid grid-cols-1 gap-12 md:grid-cols-4">
-        <div class="col-span-1 md:col-span-1">
+      <div class="mb-12 flex flex-col justify-between gap-12 md:flex-row">
+        <div class="max-w-md">
           <div class="mb-6 flex items-center gap-3">
             <div
               class="flex h-8 w-8 items-center justify-center rounded-lg bg-green-500 text-lg font-bold text-slate-900"
@@ -10,7 +10,7 @@
               π
             </div>
             <span class="text-xl font-black tracking-tighter text-white">
-              Culti <span class="text-green-500">va</span>
+              Cultiva
             </span>
           </div>
           <p class="text-sm leading-relaxed text-slate-400">
@@ -19,30 +19,22 @@
           </p>
         </div>
 
-        <div>
-          <h4 class="mb-6 text-sm font-bold tracking-widest text-white uppercase">Plataforma</h4>
-          <ul class="space-y-4 text-sm">
-            <li><a href="#" class="transition hover:text-green-500">Marketplace</a></li>
-            <li><a href="#" class="transition hover:text-green-500">media de preços</a></li>
-          </ul>
-        </div>
 
         <div>
           <h4 class="mb-6 text-sm font-bold tracking-widest text-white uppercase">Institucional</h4>
           <ul class="space-y-4 text-sm">
-            <li><a href="#" class="transition hover:text-green-500">Sobre o Projeto</a></li>
-            <li><a href="#" class="transition hover:text-green-500">Documentação Técnica</a></li>
             <li>
-              <a href="#" class="transition hover:text-green-500">SDG 9 - Sustentabilidade</a>
+              <a href="https://docs.google.com/document/d/1Sj4P5nEl6HJOt2TKL23mWR1x7BN8BgVgE_t_16QcDfk/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="transition hover:text-green-500">Documentação</a>
             </li>
-            <li><a href="#" class="transition hover:text-green-500">Repositório GitHub</a></li>
-          </ul>
-        </div>
-
-        <div>
-          <h4 class="mb-6 text-sm font-bold tracking-widest text-white uppercase">Ajuda</h4>
-          <ul class="space-y-4 text-sm text-slate-400">
-            <li>principais duvidas</li>
+            <li>
+              <a href="https://courseware.fho.edu.br/repositorio-publico/eyJpdiI6Ik03ZllXYWNuMndmWEVEdk5HNlcvNFE9PSIsInZhbHVlIjoiUHdWeGplQnVoQ1pnY0RHWUFhZzU3QT09IiwibWFjIjoiNjM5ODk3Yjc3NDM2NmY2ODYwMGZjMTMwMjc4YTY2NTRhY2IxOGZiMDU4NzNmYzc3MmE2ZmQwZDZiNDNhN2M0MiIsInRhZyI6IiJ9?search=escoamento" target="_blank" rel="noopener noreferrer" class="transition hover:text-green-500">Publicação no repositório da Fundação Hermínio Ometto (FHO)</a>
+            </li>
+            <li>
+              <a href="https://sdgs.un.org/goals/goal9" target="_blank" rel="noopener noreferrer" class="transition hover:text-green-500">SDG 9 - Sustentabilidade</a>
+            </li>
+            <li>
+              <a href="https://github.com/nahel-argama/PI_III_2026_TB_BAD_THREE_PI" target="_blank" rel="noopener noreferrer" class="transition hover:text-green-500">Repositório GitHub</a>
+            </li>
           </ul>
         </div>
       </div>

@@ -225,11 +225,11 @@ Content-Type: application/json
 ```json
 {
     "status": "error",
-    "message": "Invalid credit card cvv.",
+    "message": "Erro ao processar pagamento.",
     "errors": [
         {
             "field": "card.cvv",
-            "message": "Invalid credit card cvv.",
+            "message": "Erro ao processar pagamento.",
             "value": "000"
         }
     ]

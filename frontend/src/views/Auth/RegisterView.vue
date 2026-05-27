@@ -246,16 +246,29 @@
           <button
             v-if="currentStep > 1"
             type="button"
-            class="rounded-lg border px-4 py-2 font-bold text-gray-700 hover:bg-gray-100"
+            class="rounded-lg border px-4 py-2 font-bold text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-70"
+            :disabled="isLoading"
             @click="prevStep"
           >
             Anterior
           </button>
           <button
             type="submit"
-            class="bg-primary hover:bg-secondary rounded-lg px-4 py-2 font-bold text-white transition duration-300"
+            class="bg-primary hover:bg-secondary flex items-center justify-center rounded-lg px-4 py-2 font-bold text-white transition duration-300 disabled:cursor-not-allowed disabled:opacity-70"
+            :disabled="isLoading"
           >
-            {{ currentStep < 3 ? 'Próximo' : 'Cadastrar' }}
+            <svg
+              v-if="isLoading && currentStep === 3"
+              class="mr-2 h-5 w-5 animate-spin text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span v-if="currentStep < 3">Próximo</span>
+            <span v-else>{{ isLoading ? 'Cadastrando...' : 'Cadastrar' }}</span>
           </button>
         </div>
       </form>
@@ -269,7 +282,7 @@
 
 <script setup>
 import { reactive, ref, watch, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { fetchAddressByCep, fetchStates } from '@/services/brasilApi';
 import AppSelect from '@/components/ui/AppSelect.vue';
@@ -281,12 +294,17 @@ const toast = useToast();
 const currentStep = ref(1);
 const isSearchingCep = ref(false);
 const isLoadingStates = ref(false);
+const isLoading = ref(false);
 const lastSearchedCep = ref('');
+
+const route = useRoute();
+
+const initialType = ['PRODUCER', 'RETAILER'].includes(route.query.type) ? route.query.type : 'PRODUCER';
 
 const form = reactive({
   name: '',
   email: '',
-  type: 'PRODUCER',
+  type: initialType,
   password: '',
   tipo_documento: 'CPF',
   documento: '',
@@ -663,6 +681,8 @@ const handleCadastro = async () => {
     return;
   }
 
+  isLoading.value = true;
+
   try {
     const signupPayload = {
       name: form.name,
@@ -707,6 +727,8 @@ const handleCadastro = async () => {
       typeof backendMessage === 'object' ? JSON.stringify(backendMessage) : String(backendMessage);
 
     toast.error(`Falha ao concluir seu cadastro. Detalhes: ${errorDetails}`, 'Falha no Cadastro');
+  } finally {
+    isLoading.value = false;
   }
 };
 </script>

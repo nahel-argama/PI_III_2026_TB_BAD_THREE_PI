@@ -15,6 +15,7 @@
       empty-title="Nenhuma compra encontrada"
       empty-description="Não há pedidos confirmados/cancelados/entregues para exibir."
       item-kind-label="Compra"
+      @download-invoice="onDownloadInvoice"
     />
 
     <AppPagination
@@ -34,6 +35,7 @@ import AppPagination from '@/components/ui/AppPagination.vue';
 import { listOrders } from '@/services/ordersService';
 import { useToast } from '@/composables/useToast';
 import { formatDocument, formatPostalCode } from '@/utils/formatters';
+import { downloadInvoice } from '@/utils/invoiceGenerator';
 
 const searchTerm = ref('');
 const purchases = ref([]);
@@ -72,6 +74,17 @@ function formatAddress(address) {
 }
 
 
+
+const PAYMENT_METHOD_LABELS = {
+  pix: 'PIX',
+  invoice: 'Boleto Bancário',
+  credit_card: 'Cartão de Crédito',
+};
+
+function formatPaymentMethod(method) {
+  if (!method) return 'Método não informado';
+  return PAYMENT_METHOD_LABELS[method] || method;
+}
 
 function getStatusView(status) {
   if (status === 'CONFIRMED') {
@@ -136,6 +149,7 @@ function buildHistoryItem(order) {
 
   return {
     id: order.id,
+    rawOrder: order,
     contractTitle: `Pedido #${order.id}`,
     partyName: producerName,
     partyDocument:
@@ -149,8 +163,10 @@ function buildHistoryItem(order) {
     status: statusView.label,
     statusTone: statusView.tone,
     payment: {
-      method: 'Método não informado',
-      details: 'Dados de pagamento não retornados pela API de pedidos.',
+      method: formatPaymentMethod(order?.payment_method),
+      details: order?.payment_method 
+        ? (order?.status === 'CANCELED' ? `Tentativa via ${formatPaymentMethod(order.payment_method)}` : `Pago via ${formatPaymentMethod(order.payment_method)}`) 
+        : 'Pagamento não registrado.',
       total: formatMoney(order?.total_value),
     },
     items: items.map((item) => {
@@ -178,6 +194,10 @@ async function loadPurchaseHistory() {
     purchases.value = [];
     toast.error(error?.message || 'Não foi possível carregar histórico de compras.', 'Erro');
   }
+}
+
+function onDownloadInvoice(item) {
+  downloadInvoice(item.rawOrder);
 }
 
 const filteredPurchases = computed(() => {

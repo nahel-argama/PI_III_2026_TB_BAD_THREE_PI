@@ -19,7 +19,20 @@ class Order(models.Model):
         ('DELIVERED', 'Delivered')
     ]
 
+    PAYMENT_METHOD_CHOICES = [
+        ('pix', 'PIX'),
+        ('invoice', 'Boleto Bancário'),
+        ('credit_card', 'Cartão de Crédito'),
+    ]
+
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PAYMENT_METHOD_CHOICES,
+        null=True,
+        blank=True,
+        default=None,
+    )
     subtotal_value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     fee_value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_value = models.DecimalField(max_digits=10, decimal_places=2, default=0)

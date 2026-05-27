@@ -27,13 +27,13 @@
 
           <div class="flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
             <router-link
-              to="/register"
+              to="/register?type=PRODUCER"
               class="rounded-2xl bg-green-600 px-10 py-4 text-lg font-extrabold text-white shadow-xl shadow-green-100 transition-all hover:-translate-y-1 hover:bg-green-700"
             >
               Sou Produtor
             </router-link>
             <router-link
-              to="/register"
+              to="/register?type=RETAILER"
               class="rounded-2xl border-2 border-slate-200 bg-white px-10 py-4 text-lg font-extrabold text-slate-700 transition-all hover:border-green-600"
             >
               Sou Varejista
@@ -46,31 +46,31 @@
             <img
               src="/Hero_image.jpg"
               alt="Produção agrícola fresca"
-              class="h-137 w-full object-cover transition-transform duration-700 group-hover:scale-105"
+              class="h-137 w-full object-cover"
             />
+          </div>
 
-            <div
-              class="absolute bottom-8 left-8 -rotate-1 rounded-2xl border border-white/20 bg-white/95 p-5 shadow-2xl backdrop-blur"
-            >
-              <div class="flex items-center gap-4">
-                <div class="rounded-xl bg-orange-100 p-3 text-orange-600">
-                  <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="3"
-                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <p class="text-sm leading-none font-black text-slate-900 italic">
-                    media de preços
-                  </p>
-                  <p class="mt-1 text-xs text-slate-500">
-                    Preços otimizados com dados da plataforma
-                  </p>
-                </div>
+          <div
+            class="absolute bottom-8 left-8 z-20 rounded-2xl border border-slate-100 bg-white p-5 shadow-2xl"
+          >
+            <div class="flex items-center gap-4">
+              <div class="rounded-xl bg-green-100 p-3 text-green-600">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="3"
+                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                  />
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm leading-none font-black text-slate-900 italic">
+                  Média de preços
+                </p>
+                <p class="mt-1 text-xs text-slate-500">
+                  Preços otimizados com dados da plataforma
+                </p>
               </div>
             </div>
           </div>

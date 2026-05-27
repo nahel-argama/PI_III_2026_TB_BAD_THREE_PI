@@ -4,12 +4,10 @@
       <div class="mx-auto mb-20 max-w-3xl text-center">
         <span class="text-sm font-bold tracking-wider text-green-600 uppercase">Como Funciona</span>
         <h2 class="mt-4 mb-6 text-3xl font-black tracking-tight text-slate-900 md:text-5xl">
-          Transparência e eficiência em cada etapa
+          Transparência, inteligência e eficiência em cada etapa
         </h2>
         <p class="text-lg leading-relaxed text-slate-600">
-          O fluxo do <span class="font-bold text-slate-800">Cultiva</span> foi desenhado para
-          eliminar a burocracia, conectar as pontas da cadeia e maximizar o lucro de quem realmente
-          produz o alimento.
+          O <span class="font-bold text-slate-800">Cultiva</span> conecta pequenos produtores e varejistas através de uma plataforma inteligente que reduz intermediários, otimiza a logística e promove negociações mais justas para toda a cadeia de abastecimento.
         </p>
       </div>
 
@@ -37,23 +35,23 @@ import ProcessCard from './processes/ProcessesCards.vue';
 const stepsData = [
   {
     number: 1,
-    title: 'Descoberta Local',
+    title: 'Descoberta Inteligente',
     description:
-      'Através do nosso sistema de georreferenciamento, o varejista encontra produtores num raio de proximidade ideal, reduzindo os custos logísticos e a pegada de carbono.',
+      'Utilizando georreferenciamento e filtros avançados, o varejista encontra produtores próximos com base em disponibilidade, categoria de produto e capacidade de fornecimento. Isso reduz custos logísticos, acelera entregas e fortalece o comércio local.',
     theme: 'green',
   },
   {
     number: 2,
-    title: 'media de preços',
+    title: 'Precificação Dinâmica',
     description:
-      'Nosso algoritmo analisa o mercado e sugere o preço ideal em tempo real. Evitamos a concorrência predatória e garantimos que o produtor receba o valor justo pela sua colheita.',
+      'Nosso motor de inteligência de mercado analisa referências públicas, tendências regionais e dados da CONAB para sugerir preços equilibrados em tempo real. O resultado é uma negociação mais transparente, sustentável e sem concorrência predatória.',
     theme: 'green',
   },
   {
     number: 3,
-    title: 'Conexão Direta',
+    title: 'Negociação Direta',
     description:
-      'A negociação e o pedido são efetuados sem intermediários. O varejo recebe produtos mais frescos aumenta suas opções de fornecedores e o agricultor aumenta a sua visibilidade e lucro.',
+      'A plataforma conecta produtor e varejo sem atravessadores. O varejista amplia sua rede de fornecedores e recebe produtos mais frescos, enquanto o pequeno produtor ganha mais visibilidade, autonomia comercial e margem de lucro.',
     theme: 'green',
   },
 ];

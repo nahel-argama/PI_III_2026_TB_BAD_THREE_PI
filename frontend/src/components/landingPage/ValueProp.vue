@@ -35,28 +35,28 @@ import 'primeicons/primeicons.css';
 
 const values = [
   {
-    title: 'Margens Reais',
+    title: 'Mapeamento Inteligente',
     description:
-      'Eliminamos o atravessador para que o lucro da venda fique com quem produz, não com quem intermedia.',
-      icon: 'pi pi-chart-bar',
+      'Conecta varejistas aos produtores locais mais próximos usando algoritmos de georreferenciamento. Isso reduz custos logísticos, acelera entregas e fortalece a economia da sua região com total eficiência.',
+    icon: 'pi pi-map-marker',
   },
   {
-    title: 'Georreferenciamento',
+    title: 'Precificação Inteligente',
     description:
-      'Algoritmos que priorizam o comércio local, ajudando tanto o varejista quanto o produtor',
-      icon: 'pi pi-map-marker'
+      'Motor dinâmico baseado em inteligência de mercado e dados públicos da CONAB. A plataforma sugere preços justos e competitivos, evitando concorrência predatória e garantindo transparência para todos.',
+    icon: 'pi pi-dollar',
   },
   {
-    title: 'Preço Dinâmico',
+    title: 'Previsão de Produção',
     description:
-      'O scrapper de preço dinamico calcula uma media de preços, garantindo competitividade não predatoria.',
-      icon: 'pi pi-wallet',
+      'A partir das listas de interesse do varejo, nosso sistema gera previsões precisas de demanda. Assim, orientamos o produtor sobre o que plantar e quais produtos terão maior potencial e garantia de vendas.',
+    icon: 'pi pi-chart-line',
   },
   {
-    title: 'Transparencia',
+    title: 'Ecossistema Inteligente B2B',
     description:
-      'Informação de mercado clara para o pequeno produtor ficar por dentro do mundo agricola.',
-      icon: 'pi pi-info-circle',
+      'Mais do que um simples marketplace, oferecemos uma infraestrutura tecnológica completa. Nossa plataforma unifica a gestão, comercialização e rastreabilidade em um ambiente acessível, moderno e muito prático.',
+    icon: 'pi pi-globe',
   },
 ];
 </script>

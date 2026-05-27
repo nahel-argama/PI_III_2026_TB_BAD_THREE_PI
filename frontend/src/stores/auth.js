@@ -165,14 +165,24 @@ export const useAuthStore = defineStore('auth', () => {
 
   const login = async (email, password) => {
     const { default: api } = await import('@/services/api');
-    const response = await api.post('/auth/login/', {
-      email,
-      password,
-    });
+    try {
+      const response = await api.post('/auth/login/', {
+        email,
+        password,
+      });
 
-    _hydrateAuthStateFromResponse(response.data);
+      _hydrateAuthStateFromResponse(response.data);
 
-    return response.data;
+      return response.data;
+    } catch (error) {
+      if (
+        error.response?.status === 401 &&
+        error.response?.data?.detail === 'No active account found with the given credentials'
+      ) {
+        error.response.data.detail = 'E-mail ou senha inválidos.';
+      }
+      throw error;
+    }
   };
 
   const signup = async (payload) => {

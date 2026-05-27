@@ -13,4 +13,4 @@ def validate_payment_rules(payload: PaymentRequestSchema) -> None:
 
     # error handling if credit card cvv is 000
     if payload.payment_method == PaymentMethods.CREDIT_CARD and payload.card.cvv.endswith("000"):
-        raise PaymentValidationError("Invalid credit card cvv.", field="card.cvv")
+        raise PaymentValidationError("Erro ao processar pagamento.", field="card.cvv")

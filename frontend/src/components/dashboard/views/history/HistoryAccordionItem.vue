@@ -1,5 +1,7 @@
 <template>
-  <article class="overflow-hidden rounded-[24px] border border-white/70 bg-white/90 shadow-sm transition hover:border-emerald-200 hover:shadow-lg">
+  <article
+    class="overflow-hidden rounded-[24px] border border-white/70 bg-white/90 shadow-sm transition hover:border-emerald-200 hover:shadow-lg"
+  >
     <button
       type="button"
       class="flex w-full items-center justify-between gap-4 px-5 py-5 text-left transition hover:bg-slate-50/80"
@@ -8,11 +10,11 @@
     >
       <div class="min-w-0 flex-1">
         <div class="flex flex-wrap items-center gap-2">
-          <p class="text-xs font-bold uppercase tracking-[0.26em] text-emerald-600">
+          <p class="text-xs font-bold tracking-[0.26em] text-emerald-600 uppercase">
             {{ itemKindLabel }}
           </p>
           <span
-            class="rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em]"
+            class="rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.22em] uppercase"
             :class="statusClasses[item.statusTone || 'emerald']"
           >
             {{ item.status }}
@@ -23,9 +25,7 @@
           {{ item.contractTitle }}
         </h3>
 
-        <p class="mt-1 truncate text-sm text-slate-500">
-          {{ item.partyName }} • {{ item.date }}
-        </p>
+        <p class="mt-1 truncate text-sm text-slate-500">{{ item.partyName }} • {{ item.date }}</p>
       </div>
 
       <div class="shrink-0 rounded-2xl border border-slate-200 bg-white p-2 text-slate-500">
@@ -37,14 +37,21 @@
     </button>
 
     <transition name="history-panel">
-      <div
-        v-if="isOpen"
-        class="border-t border-slate-100 px-5 py-5"
-      >
+      <div v-if="isOpen" class="border-t border-slate-100 px-5 py-5">
         <div class="space-y-3">
+          <button
+            v-if="item.rawOrder?.status !== 'CANCELED'"
+            type="button"
+            class="invoice-btn ml-4"
+            @click.stop="$emit('download-invoice', item)"
+          >
+            <ArrowDownTrayIcon class="h-4 w-4" />
+            Baixar Nota Fiscal
+          </button>
+
           <div class="min-w-0 space-y-3">
             <div class="rounded-[22px] bg-slate-50 px-4 py-3">
-              <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+              <p class="text-xs font-semibold tracking-[0.24em] text-slate-400 uppercase">
                 Fornecedor
               </p>
               <p class="mt-1 text-base font-bold text-slate-900">
@@ -56,7 +63,7 @@
             </div>
 
             <div class="rounded-[22px] bg-slate-50 px-4 py-3">
-              <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+              <p class="text-xs font-semibold tracking-[0.24em] text-slate-400 uppercase">
                 Contato
               </p>
               <p class="mt-1 text-base font-bold text-slate-900">
@@ -68,7 +75,7 @@
             </div>
 
             <div class="rounded-[22px] bg-slate-50 px-4 py-3">
-              <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+              <p class="text-xs font-semibold tracking-[0.24em] text-slate-400 uppercase">
                 Data do contrato
               </p>
               <p class="mt-1 text-base font-bold text-slate-900">
@@ -80,7 +87,7 @@
 
         <div class="mt-4 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
           <div class="rounded-[22px] bg-slate-50 px-4 py-4">
-            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+            <p class="text-xs font-semibold tracking-[0.24em] text-slate-400 uppercase">
               Itens {{ itemKindLabel.toLowerCase() }}
             </p>
 
@@ -99,7 +106,9 @@
                   </p>
                 </div>
 
-                <span class="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                <span
+                  class="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600"
+                >
                   {{ contractItem.category }}
                 </span>
               </div>
@@ -108,7 +117,7 @@
 
           <div class="space-y-3">
             <div class="rounded-[22px] bg-slate-50 px-4 py-3">
-              <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+              <p class="text-xs font-semibold tracking-[0.24em] text-slate-400 uppercase">
                 Forma de pagamento
               </p>
               <p class="mt-1 text-base font-bold text-slate-900">
@@ -120,14 +129,13 @@
             </div>
 
             <div class="rounded-[22px] bg-slate-50 px-4 py-3">
-              <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+              <p class="text-xs font-semibold tracking-[0.24em] text-slate-400 uppercase">
                 Valor do contrato
               </p>
               <p class="mt-1 text-base font-bold text-slate-900">
                 {{ item.payment.total }}
               </p>
             </div>
-
           </div>
         </div>
       </div>
@@ -136,7 +144,7 @@
 </template>
 
 <script setup>
-import { ChevronDownIcon } from '@heroicons/vue/24/outline';
+import { ChevronDownIcon, ArrowDownTrayIcon } from '@heroicons/vue/24/outline';
 
 defineProps({
   item: {
@@ -153,7 +161,7 @@ defineProps({
   },
 });
 
-defineEmits(['toggle']);
+defineEmits(['toggle', 'download-invoice']);
 
 const statusClasses = {
   emerald: 'bg-emerald-50 text-emerald-700',
@@ -174,5 +182,33 @@ const statusClasses = {
 .history-panel-leave-to {
   opacity: 0;
   transform: translateY(-6px);
+}
+
+.invoice-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: none;
+  background: #052e16;
+  color: #a7f3d0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    transform 0.12s ease;
+}
+
+.invoice-btn:hover {
+  background: #14532d;
+  transform: translateY(-1px);
+}
+
+.invoice-btn:active {
+  transform: translateY(0);
 }
 </style>

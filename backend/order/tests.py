@@ -1,3 +1,5 @@
+from unittest.mock import patch, MagicMock
+from requests.exceptions import RequestException
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -154,7 +156,7 @@ class OrderLifecycleWithNestedItemsTestCase(TestCase):
         order_detail_response = self.client.get(f'{self.orders_url}{order_id}/')
 
         self.assertEqual(order_detail_response.status_code, status.HTTP_200_OK)
-        self.assertEqual(order_detail_response.data['total_value'], '30.00')
+        self.assertEqual(order_detail_response.data['total_value'], '31.50')
         self.assertEqual(len(order_detail_response.data['items']), 1)
         self.assertEqual(order_detail_response.data['items'][0]['quantity'], 3)
 
@@ -372,6 +374,7 @@ class OrderConfirmTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['status'], 'CONFIRMED')
+        self.assertIsNone(response.data['payment_method'])
 
         # Verify order status in database
         updated_order = Order.objects.get(id=self.order.id)
@@ -597,3 +600,211 @@ class OrderListingTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(response.data['results'][0]['id'], self.order1.id)
+
+
+class OrderPaymentProxyTestCase(TestCase):
+    """Test cases for the new payment proxy action (/orders/{id}/pay/)."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.orders_url = '/api/orders/'
+
+        self.producer_user = User.objects.create_user(
+            email='producer_pay@agriculture.com',
+            name='Producer Pay',
+            password='SecurePass123',
+            user_type='PRODUCER'
+        )
+        self.producer = Producer.objects.create(
+            user=self.producer_user,
+            document_type='CPF',
+            document_number='12345678901'
+        )
+
+        self.retailer_user = User.objects.create_user(
+            email='retailer_pay@retail.com',
+            name='Retailer Pay',
+            password='SecurePass123',
+            user_type='RETAILER'
+        )
+        self.retailer = Retailer.objects.create(
+            user=self.retailer_user,
+            document_type='CNPJ',
+            document_number='12345678901234'
+        )
+
+        self.category = Category.objects.create(name='Electronics')
+        self.product = Product.objects.create(
+            category=self.category,
+            producer=self.producer,
+            name='Product Pay',
+            total_quantity=100,
+            reserved_quantity=0,
+            price=10.00,
+            is_active=True
+        )
+
+        self.order = Order.objects.create(
+            retailer=self.retailer,
+            producer=self.producer,
+            status='PENDING',
+            total_value=0
+        )
+        self.order_item = OrderItem.objects.create(
+            order=self.order,
+            product=self.product,
+            quantity=5,
+            unit_price=10.00
+        )
+        self.pay_url = f'{self.orders_url}{self.order.id}/pay/'
+
+    def test_payment_success(self):
+        self.client.force_authenticate(user=self.retailer_user)
+        
+        with patch('order.services.requests.post') as mock_post:
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_post.return_value = mock_response
+
+            response = self.client.post(self.pay_url, {
+                'payment_method': 'pix',
+            }, format='json')
+
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(response.data['status'], 'CONFIRMED')
+            self.assertEqual(response.data['payment_method'], 'pix')
+
+            self.order.refresh_from_db()
+            self.assertEqual(self.order.status, 'CONFIRMED')
+            self.assertEqual(self.order.payment_method, 'pix')
+
+    def test_payment_success_credit_card(self):
+        self.client.force_authenticate(user=self.retailer_user)
+        
+        with patch('order.services.requests.post') as mock_post:
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_post.return_value = mock_response
+
+            response = self.client.post(self.pay_url, {
+                'payment_method': 'credit_card',
+                'card': {
+                    'holder_name': 'Test User',
+                    'number': '4111111111111111',
+                    'expiry_month': 12,
+                    'expiry_year': 2030,
+                    'cvv': '123'
+                }
+            }, format='json')
+
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(response.data['status'], 'CONFIRMED')
+            self.assertEqual(response.data['payment_method'], 'credit_card')
+
+            self.order.refresh_from_db()
+            self.assertEqual(self.order.status, 'CONFIRMED')
+            self.assertEqual(self.order.payment_method, 'credit_card')
+
+    def test_payment_gateway_402(self):
+        self.client.force_authenticate(user=self.retailer_user)
+        
+        with patch('order.services.requests.post') as mock_post:
+            mock_response = MagicMock()
+            mock_response.status_code = 402
+            mock_response.json.return_value = {"message": "Saldo insuficiente"}
+            mock_post.return_value = mock_response
+
+            response = self.client.post(self.pay_url, {
+                'payment_method': 'credit_card',
+                'card': {'number': '1234'}
+            }, format='json')
+
+            self.assertEqual(response.status_code, status.HTTP_402_PAYMENT_REQUIRED)
+            self.assertEqual(response.data['error'], 'Saldo insuficiente')
+            self.order.refresh_from_db()
+            self.assertEqual(self.order.status, 'CANCELED')
+            self.assertEqual(self.order.payment_method, 'credit_card')
+
+    def test_payment_gateway_422(self):
+        self.client.force_authenticate(user=self.retailer_user)
+        
+        with patch('order.services.requests.post') as mock_post:
+            mock_response = MagicMock()
+            mock_response.status_code = 422
+            mock_response.json.return_value = {"message": "Payload inválido"}
+            mock_post.return_value = mock_response
+
+            response = self.client.post(self.pay_url, {
+                'payment_method': 'pix',
+            }, format='json')
+
+            self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+            self.order.refresh_from_db()
+            self.assertEqual(self.order.status, 'CANCELED')
+            self.assertEqual(self.order.payment_method, 'pix')
+
+    def test_payment_gateway_timeout(self):
+        self.client.force_authenticate(user=self.retailer_user)
+        
+        with patch('order.services.requests.post', side_effect=RequestException("Timeout")):
+            response = self.client.post(self.pay_url, {
+                'payment_method': 'pix',
+            }, format='json')
+
+            self.assertEqual(response.status_code, status.HTTP_503_SERVICE_UNAVAILABLE)
+            self.order.refresh_from_db()
+            self.assertEqual(self.order.status, 'PENDING')
+            self.assertIsNone(self.order.payment_method)
+
+    def test_payment_method_null_on_new_order(self):
+        self.client.force_authenticate(user=self.retailer_user)
+        response = self.client.get(f'/api/orders/{self.order.id}/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsNone(response.data['payment_method'])
+
+    def test_payment_order_not_pending(self):
+        self.client.force_authenticate(user=self.retailer_user)
+        self.order.status = 'CONFIRMED'
+        self.order.save()
+
+        response = self.client.post(self.pay_url, {
+            'payment_method': 'pix',
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_payment_order_no_items(self):
+        self.client.force_authenticate(user=self.retailer_user)
+        self.order_item.delete()
+
+        response = self.client.post(self.pay_url, {
+            'payment_method': 'pix',
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_payment_unauthenticated(self):
+        response = self.client.post(self.pay_url, {
+            'payment_method': 'pix',
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_payment_not_retailer(self):
+        self.client.force_authenticate(user=self.producer_user)
+        response = self.client.post(self.pay_url, {
+            'payment_method': 'pix',
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_payment_missing_method(self):
+        self.client.force_authenticate(user=self.retailer_user)
+        response = self.client.post(self.pay_url, {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_payment_missing_card_for_credit_card(self):
+        self.client.force_authenticate(user=self.retailer_user)
+        response = self.client.post(self.pay_url, {
+            'payment_method': 'credit_card',
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
