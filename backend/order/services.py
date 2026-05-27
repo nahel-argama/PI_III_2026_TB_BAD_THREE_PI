@@ -1,3 +1,7 @@
+import os
+import requests
+from requests.exceptions import RequestException
+
 from django.db import transaction
 from django.db.models import F
 
@@ -51,3 +55,55 @@ def confirm_order_with_stock(order):
         order.save(update_fields=['status'])
 
     return order, None
+
+
+def process_payment_and_confirm(order, payment_method, price, card=None):
+    gateway_url = os.environ.get('PAYMENT_GATEWAY_URL', 'http://localhost:8002')
+    url = f"{gateway_url}/payments"
+
+    payload = {
+        "price": float(price),
+        "payment_method": payment_method
+    }
+
+    if payment_method == 'credit_card' and card:
+        payload["card"] = card
+
+    try:
+        response = requests.post(url, json=payload, timeout=10)
+
+        if response.status_code in (402, 422):
+            order.status = 'CANCELED'
+            order.save(update_fields=['status'])
+
+            try:
+                data = response.json()
+            except ValueError:
+                data = {}
+
+            error_msg = data.get("message")
+            if not error_msg:
+                detail = data.get("detail")
+                if isinstance(detail, dict):
+                    error_msg = detail.get("message")
+                elif isinstance(detail, str):
+                    error_msg = detail
+
+            if not error_msg:
+                error_msg = "Pagamento recusado pelo gateway."
+
+            errors = data.get("errors") if isinstance(data.get("errors"), list) else []
+
+            return None, {"status": response.status_code, "error": error_msg, "gateway_errors": errors}
+
+        response.raise_for_status()
+
+        # Sucesso no gateway, confirma pedido e baixa estoque
+        order, error = confirm_order_with_stock(order)
+        if error:
+            return None, {"status": 400, "error": error}
+
+        return order, None
+
+    except RequestException:
+        return None, {"status": 503, "error": "Serviço de pagamento indisponível. Tente novamente."}

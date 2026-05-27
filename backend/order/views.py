@@ -9,7 +9,7 @@ from .serializers import OrderSerializer
 from users.permissions import IsRetailer
 from .filters import OrderFilter
 from .models import Order
-from .services import confirm_order_with_stock
+from .services import confirm_order_with_stock, process_payment_and_confirm
 from order_item.models import OrderItem
 
 
@@ -37,7 +37,7 @@ class OrderViewSet(
     )
 
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'confirm', 'cancel', 'destroy']:
+        if self.action in ['create', 'update', 'partial_update', 'confirm', 'cancel', 'pay', 'destroy']:
             return [IsAuthenticated(), IsRetailer()]
         return [IsAuthenticated()]
 
@@ -116,5 +116,39 @@ class OrderViewSet(
 
         order.status = 'CANCELED'
         order.save()
+
+        return Response(OrderSerializer(order).data)
+
+    @action(detail=True, methods=['post'])
+    def pay(self, request, pk=None):
+        order = self.get_object()
+
+        if order.status != 'PENDING':
+            return Response(
+                {"error": f"Order status is {order.status}, not PENDING"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not order.items.exists():
+            return Response(
+                {"error": "Cannot confirm order with no items"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        payment_method = request.data.get('payment_method')
+        card = request.data.get('card')
+
+        if not payment_method:
+            return Response({"error": "payment_method is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if payment_method == 'credit_card' and not card:
+            return Response({"error": "card data is required for credit_card payment"}, status=status.HTTP_400_BAD_REQUEST)
+
+        price = order.total_value
+
+        order, error = process_payment_and_confirm(order, payment_method, price, card)
+        
+        if error:
+            # error dictionary contains status and error message
+            return Response(error, status=error.get('status', status.HTTP_400_BAD_REQUEST))
 
         return Response(OrderSerializer(order).data)

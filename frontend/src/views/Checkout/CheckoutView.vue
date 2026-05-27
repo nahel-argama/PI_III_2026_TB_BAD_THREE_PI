@@ -124,8 +124,7 @@ import CheckoutFooter from '@/components/checkout/CheckoutFooter.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
 import CreditCardModal from '@/components/checkout/CreditCardModal.vue';
 import PaymentConfirmationModal from '@/components/checkout/PaymentConfirmationModal.vue';
-import { getOrder, deleteOrder as deleteOrderApi, cancelOrder } from '@/services/ordersService';
-import { processPayment } from '@/services/paymentGatewayService';
+import { getOrder, deleteOrder as deleteOrderApi, payOrder } from '@/services/ordersService';
 import { useCartStore } from '@/stores/cart';
 import { useToast } from '@/composables/useToast';
 
@@ -248,50 +247,46 @@ async function loadOrder() {
   }
 }
 
-function buildPaymentPayload(card = null) {
-  const payload = {
-    selectedPaymentId: selectedPaymentId.value,
-    price: total.value,
-  };
-  if (selectedPaymentId.value === 3 && card) {
-    payload.card = card;
-  }
-  return payload;
-}
+
 
 // Chamado quando o usuário clica "Confirmar pagamento" no PaymentConfirmationModal
 const paymentModalRef = ref(null);
+
+const PAYMENT_METHOD_MAP = { 1: 'pix', 2: 'invoice', 3: 'credit_card' };
 
 async function onPaymentModalConfirm() {
   isConfirming.value = true;
   paymentModalError.value = '';
 
-  try {
-    // PASSO 1: Gateway de pagamento
-    await processPayment(buildPaymentPayload(pendingCardData.value));
+  const payment_method = PAYMENT_METHOD_MAP[selectedPaymentId.value];
 
-    // PASSO 2: Pagamento aprovado → confirmar pedido no backend
-    const confirmedOrder = await cartStore.confirmOrder(orderId.value);
+  try {
+    // ÚNICA chamada: o backend chama o gateway e confirma/cancela internamente
+    const confirmedOrder = await payOrder(orderId.value, {
+      payment_method,
+      card: selectedPaymentId.value === 3 ? pendingCardData.value : null,
+    });
+
     order.value = confirmedOrder;
+    const producerId = checkoutProducer.value?.id;
+    if (producerId) cartStore.removePendingOrderByProducer(producerId);
 
     paymentModalRef.value?.setState('success');
     toast.success('Pedido confirmado com sucesso.', 'Compra finalizada');
   } catch (error) {
-    if (error.name === 'PaymentGatewayError') {
-      // PASSO 3: Gateway recusou → cancelar pedido no backend
-      try {
-        await cancelOrder(orderId.value);
-        const producerId = checkoutProducer.value?.id;
-        if (producerId) cartStore.removePendingOrderByProducer(producerId);
-      } catch (cancelError) {
-        // eslint-disable-next-line no-console
-        console.error('Falha ao cancelar pedido após rejeição do gateway:', cancelError);
-      }
-      paymentModalError.value = error.message || 'Pagamento recusado pelo gateway.';
+    // Se o backend retornou 402 ou 422 (gateway rejeitou): pedido já foi cancelado pelo backend
+    if (error.status === 402 || error.status === 422) {
+      const producerId = checkoutProducer.value?.id;
+      if (producerId) cartStore.removePendingOrderByProducer(producerId);
+      paymentModalError.value = error.message || 'Pagamento recusado.';
+    } else if (error.status === 503) {
+      // Gateway indisponível: pedido ainda PENDING, usuário pode tentar novamente
+      paymentModalError.value = error.message || 'Serviço de pagamento indisponível.';
+      // NÃO remove o pedido do carrinho — permite retry
     } else {
-      paymentModalError.value =
-        error?.message || 'O estoque foi alterado. Revise as quantidades e tente novamente.';
-      await loadOrder();
+      // Erro de estoque (400) ou outro
+      paymentModalError.value = error.message || 'Erro ao processar pedido.';
+      await loadOrder(); // recarregar estado atualizado
     }
     paymentModalRef.value?.setState('error');
   } finally {
