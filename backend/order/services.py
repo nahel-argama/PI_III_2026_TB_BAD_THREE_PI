@@ -21,7 +21,7 @@ def validate_item_stock(product, quantity):
     return None
 
 
-def confirm_order_with_stock(order):
+def confirm_order_with_stock(order, payment_method=None):
     with transaction.atomic():
         order = (
             order.__class__.objects
@@ -51,8 +51,14 @@ def confirm_order_with_stock(order):
                 total_quantity=F('total_quantity') - item.quantity
             )
 
+        update_fields = ['status']
         order.status = 'CONFIRMED'
-        order.save(update_fields=['status'])
+
+        if payment_method:
+            order.payment_method = payment_method
+            update_fields.append('payment_method')
+
+        order.save(update_fields=update_fields)
 
     return order, None
 
@@ -74,7 +80,8 @@ def process_payment_and_confirm(order, payment_method, price, card=None):
 
         if response.status_code in (402, 422):
             order.status = 'CANCELED'
-            order.save(update_fields=['status'])
+            order.payment_method = payment_method
+            order.save(update_fields=['status', 'payment_method'])
 
             try:
                 data = response.json()
@@ -99,7 +106,7 @@ def process_payment_and_confirm(order, payment_method, price, card=None):
         response.raise_for_status()
 
         # Sucesso no gateway, confirma pedido e baixa estoque
-        order, error = confirm_order_with_stock(order)
+        order, error = confirm_order_with_stock(order, payment_method)
         if error:
             return None, {"status": 400, "error": error}
 

@@ -75,6 +75,17 @@ function formatAddress(address) {
 
 
 
+const PAYMENT_METHOD_LABELS = {
+  pix: 'PIX',
+  invoice: 'Boleto Bancário',
+  credit_card: 'Cartão de Crédito',
+};
+
+function formatPaymentMethod(method) {
+  if (!method) return 'Método não informado';
+  return PAYMENT_METHOD_LABELS[method] || method;
+}
+
 function getStatusView(status) {
   if (status === 'CONFIRMED') {
     return {
@@ -152,8 +163,10 @@ function buildHistoryItem(order) {
     status: statusView.label,
     statusTone: statusView.tone,
     payment: {
-      method: 'Método não informado',
-      details: 'Dados de pagamento não retornados pela API de pedidos.',
+      method: formatPaymentMethod(order?.payment_method),
+      details: order?.payment_method 
+        ? (order?.status === 'CANCELED' ? `Tentativa via ${formatPaymentMethod(order.payment_method)}` : `Pago via ${formatPaymentMethod(order.payment_method)}`) 
+        : 'Pagamento não registrado.',
       total: formatMoney(order?.total_value),
     },
     items: items.map((item) => {

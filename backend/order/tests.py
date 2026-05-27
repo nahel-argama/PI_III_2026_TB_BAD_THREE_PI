@@ -374,6 +374,7 @@ class OrderConfirmTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['status'], 'CONFIRMED')
+        self.assertIsNone(response.data['payment_method'])
 
         # Verify order status in database
         updated_order = Order.objects.get(id=self.order.id)
@@ -671,8 +672,38 @@ class OrderPaymentProxyTestCase(TestCase):
 
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertEqual(response.data['status'], 'CONFIRMED')
+            self.assertEqual(response.data['payment_method'], 'pix')
+
             self.order.refresh_from_db()
             self.assertEqual(self.order.status, 'CONFIRMED')
+            self.assertEqual(self.order.payment_method, 'pix')
+
+    def test_payment_success_credit_card(self):
+        self.client.force_authenticate(user=self.retailer_user)
+        
+        with patch('order.services.requests.post') as mock_post:
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_post.return_value = mock_response
+
+            response = self.client.post(self.pay_url, {
+                'payment_method': 'credit_card',
+                'card': {
+                    'holder_name': 'Test User',
+                    'number': '4111111111111111',
+                    'expiry_month': 12,
+                    'expiry_year': 2030,
+                    'cvv': '123'
+                }
+            }, format='json')
+
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(response.data['status'], 'CONFIRMED')
+            self.assertEqual(response.data['payment_method'], 'credit_card')
+
+            self.order.refresh_from_db()
+            self.assertEqual(self.order.status, 'CONFIRMED')
+            self.assertEqual(self.order.payment_method, 'credit_card')
 
     def test_payment_gateway_402(self):
         self.client.force_authenticate(user=self.retailer_user)
@@ -692,6 +723,7 @@ class OrderPaymentProxyTestCase(TestCase):
             self.assertEqual(response.data['error'], 'Saldo insuficiente')
             self.order.refresh_from_db()
             self.assertEqual(self.order.status, 'CANCELED')
+            self.assertEqual(self.order.payment_method, 'credit_card')
 
     def test_payment_gateway_422(self):
         self.client.force_authenticate(user=self.retailer_user)
@@ -709,6 +741,7 @@ class OrderPaymentProxyTestCase(TestCase):
             self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
             self.order.refresh_from_db()
             self.assertEqual(self.order.status, 'CANCELED')
+            self.assertEqual(self.order.payment_method, 'pix')
 
     def test_payment_gateway_timeout(self):
         self.client.force_authenticate(user=self.retailer_user)
@@ -721,6 +754,14 @@ class OrderPaymentProxyTestCase(TestCase):
             self.assertEqual(response.status_code, status.HTTP_503_SERVICE_UNAVAILABLE)
             self.order.refresh_from_db()
             self.assertEqual(self.order.status, 'PENDING')
+            self.assertIsNone(self.order.payment_method)
+
+    def test_payment_method_null_on_new_order(self):
+        self.client.force_authenticate(user=self.retailer_user)
+        response = self.client.get(f'/api/orders/{self.order.id}/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsNone(response.data['payment_method'])
 
     def test_payment_order_not_pending(self):
         self.client.force_authenticate(user=self.retailer_user)
