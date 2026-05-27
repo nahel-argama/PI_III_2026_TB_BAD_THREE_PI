@@ -5,7 +5,7 @@ from decimal import Decimal
 
 def normalize_query(query: str) -> str:
     transformed = query.lower().strip()
-    normalized = unicodedata.normalize("NFD", transformed)
+    normalized = unicodedata.normalize("NFD", transformed).replace(" ", "")
 
     return normalized
 

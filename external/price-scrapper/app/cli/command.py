@@ -190,3 +190,23 @@ def parse_command(command_str: str) -> ICommand:
             f"Command '{command_str}' not found. Use 'help' to see available commands."
         )
     return cmd
+
+
+@_register_command
+class UpdateProductContextCommand(ICommand):
+    def command(self) -> str:
+        return "update-product-context"
+
+    def title(self) -> str:
+        return "Update product context"
+
+    def help(self) -> str:
+        return "Generate and update the presentation name and context for products that are missing this information."
+
+    def handler(self, args: list[str]) -> None:
+        from app.ai.generation import run_batch_update
+
+        try:
+            run_batch_update()
+        except Exception as e:
+            print(f"Error updating product context: {e}", file=sys.stderr)
