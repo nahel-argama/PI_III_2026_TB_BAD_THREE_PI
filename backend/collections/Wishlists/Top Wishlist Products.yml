@@ -1,0 +1,22 @@
+info:
+  name: Top Wishlist Products
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: "{{host}}/api/wishlists/top-products/?state=SP&top=5"
+  params:
+    - name: state
+      value: "SP"
+      type: query
+    - name: top
+      value: "5"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

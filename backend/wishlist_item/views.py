@@ -3,12 +3,13 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import exceptions
+from django.db.models import Count
 from django.db import transaction
 
 from product import price_scrapper_client
 from product.price_scrapper_client import ExternalServiceError
 from retailer.models import Retailer
-from users.permissions import IsRetailer
+from users.permissions import IsProducer, IsRetailer
 from wishlist_item.filters import WishlistItemFilter
 from wishlist.models import Wishlist
 from wishlist_item.models import WishlistItem
@@ -127,3 +128,86 @@ class WhishlistItemDeleteView(BaseWishlistItemView):
         item.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class WishlistTopProductsView(APIView):
+    permission_classes = [IsProducer]
+    default_top = 5
+
+    def get(self, request):
+        state = self.get_state(request)
+        if not state:
+            return Response(
+                {"detail": "State must be provided or registered on producer address."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        top = self.get_top(request)
+        if top is None:
+            return Response(
+                {"detail": "Top must be a positive integer."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        ranked_products = list(
+            WishlistItem.objects.filter(
+                wishlist__retailer__user__address__state__iexact=state
+            )
+            .values("product_external_key", "product_name")
+            .annotate(total=Count("id"))
+            .order_by("-total", "product_name")[:top]
+        )
+
+        total_items = sum(product["total"] for product in ranked_products)
+
+        results = [
+            {
+                "product_external_key": product["product_external_key"],
+                "product_name": product["product_name"],
+                "total": product["total"],
+                "percentage": self.get_percentage(product["total"], total_items),
+            }
+            for product in ranked_products
+        ]
+
+        return Response(
+            {
+                "state": state,
+                "top": top,
+                "total_items": total_items,
+                "results": results,
+            }
+        )
+
+    def get_state(self, request):
+        state = request.query_params.get("state")
+
+        if not state:
+            state = getattr(getattr(request.user, "address", None), "state", None)
+
+        if not state:
+            return None
+
+        return state.strip().upper()
+
+    def get_top(self, request):
+        raw_top = request.query_params.get("top") or request.query_params.get("limit")
+
+        if not raw_top:
+            return self.default_top
+
+        try:
+            top = int(raw_top)
+        except (TypeError, ValueError):
+            return None
+
+        if top <= 0:
+            return None
+
+        return top
+
+    def get_percentage(self, total, total_items):
+        if total_items == 0:
+            return 0
+
+        return round((total / total_items) * 100, 2)
