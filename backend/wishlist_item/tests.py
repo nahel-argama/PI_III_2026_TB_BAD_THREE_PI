@@ -5,6 +5,8 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from address.models import Address
+from producer.models import Producer
 from retailer.models import Retailer
 from wishlist.models import Wishlist
 from wishlist_item.models import WishlistItem
@@ -53,6 +55,16 @@ class WishlistItemNestedRouteTestCase(TestCase):
             password='SecurePass123',
             user_type='PRODUCER'
         )
+        self.producer = Producer.objects.create(
+            user=self.producer_user,
+            document_type='CNPJ',
+            document_number='11122233344455',
+            trade_name='Producer One Farm'
+        )
+
+        self.create_address(self.retailer_user, state='SP')
+        self.create_address(self.other_retailer_user, state='SP')
+        self.create_address(self.producer_user, state='SP')
 
         self.item = WishlistItem.objects.create(
             wishlist=self.wishlist,
@@ -67,9 +79,22 @@ class WishlistItemNestedRouteTestCase(TestCase):
 
         self.client.force_authenticate(user=self.retailer_user)
 
+    def create_address(self, user, state):
+        return Address.objects.create(
+            user=user,
+            street='Main Street',
+            number='123',
+            neighborhood='Downtown',
+            city='Sao Paulo',
+            state=state,
+            postal_code='01000-000',
+        )
+
     def wishlist_items_url(self):
         return '/api/wishlists/items/'
 
+    def wishlist_top_products_url(self):
+        return '/api/wishlists/top-products/'
 
     def wishlist_item_detail_url(self, item=None):
         item = item or self.item
@@ -82,7 +107,6 @@ class WishlistItemNestedRouteTestCase(TestCase):
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(len(response.data['results']), 1)
         self.assertEqual(response.data['results'][0]['id'], self.item.id)
-        self.assertEqual(response.data['results'][0]['wishlist'], self.wishlist.id)
 
     def test_list_items_returns_image_url_when_available(self):
         image = Image.objects.create(blob=b"image-data", mime_type="image/png")
@@ -121,7 +145,6 @@ class WishlistItemNestedRouteTestCase(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
-        self.assertEqual(response.data['wishlist'], self.wishlist.id)
         self.assertEqual(response.data['product_external_key'], 'external-3')
         self.assertEqual(response.data['product_name'], 'External Product Three')
         self.assertTrue(
@@ -175,8 +198,7 @@ class WishlistItemNestedRouteTestCase(TestCase):
             {'product_external_key': self.item.product_external_key}
         )
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('product_external_key', response.data)
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
 
     def test_delete_item_does_not_remove_image(self):
         image = Image.objects.create(blob=b"image-data", mime_type="image/png")
@@ -208,5 +230,75 @@ class WishlistItemNestedRouteTestCase(TestCase):
             self.wishlist_items_url(),
             {'product_external_key': 'external-3'}
         )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_top_products_uses_producer_state_and_default_top(self):
+        self.client.force_authenticate(user=self.producer_user)
+        WishlistItem.objects.create(
+            wishlist=self.other_wishlist,
+            product_external_key='external-1',
+            product_name='External Product One'
+        )
+        WishlistItem.objects.create(
+            wishlist=self.other_wishlist,
+            product_external_key='external-3',
+            product_name='External Product Three'
+        )
+
+        response = self.client.get(self.wishlist_top_products_url())
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['state'], 'SP')
+        self.assertEqual(response.data['top'], 5)
+        self.assertEqual(response.data['total_items'], 4)
+        self.assertEqual(len(response.data['results']), 3)
+        self.assertEqual(response.data['results'][0]['product_external_key'], 'external-1')
+        self.assertEqual(response.data['results'][0]['total'], 2)
+        self.assertEqual(response.data['results'][0]['percentage'], 50)
+
+    def test_top_products_filters_by_query_state_and_limit(self):
+        rj_user = User.objects.create_user(
+            email='retailer-rj@example.com',
+            name='Retailer RJ',
+            password='SecurePass123',
+            user_type='RETAILER'
+        )
+        rj_retailer = Retailer.objects.create(
+            user=rj_user,
+            document_type='CNPJ',
+            document_number='55566677788899',
+            trade_name='Retailer RJ Shop'
+        )
+        rj_wishlist = Wishlist.objects.create(retailer=rj_retailer)
+        self.create_address(rj_user, state='RJ')
+        WishlistItem.objects.create(
+            wishlist=rj_wishlist,
+            product_external_key='external-rj',
+            product_name='External Product RJ'
+        )
+        self.client.force_authenticate(user=self.producer_user)
+
+        response = self.client.get(
+            self.wishlist_top_products_url(),
+            {'state': 'rj', 'top': 1}
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['state'], 'RJ')
+        self.assertEqual(response.data['top'], 1)
+        self.assertEqual(response.data['total_items'], 1)
+        self.assertEqual(response.data['results'][0]['product_external_key'], 'external-rj')
+        self.assertEqual(response.data['results'][0]['percentage'], 100)
+
+    def test_top_products_rejects_invalid_top(self):
+        self.client.force_authenticate(user=self.producer_user)
+
+        response = self.client.get(self.wishlist_top_products_url(), {'top': 'zero'})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_top_products_requires_producer(self):
+        response = self.client.get(self.wishlist_top_products_url(), {'state': 'SP'})
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
