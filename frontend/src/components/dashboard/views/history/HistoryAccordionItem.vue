@@ -40,6 +40,7 @@
       <div v-if="isOpen" class="border-t border-slate-100 px-5 py-5">
         <div class="space-y-3">
           <button
+            v-if="item.rawOrder?.status !== 'CANCELED'"
             type="button"
             class="invoice-btn ml-4"
             @click.stop="$emit('download-invoice', item)"
