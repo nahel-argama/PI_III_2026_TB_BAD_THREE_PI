@@ -16,7 +16,6 @@
 - [Tratamento de Erros](#tratamento-de-erros)
 - [Exemplos Práticos](#exemplos-práticos)
 - [Estrutura do Projeto](#estrutura-do-projeto)
-- [Desenvolvimento](#desenvolvimento)
 
 ---
 
@@ -44,7 +43,7 @@ O **PI Payment Gateway** é um serviço de processamento de pagamentos mock (sim
 | **FastAPI**  | ≥0.135.3 | Framework HTTP moderno e rápido     |
 | **Pydantic** | ≥2.12.5  | Validação de dados baseada em tipos |
 | **Uvicorn**  | ≥0.44.0  | Servidor ASGI                       |
-| **Python**   | ≥3.14    | Linguagem                           |
+| **Python**   | ≥3.10    | Linguagem                           |
 
 ---
 
@@ -52,48 +51,98 @@ O **PI Payment Gateway** é um serviço de processamento de pagamentos mock (sim
 
 ### Pré-requisitos
 
-- **Python 3.14+** instalado
-- **UV** instalado
+- **Python 3.10+** instalado
 
-### Usando UV ⭐ (Recomendado)
+### Passo 1: Criar o Ambiente Virtual (`venv`)
 
-O projeto usa **UV** como gerenciador de pacotes. Se você ainda não tem, instale.
+No terminal, no diretório raiz do projeto, crie o ambiente virtual:
 
-Após instalar UV, instale as dependências do projeto:
+**Linux / macOS:**
+```bash
+python3 -m venv venv
+```
+
+**Windows:**
+```cmd
+python -m venv venv
+```
+
+### Passo 2: Ativar o Ambiente Virtual
+
+Ative o ambiente virtual para que as dependências sejam isoladas no projeto:
+
+**Linux / macOS:**
+```bash
+source venv/bin/activate
+```
+
+**Windows (Prompt de Comando):**
+```cmd
+venv\Scripts\activate.bat
+```
+
+**Windows (PowerShell):**
+```powershell
+venv\Scripts\Activate.ps1
+```
+
+### Passo 3: Instalar as Dependências
+
+Com o ambiente virtual **ativado**, instale as dependências a partir do `requirements.txt`:
 
 ```bash
-uv sync
+pip install -r requirements.txt
+```
+
+### Passo 4: Configurar as Variáveis de Ambiente
+
+Copie o arquivo `.env.example` para `.env` para configurar a porta padrão (8002) e o host:
+
+```bash
+cp .env.example .env
 ```
 
 ---
 
 ## 🚀 Como Executar
 
-### Com UV (Recomendado) ⭐
-
-Para rodar o servidor de desenvolvimento com hot-reload:
+Para rodar o servidor de desenvolvimento com hot-reload (na porta 8002 por padrão, conforme configurado no `.env` ou via parâmetro), certifique-se de que o ambiente virtual está **ativado** e execute:
 
 ```bash
-uv run uvicorn src.main:app --reload
+uvicorn src.main:app --reload --port 8002
+```
+
+Ou execute diretamente usando o executável do ambiente virtual sem precisar ativá-lo:
+
+**Linux / macOS:**
+```bash
+./venv/bin/uvicorn src.main:app --reload --port 8002
+```
+
+**Windows:**
+```cmd
+venv\Scripts\uvicorn src.main:app --reload --port 8002
 ```
 
 O servidor estará disponível em:
 
-- **API:** `http://localhost:8000`
-- **Documentação Swagger:** `http://localhost:8000/docs`
-- **Documentação ReDoc:** `http://localhost:8000/redoc`
+- **API:** `http://localhost:8002`
+- **Documentação Swagger:** `http://localhost:8002/docs`
+- **Documentação ReDoc:** `http://localhost:8002/redoc`
 
-### Comandos Úteis com UV
+### Comandos Úteis
+
+Com o ambiente virtual ativado:
 
 ```bash
 # Rodar sem hot-reload (produção)
-uv run uvicorn src.main:app --reload
+uvicorn src.main:app --port 8002
 
-# Rodar em background
-uv run uvicorn src.main:app --reload &
+# Rodar em background (Linux/macOS)
+uvicorn src.main:app --reload --port 8002 &
 
 # Ver logs mais detalhados
-uv run uvicorn src.main:app --reload --log-level debug
+uvicorn src.main:app --reload --port 8002 --log-level debug
 ```
 
 ---
@@ -344,7 +393,7 @@ O gateway usa códigos HTTP padronizados para indicar o resultado das operaçõe
 ### 1. Pagamento com Cartão de Crédito ✅
 
 ```bash
-curl -X POST http://localhost:8000/payments \
+curl -X POST http://localhost:8002/payments \
   -H "Content-Type: application/json" \
   -d '{
     "price": 99.99,
@@ -373,7 +422,7 @@ curl -X POST http://localhost:8000/payments \
 ### 2. Pagamento com PIX ✅
 
 ```bash
-curl -X POST http://localhost:8000/payments \
+curl -X POST http://localhost:8002/payments \
   -H "Content-Type: application/json" \
   -d '{
     "price": 50.00,
@@ -395,7 +444,7 @@ curl -X POST http://localhost:8000/payments \
 ### 3. Pagamento com Fatura ✅
 
 ```bash
-curl -X POST http://localhost:8000/payments \
+curl -X POST http://localhost:8002/payments \
   -H "Content-Type: application/json" \
   -d '{
     "price": 150.00,
@@ -417,7 +466,7 @@ curl -X POST http://localhost:8000/payments \
 ### 4. Erro - Valor Inválido ❌
 
 ```bash
-curl -X POST http://localhost:8000/payments \
+curl -X POST http://localhost:8002/payments \
   -H "Content-Type: application/json" \
   -d '{
     "price": -10.00,
@@ -445,7 +494,7 @@ curl -X POST http://localhost:8000/payments \
 
 ### 7. Testar com Swagger (GUI)
 
-Abra seu navegador em: **http://localhost:8000/docs**
+Abra seu navegador em: **http://localhost:8002/docs**
 
 A documentação interativa do Swagger permite:
 
