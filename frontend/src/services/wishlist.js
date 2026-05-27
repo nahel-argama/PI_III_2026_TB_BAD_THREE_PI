@@ -2,7 +2,7 @@ import api from './api';
 
 /**
  * Adiciona um produto à wishlist do usuário.
- * 
+ *
  * @param {string|number} productId - O ID externo do produto.
  * @returns {Promise<Object>} O item da wishlist criado.
  */
@@ -17,7 +17,7 @@ export async function addProductToWishlist(productId) {
 
 /**
  * Remove um produto da wishlist do usuário.
- * 
+ *
  * @param {number} itemId - O ID do item na wishlist (ID interno).
  * @returns {Promise<void>}
  */
@@ -27,7 +27,7 @@ export async function removeProductFromWishlist(itemId) {
 
 /**
  * Lista todos os itens da wishlist do usuário com suporte a paginação e busca.
- * 
+ *
  * @param {Object} params - Parâmetros de busca.
  * @param {number} params.page - Número da página.
  * @param {string} [params.productName] - Termo de busca por nome do produto.
@@ -38,7 +38,7 @@ export async function listWishlistItems({ page = 1, productName = '' } = {}) {
   if (productName) {
     params.product_name = productName;
   }
-  
+
   const response = await api.get('/wishlists/items/', { params });
   return response.data;
 }

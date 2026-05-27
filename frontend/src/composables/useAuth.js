@@ -34,7 +34,11 @@ export const useAuth = () => {
    */
   const userName = computed(() => authStore.getCurrentUser?.name || null);
   const userType = computed(
-    () => authStore.getCurrentUserType || authStore.getCurrentUser?.user_type || authStore.getCurrentUser?.type || null,
+    () =>
+      authStore.getCurrentUserType ||
+      authStore.getCurrentUser?.user_type ||
+      authStore.getCurrentUser?.type ||
+      null,
   );
 
   return {

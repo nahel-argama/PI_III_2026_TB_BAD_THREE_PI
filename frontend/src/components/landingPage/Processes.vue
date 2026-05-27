@@ -7,7 +7,9 @@
           Transparência, inteligência e eficiência em cada etapa
         </h2>
         <p class="text-lg leading-relaxed text-slate-600">
-          O <span class="font-bold text-slate-800">Cultiva</span> conecta pequenos produtores e varejistas através de uma plataforma inteligente que reduz intermediários, otimiza a logística e promove negociações mais justas para toda a cadeia de abastecimento.
+          O <span class="font-bold text-slate-800">Cultiva</span> conecta pequenos produtores e
+          varejistas através de uma plataforma inteligente que reduz intermediários, otimiza a
+          logística e promove negociações mais justas para toda a cadeia de abastecimento.
         </p>
       </div>
 

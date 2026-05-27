@@ -11,16 +11,21 @@
         @keydown.esc="onEsc"
       >
         <div class="pm-panel" :class="[`pm-panel--${size}`]">
-
           <!-- ═══════════════ IDLE ═══════════════ -->
           <template v-if="currentState === 'idle'">
             <div class="pm-header">
               <div class="pm-header-icon">
                 <svg
-xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                  stroke-linejoin="round" aria-hidden="true">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 </svg>
               </div>
               <div>
@@ -60,10 +65,15 @@ xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                 <div class="pm-pulse-ring__middle" />
                 <div class="pm-pulse-ring__inner">
                   <svg
-xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   </svg>
                 </div>
               </div>
@@ -78,16 +88,30 @@ xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
               <div class="pm-anim-check" aria-hidden="true">
                 <svg class="pm-anim-check__svg" viewBox="0 0 52 52">
                   <circle
-class="pm-anim-check__circle" cx="26" cy="26" r="24"
-                    fill="none" stroke-width="2.5"/>
+                    class="pm-anim-check__circle"
+                    cx="26"
+                    cy="26"
+                    r="24"
+                    fill="none"
+                    stroke-width="2.5"
+                  />
                   <polyline
-class="pm-anim-check__tick" points="14,27 22,35 38,19"
-                    fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    class="pm-anim-check__tick"
+                    points="14,27 22,35 38,19"
+                    fill="none"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
                 </svg>
               </div>
               <p class="pm-state-title pm-state-title--success">{{ successTitle }}</p>
               <p class="pm-state-sub">{{ successMessage }}</p>
-              <button type="button" class="pm-btn pm-btn--success pm-btn--full" @click="onSuccessClose">
+              <button
+                type="button"
+                class="pm-btn pm-btn--success pm-btn--full"
+                @click="onSuccessClose"
+              >
                 Fechar
               </button>
             </div>
@@ -99,26 +123,46 @@ class="pm-anim-check__tick" points="14,27 22,35 38,19"
               <div class="pm-anim-error" aria-hidden="true">
                 <svg class="pm-anim-error__svg" viewBox="0 0 52 52">
                   <circle
-class="pm-anim-error__circle" cx="26" cy="26" r="24"
-                    fill="none" stroke-width="2.5"/>
+                    class="pm-anim-error__circle"
+                    cx="26"
+                    cy="26"
+                    r="24"
+                    fill="none"
+                    stroke-width="2.5"
+                  />
                   <line
-class="pm-anim-error__x1" x1="17" y1="17" x2="35" y2="35"
-                    stroke-width="3" stroke-linecap="round"/>
+                    class="pm-anim-error__x1"
+                    x1="17"
+                    y1="17"
+                    x2="35"
+                    y2="35"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                  />
                   <line
-class="pm-anim-error__x2" x1="35" y1="17" x2="17" y2="35"
-                    stroke-width="3" stroke-linecap="round"/>
+                    class="pm-anim-error__x2"
+                    x1="35"
+                    y1="17"
+                    x2="17"
+                    y2="35"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                  />
                 </svg>
               </div>
               <p class="pm-state-title pm-state-title--error">{{ errorTitle }}</p>
               <p class="pm-state-sub">{{ errorMessage }}</p>
               <div class="pm-actions pm-actions--stacked">
-                <button type="button" class="pm-btn pm-btn--cancel pm-btn--full" @click="onErrorClose">
+                <button
+                  type="button"
+                  class="pm-btn pm-btn--cancel pm-btn--full"
+                  @click="onErrorClose"
+                >
                   Fechar
                 </button>
               </div>
             </div>
           </template>
-
         </div>
       </div>
     </Transition>
@@ -129,38 +173,31 @@ class="pm-anim-error__x2" x1="35" y1="17" x2="17" y2="35"
 import { ref, watch, onBeforeUnmount } from 'vue';
 
 const props = defineProps({
-  modelValue:       { type: Boolean, default: false },
-  amount:           { type: String, required: true },
-  paymentMethod:    { type: String, required: true },
+  modelValue: { type: Boolean, default: false },
+  amount: { type: String, required: true },
+  paymentMethod: { type: String, required: true },
 
-  title:            { type: String, default: 'Confirmar pagamento' },
-  description:      { type: String, default: 'Revise os dados antes de prosseguir.' },
+  title: { type: String, default: 'Confirmar pagamento' },
+  description: { type: String, default: 'Revise os dados antes de prosseguir.' },
 
-  successTitle:     { type: String, default: 'Pagamento realizado!' },
-  successMessage:   { type: String, default: 'Sua transação foi processada com sucesso.' },
+  successTitle: { type: String, default: 'Pagamento realizado!' },
+  successMessage: { type: String, default: 'Sua transação foi processada com sucesso.' },
 
-  errorTitle:       { type: String, default: 'Falha no pagamento' },
-  errorMessage:     { type: String, default: 'Ocorreu um erro ao processar seu pagamento.' },
+  errorTitle: { type: String, default: 'Falha no pagamento' },
+  errorMessage: { type: String, default: 'Ocorreu um erro ao processar seu pagamento.' },
 
-  cancelLabel:      { type: String, default: 'Cancelar' },
+  cancelLabel: { type: String, default: 'Cancelar' },
 
-  autoClose:        { type: Boolean, default: false },
-  autoCloseDelay:   { type: Number, default: 2500 },
+  autoClose: { type: Boolean, default: false },
+  autoCloseDelay: { type: Number, default: 2500 },
 
-  closable:         { type: Boolean, default: true },
-  persistent:       { type: Boolean, default: false },
+  closable: { type: Boolean, default: true },
+  persistent: { type: Boolean, default: false },
 
-  size:             { type: String, default: 'md' },
+  size: { type: String, default: 'md' },
 });
 
-const emit = defineEmits([
-  'update:modelValue',
-  'confirm',
-  'success',
-  'error',
-  'retry',
-  'close',
-]);
+const emit = defineEmits(['update:modelValue', 'confirm', 'success', 'error', 'retry', 'close']);
 
 // ─── State machine ────────────────────────────────────────────────────────────
 const currentState = ref('idle'); // 'idle' | 'loading' | 'success' | 'error'
@@ -168,7 +205,10 @@ const currentState = ref('idle'); // 'idle' | 'loading' | 'success' | 'error'
 let autoCloseTimer = null;
 
 function clearTimers() {
-  if (autoCloseTimer) { clearTimeout(autoCloseTimer); autoCloseTimer = null; }
+  if (autoCloseTimer) {
+    clearTimeout(autoCloseTimer);
+    autoCloseTimer = null;
+  }
 }
 
 // ─── Exposed: let parent drive state transitions ──────────────────────────────
@@ -180,7 +220,9 @@ function setState(s) {
       autoCloseTimer = setTimeout(() => onSuccessClose(), props.autoCloseDelay);
     }
   }
-  if (s === 'error') { emit('error'); }
+  if (s === 'error') {
+    emit('error');
+  }
 }
 
 defineExpose({ setState, state: currentState });
@@ -224,12 +266,15 @@ function onErrorClose() {
 }
 
 // Reset state when modal opens
-watch(() => props.modelValue, (opened) => {
-  if (opened) {
-    currentState.value = 'idle';
-    clearTimers();
-  }
-});
+watch(
+  () => props.modelValue,
+  (opened) => {
+    if (opened) {
+      currentState.value = 'idle';
+      clearTimers();
+    }
+  },
+);
 
 onBeforeUnmount(() => clearTimers());
 </script>
@@ -265,9 +310,15 @@ onBeforeUnmount(() => clearTimers());
   overflow: hidden;
 }
 
-.pm-panel--sm { max-width: 22rem; }
-.pm-panel--md { max-width: 28rem; }
-.pm-panel--lg { max-width: 34rem; }
+.pm-panel--sm {
+  max-width: 22rem;
+}
+.pm-panel--md {
+  max-width: 28rem;
+}
+.pm-panel--lg {
+  max-width: 34rem;
+}
 
 /* ── Header (same structure as CreditCardModal) ──────────────────────────── */
 .pm-header {
@@ -378,20 +429,33 @@ onBeforeUnmount(() => clearTimers());
   font-weight: 700;
   border: none;
   cursor: pointer;
-  transition: background 0.15s, box-shadow 0.15s, opacity 0.15s, transform 0.1s;
+  transition:
+    background 0.15s,
+    box-shadow 0.15s,
+    opacity 0.15s,
+    transform 0.1s;
   line-height: 1.2;
 }
 
-.pm-btn:active:not(:disabled) { transform: scale(0.97); }
-.pm-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.pm-btn--full { width: 100%; }
+.pm-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.pm-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.pm-btn--full {
+  width: 100%;
+}
 
 .pm-btn--cancel {
   background: #f8fafc;
   color: #475569;
   border: 1.5px solid #e2e8f0;
 }
-.pm-btn--cancel:hover:not(:disabled) { background: #f1f5f9; }
+.pm-btn--cancel:hover:not(:disabled) {
+  background: #f1f5f9;
+}
 
 .pm-btn--confirm {
   background: #059669;
@@ -409,7 +473,9 @@ onBeforeUnmount(() => clearTimers());
   box-shadow: 0 4px 14px rgb(5 150 105 / 0.28);
   margin-top: 0.5rem;
 }
-.pm-btn--success:hover:not(:disabled) { background: #047857; }
+.pm-btn--success:hover:not(:disabled) {
+  background: #047857;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    STATES — Loading / Success / Error
@@ -431,8 +497,12 @@ onBeforeUnmount(() => clearTimers());
   color: #0f172a;
   letter-spacing: -0.02em;
 }
-.pm-state-title--success { color: #059669; }
-.pm-state-title--error   { color: #dc2626; }
+.pm-state-title--success {
+  color: #059669;
+}
+.pm-state-title--error {
+  color: #dc2626;
+}
 
 .pm-state-sub {
   margin: 0 0 0.25rem;
@@ -460,7 +530,9 @@ onBeforeUnmount(() => clearTimers());
   animation: pm-spin linear infinite;
 }
 
-.pm-pulse-ring__outer  { animation-duration: 1s; }
+.pm-pulse-ring__outer {
+  animation-duration: 1s;
+}
 .pm-pulse-ring__middle {
   inset: 10px;
   border-top-color: rgba(5, 150, 105, 0.4);
@@ -486,12 +558,21 @@ onBeforeUnmount(() => clearTimers());
 }
 
 @keyframes pm-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes pm-pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50%      { transform: scale(0.92); opacity: 0.7; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.92);
+    opacity: 0.7;
+  }
 }
 
 /* ── Loading: progress bar ───────────────────────────────────────────────── */
@@ -512,9 +593,15 @@ onBeforeUnmount(() => clearTimers());
 }
 
 @keyframes pm-progress {
-  0%   { width: 0%; }
-  50%  { width: 70%; }
-  100% { width: 100%; }
+  0% {
+    width: 0%;
+  }
+  50% {
+    width: 70%;
+  }
+  100% {
+    width: 100%;
+  }
 }
 
 /* ── Success: animated check ─────────────────────────────────────────────── */
@@ -544,11 +631,15 @@ onBeforeUnmount(() => clearTimers());
 }
 
 @keyframes pm-draw-circle {
-  to { stroke-dashoffset: 0; }
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 @keyframes pm-draw-tick {
-  to { stroke-dashoffset: 0; }
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 /* ── Error: animated X ───────────────────────────────────────────────────── */
@@ -577,8 +668,12 @@ onBeforeUnmount(() => clearTimers());
   stroke-dashoffset: 28;
 }
 
-.pm-anim-error__x1 { animation: pm-draw-tick 0.25s ease forwards 0.4s; }
-.pm-anim-error__x2 { animation: pm-draw-tick 0.25s ease forwards 0.55s; }
+.pm-anim-error__x1 {
+  animation: pm-draw-tick 0.25s ease forwards 0.4s;
+}
+.pm-anim-error__x2 {
+  animation: pm-draw-tick 0.25s ease forwards 0.55s;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODAL TRANSITION (matching CreditCardModal)
@@ -587,19 +682,33 @@ onBeforeUnmount(() => clearTimers());
   transition: opacity 0.2s ease;
 }
 .pm-modal-enter-active .pm-panel {
-  transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition:
+    opacity 0.2s ease,
+    transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .pm-modal-leave-active {
   transition: opacity 0.18s ease;
 }
 .pm-modal-leave-active .pm-panel {
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 
-.pm-modal-enter-from { opacity: 0; }
-.pm-modal-enter-from .pm-panel { opacity: 0; transform: scale(0.9) translateY(10px); }
+.pm-modal-enter-from {
+  opacity: 0;
+}
+.pm-modal-enter-from .pm-panel {
+  opacity: 0;
+  transform: scale(0.9) translateY(10px);
+}
 
-.pm-modal-leave-to { opacity: 0; }
-.pm-modal-leave-to .pm-panel { opacity: 0; transform: scale(0.96); }
+.pm-modal-leave-to {
+  opacity: 0;
+}
+.pm-modal-leave-to .pm-panel {
+  opacity: 0;
+  transform: scale(0.96);
+}
 </style>

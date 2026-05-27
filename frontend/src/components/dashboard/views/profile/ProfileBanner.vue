@@ -39,7 +39,9 @@
         </div>
 
         <div class="pb-1 text-center sm:text-left">
-          <h2 class="max-w-full break-words text-2xl font-black tracking-tight text-white sm:text-3xl">
+          <h2
+            class="max-w-full text-2xl font-black tracking-tight break-words text-white sm:text-3xl"
+          >
             {{ name || 'Usuário Cultiva' }}
           </h2>
           <p class="mt-1 text-sm font-semibold text-emerald-100/95 sm:text-base">

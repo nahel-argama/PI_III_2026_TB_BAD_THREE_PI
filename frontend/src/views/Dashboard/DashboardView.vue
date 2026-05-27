@@ -1,8 +1,5 @@
 <template>
-  <DashboardShell
-    :sidebar-open="sidebarOpen"
-    @close-sidebar="sidebarOpen = false"
-  >
+  <DashboardShell :sidebar-open="sidebarOpen" @close-sidebar="sidebarOpen = false">
     <template #sidebar>
       <DashboardSidebar
         :profile="profile"
@@ -65,7 +62,11 @@ const sidebarOpen = ref(false);
 const activeItemId = ref('');
 
 const currentRole = computed(
-  () => authStore.getCurrentUserType || authStore.getCurrentUser?.user_type || authStore.getCurrentUser?.type || 'VAREJISTA',
+  () =>
+    authStore.getCurrentUserType ||
+    authStore.getCurrentUser?.user_type ||
+    authStore.getCurrentUser?.type ||
+    'VAREJISTA',
 );
 const profile = computed(() => dashboardProfiles[currentRole.value] || dashboardProfiles.VAREJISTA);
 const defaultActiveItemId = computed(() => profile.value.navItems[0]?.id || '');
@@ -77,7 +78,10 @@ const roleLabel = computed(() => {
 });
 
 const activeViewComponent = computed(() => {
-  return dashboardViewRegistry[currentRole.value]?.[activeItemId.value] || dashboardViewRegistry[currentRole.value]?.[defaultActiveItemId.value];
+  return (
+    dashboardViewRegistry[currentRole.value]?.[activeItemId.value] ||
+    dashboardViewRegistry[currentRole.value]?.[defaultActiveItemId.value]
+  );
 });
 
 function hasNavItem(itemId) {
@@ -89,11 +93,15 @@ function handleSelect(itemId) {
   sidebarOpen.value = false;
 }
 
-watch(defaultActiveItemId, (nextDefaultItemId) => {
-  if (!hasNavItem(activeItemId.value)) {
-    activeItemId.value = nextDefaultItemId;
-  }
-}, { immediate: true });
+watch(
+  defaultActiveItemId,
+  (nextDefaultItemId) => {
+    if (!hasNavItem(activeItemId.value)) {
+      activeItemId.value = nextDefaultItemId;
+    }
+  },
+  { immediate: true },
+);
 
 watch(
   () => route.query.tab,

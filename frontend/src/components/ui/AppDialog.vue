@@ -246,12 +246,30 @@ function onBackdropClick() {
 }
 
 /* Variant colours */
-.app-dialog-icon-wrap--info    { background: #eff6ff; color: #3b82f6; }
-.app-dialog-icon-wrap--success { background: #ecfdf5; color: #059669; }
-.app-dialog-icon-wrap--warning { background: #fffbeb; color: #d97706; }
-.app-dialog-icon-wrap--danger  { background: #fef2f2; color: #dc2626; }
-.app-dialog-icon-wrap--confirm { background: #ecfdf5; color: #059669; }
-.app-dialog-icon-wrap--delete  { background: #fef2f2; color: #dc2626; }
+.app-dialog-icon-wrap--info {
+  background: #eff6ff;
+  color: #3b82f6;
+}
+.app-dialog-icon-wrap--success {
+  background: #ecfdf5;
+  color: #059669;
+}
+.app-dialog-icon-wrap--warning {
+  background: #fffbeb;
+  color: #d97706;
+}
+.app-dialog-icon-wrap--danger {
+  background: #fef2f2;
+  color: #dc2626;
+}
+.app-dialog-icon-wrap--confirm {
+  background: #ecfdf5;
+  color: #059669;
+}
+.app-dialog-icon-wrap--delete {
+  background: #fef2f2;
+  color: #dc2626;
+}
 
 /* ── Header ───────────────────────────────────────────────────────────────── */
 
@@ -352,21 +370,27 @@ function onBackdropClick() {
   color: #fff;
   box-shadow: 0 4px 14px rgb(59 130 246 / 0.35);
 }
-.app-dialog-btn--info:hover:not(:disabled) { background: #2563eb; }
+.app-dialog-btn--info:hover:not(:disabled) {
+  background: #2563eb;
+}
 
 .app-dialog-btn--success {
   background: #059669;
   color: #fff;
   box-shadow: 0 4px 14px rgb(5 150 105 / 0.35);
 }
-.app-dialog-btn--success:hover:not(:disabled) { background: #047857; }
+.app-dialog-btn--success:hover:not(:disabled) {
+  background: #047857;
+}
 
 .app-dialog-btn--warning {
   background: #d97706;
   color: #fff;
   box-shadow: 0 4px 14px rgb(217 119 6 / 0.35);
 }
-.app-dialog-btn--warning:hover:not(:disabled) { background: #b45309; }
+.app-dialog-btn--warning:hover:not(:disabled) {
+  background: #b45309;
+}
 
 .app-dialog-btn--danger,
 .app-dialog-btn--delete {
@@ -375,14 +399,18 @@ function onBackdropClick() {
   box-shadow: 0 4px 14px rgb(220 38 38 / 0.35);
 }
 .app-dialog-btn--danger:hover:not(:disabled),
-.app-dialog-btn--delete:hover:not(:disabled) { background: #b91c1c; }
+.app-dialog-btn--delete:hover:not(:disabled) {
+  background: #b91c1c;
+}
 
 .app-dialog-btn--confirm {
   background: #059669;
   color: #fff;
   box-shadow: 0 4px 14px rgb(5 150 105 / 0.35);
 }
-.app-dialog-btn--confirm:hover:not(:disabled) { background: #047857; }
+.app-dialog-btn--confirm:hover:not(:disabled) {
+  background: #047857;
+}
 
 /* ── Spinner ──────────────────────────────────────────────────────────────── */
 
@@ -398,7 +426,9 @@ function onBackdropClick() {
 }
 
 @keyframes app-dialog-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Transition ───────────────────────────────────────────────────────────── */
@@ -407,14 +437,18 @@ function onBackdropClick() {
   transition: opacity 0.2s ease;
 }
 .app-dialog-enter-active .app-dialog-panel {
-  transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition:
+    opacity 0.2s ease,
+    transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .app-dialog-leave-active {
   transition: opacity 0.18s ease;
 }
 .app-dialog-leave-active .app-dialog-panel {
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 
 .app-dialog-enter-from {

@@ -65,12 +65,8 @@
                 </svg>
               </div>
               <div>
-                <p class="text-sm leading-none font-black text-slate-900 italic">
-                  Média de preços
-                </p>
-                <p class="mt-1 text-xs text-slate-500">
-                  Preços otimizados com dados da plataforma
-                </p>
+                <p class="text-sm leading-none font-black text-slate-900 italic">Média de preços</p>
+                <p class="mt-1 text-xs text-slate-500">Preços otimizados com dados da plataforma</p>
               </div>
             </div>
           </div>

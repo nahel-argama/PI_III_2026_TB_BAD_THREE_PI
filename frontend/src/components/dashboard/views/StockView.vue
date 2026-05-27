@@ -7,11 +7,7 @@
       @open-modal="isCreateModalOpen = true"
     />
 
-    <StockGrid
-      :items="products"
-      :loading="isLoading"
-      @remove="removeProductHandler"
-    />
+    <StockGrid :items="products" :loading="isLoading" @remove="removeProductHandler" />
 
     <AppPagination
       v-model="currentPage"
@@ -19,10 +15,7 @@
       @change="(page) => fetchItems(searchTerm, page)"
     />
 
-    <StockCreateModal
-      v-model="isCreateModalOpen"
-      @submit="onProductCreated"
-    />
+    <StockCreateModal v-model="isCreateModalOpen" @submit="onProductCreated" />
   </section>
 </template>
 

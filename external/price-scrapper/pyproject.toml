@@ -12,3 +12,10 @@ dependencies = [
     "requests>=2.33.1",
     "uvicorn>=0.32.0",
 ]
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*", "database*"]
+exclude = ["data*", "collections*"]

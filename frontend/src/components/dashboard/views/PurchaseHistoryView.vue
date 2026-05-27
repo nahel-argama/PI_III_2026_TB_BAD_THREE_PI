@@ -73,8 +73,6 @@ function formatAddress(address) {
   return [mainLine, extraLine, postalCode].filter(Boolean).join(' • ') || 'Endereço não disponível';
 }
 
-
-
 const PAYMENT_METHOD_LABELS = {
   pix: 'PIX',
   invoice: 'Boleto Bancário',
@@ -141,11 +139,9 @@ function buildHistoryItem(order) {
   const createdAt = order?.created_at;
   const items = Array.isArray(order?.items) ? order.items : [];
   const producerData = order?.producer_data || {};
-  const producerName = producerData.trade_name || producerData.name || `Produtor #${order.producer}`;
-  const producerDocument = formatDocument(
-    producerData.document_type,
-    producerData.document_number,
-  );
+  const producerName =
+    producerData.trade_name || producerData.name || `Produtor #${order.producer}`;
+  const producerDocument = formatDocument(producerData.document_type, producerData.document_number);
 
   return {
     id: order.id,
@@ -164,8 +160,10 @@ function buildHistoryItem(order) {
     statusTone: statusView.tone,
     payment: {
       method: formatPaymentMethod(order?.payment_method),
-      details: order?.payment_method 
-        ? (order?.status === 'CANCELED' ? `Tentativa via ${formatPaymentMethod(order.payment_method)}` : `Pago via ${formatPaymentMethod(order.payment_method)}`) 
+      details: order?.payment_method
+        ? order?.status === 'CANCELED'
+          ? `Tentativa via ${formatPaymentMethod(order.payment_method)}`
+          : `Pago via ${formatPaymentMethod(order.payment_method)}`
         : 'Pagamento não registrado.',
       total: formatMoney(order?.total_value),
     },

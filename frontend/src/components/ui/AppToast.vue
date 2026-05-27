@@ -1,11 +1,7 @@
 <template>
   <div
     class="app-toast"
-    :class="[
-      `app-toast--${type}`,
-      { 'app-toast--hovered': isHovered },
-      customClass
-    ]"
+    :class="[`app-toast--${type}`, { 'app-toast--hovered': isHovered }, customClass]"
     :style="{ opacity: dynamicOpacity }"
     :role="type === 'error' || type === 'warning' ? 'alert' : 'status'"
     :aria-live="type === 'error' || type === 'warning' ? 'assertive' : 'polite'"
@@ -34,11 +30,7 @@
 
       <!-- Contextual Action Button -->
       <div v-if="action" class="app-toast__actions">
-        <button
-          type="button"
-          class="app-toast__action-btn"
-          @click.stop="handleAction"
-        >
+        <button type="button" class="app-toast__action-btn" @click.stop="handleAction">
           {{ action.label }}
         </button>
       </div>

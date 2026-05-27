@@ -7,22 +7,28 @@
         @click.self="closeModal"
       >
         <section
-          class="relative w-full max-w-2xl overflow-hidden rounded-3xl bg-white border border-slate-100 shadow-[0_20px_60px_-10px_rgba(15,23,42,0.18)]"
+          class="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_20px_60px_-10px_rgba(15,23,42,0.18)]"
         >
           <!-- Top Decorative Gradient Bar -->
-          <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600"></div>
+          <div
+            class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600"
+          ></div>
 
           <!-- Header -->
-          <div class="flex items-center justify-between gap-3 border-b border-slate-100/80 px-5 py-4">
+          <div
+            class="flex items-center justify-between gap-3 border-b border-slate-100/80 px-5 py-4"
+          >
             <div class="flex items-center gap-3">
-              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 ring-2 ring-emerald-50/50 shadow-sm">
+              <div
+                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 shadow-sm ring-2 ring-emerald-50/50"
+              >
                 <SparklesIcon class="h-5 w-5" />
               </div>
               <div>
-                <h3 class="text-lg font-extrabold tracking-tight text-slate-900 leading-none">
+                <h3 class="text-lg leading-none font-extrabold tracking-tight text-slate-900">
                   {{ mode === 'edit' ? 'Editar Imagem' : 'Vincular Imagem' }}
                 </h3>
-                <p class="text-[11px] text-slate-500 leading-none mt-1">
+                <p class="mt-1 text-[11px] leading-none text-slate-500">
                   Defina a imagem padrão do produto.
                 </p>
               </div>
@@ -41,7 +47,6 @@
           <!-- Form Content -->
           <form class="px-5 py-4" @submit.prevent="handleSubmit">
             <div class="space-y-4">
-              
               <!-- Section 1: Product Selection -->
               <div>
                 <AppSelect
@@ -70,12 +75,14 @@
               </div>
 
               <!-- Section 3: Clean Raw Preview underneath the uploader -->
-              <div v-if="form.imageUrl" class="space-y-1.5 pt-1 animate-fade-in">
+              <div v-if="form.imageUrl" class="animate-fade-in space-y-1.5 pt-1">
                 <label class="block text-xs font-bold tracking-wider text-slate-500 uppercase">
                   Prévia
                 </label>
-                
-                <div class="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 h-64 flex items-center justify-center p-1">
+
+                <div
+                  class="flex h-64 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-1"
+                >
                   <AppSecureImage
                     :src="form.imageUrl"
                     alt="Prévia"
@@ -83,11 +90,10 @@
                   />
                 </div>
               </div>
-
             </div>
 
             <!-- Footer Buttons -->
-            <div class="mt-6 flex gap-3 justify-end border-t border-slate-100 pt-4">
+            <div class="mt-6 flex justify-end gap-3 border-t border-slate-100 pt-4">
               <button
                 type="button"
                 class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 active:scale-[0.98]"
@@ -217,7 +223,9 @@ function handleSubmit() {
 
 .product-images-modal-enter-active section,
 .product-images-modal-leave-active section {
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.25s ease;
 }
 
 .product-images-modal-enter-from section,

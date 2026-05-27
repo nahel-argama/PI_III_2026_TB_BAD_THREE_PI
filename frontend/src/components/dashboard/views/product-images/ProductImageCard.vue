@@ -1,11 +1,11 @@
 <template>
-  <article class="group overflow-hidden rounded-[24px] border border-white/70 bg-white/90 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-lg">
+  <article
+    class="group overflow-hidden rounded-[24px] border border-white/70 bg-white/90 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-lg"
+  >
     <div class="p-5">
       <div class="flex items-start justify-between gap-4">
         <div class="min-w-0">
-          <p class="text-xs font-bold uppercase tracking-[0.26em] text-emerald-600">
-            Produto
-          </p>
+          <p class="text-xs font-bold tracking-[0.26em] text-emerald-600 uppercase">Produto</p>
           <h3 class="mt-2 truncate text-xl font-black tracking-tight text-slate-900">
             {{ formatName(item.name) }}
           </h3>

@@ -1,9 +1,6 @@
 <template>
   <section>
-    <div
-      v-if="items.length"
-      class="space-y-3"
-    >
+    <div v-if="items.length" class="space-y-3">
       <HistoryAccordionItem
         v-for="item in items"
         :key="item.id"
@@ -19,9 +16,7 @@
       v-else
       class="rounded-[28px] border border-dashed border-slate-200 bg-white/70 px-6 py-16 text-center"
     >
-      <p class="text-xs font-bold uppercase tracking-[0.28em] text-emerald-600">
-        Sem resultados
-      </p>
+      <p class="text-xs font-bold tracking-[0.28em] text-emerald-600 uppercase">Sem resultados</p>
       <h3 class="mt-3 text-2xl font-black tracking-tight text-slate-900">
         {{ emptyTitle }}
       </h3>
@@ -62,5 +57,4 @@ defineEmits(['download-invoice']);
 function toggleItem(itemId) {
   openItemId.value = openItemId.value === itemId ? null : itemId;
 }
-
 </script>

@@ -2,7 +2,10 @@
   <div class="rounded-2xl border border-slate-300 bg-white p-8">
     <h2 class="mb-6 text-xl font-extrabold text-slate-900">Resumo do Pedido</h2>
 
-    <div v-if="!items.length" class="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+    <div
+      v-if="!items.length"
+      class="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600"
+    >
       Este pedido não possui itens.
     </div>
 

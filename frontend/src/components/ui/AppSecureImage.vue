@@ -1,5 +1,5 @@
 <template>
-  <div class="relative w-full h-full overflow-hidden flex items-center justify-center bg-slate-50">
+  <div class="relative flex h-full w-full items-center justify-center overflow-hidden bg-slate-50">
     <!-- Loading State -->
     <div
       v-if="loading"
@@ -8,7 +8,7 @@
       <div class="relative flex items-center justify-center">
         <!-- Elegant Premium Spinner -->
         <svg
-          class="animate-spin h-8 w-8 text-emerald-600"
+          class="h-8 w-8 animate-spin text-emerald-600"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -33,10 +33,10 @@
     <!-- Error/No Image Fallback -->
     <div
       v-else-if="error || !src"
-      class="flex flex-col items-center justify-center gap-2 h-full w-full bg-slate-100 text-slate-400"
+      class="flex h-full w-full flex-col items-center justify-center gap-2 bg-slate-100 text-slate-400"
     >
       <PhotoIcon class="h-10 w-10 stroke-[1.5]" />
-      <span v-if="error" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+      <span v-if="error" class="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
         Erro ao carregar
       </span>
     </div>
@@ -47,10 +47,7 @@
       :src="displayUrl"
       :alt="alt"
       class="h-full w-full transition-all duration-300"
-      :class="[
-        objectFitClass,
-        imageLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-      ]"
+      :class="[objectFitClass, imageLoading ? 'scale-95 opacity-0' : 'scale-100 opacity-100']"
       @load="onImageLoad"
       @error="onImageError"
     />
@@ -143,7 +140,7 @@ watch(
   (newSrc) => {
     loadSecureImage(newSrc);
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 onBeforeUnmount(() => {

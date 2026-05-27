@@ -35,7 +35,6 @@ defineProps({
     type: String,
     default: '',
   },
-
 });
 
 defineEmits(['update-search']);
