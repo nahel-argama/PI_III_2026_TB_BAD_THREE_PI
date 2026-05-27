@@ -2,13 +2,9 @@
   <div class="flex h-full flex-col px-5 py-6">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500 text-xl font-black text-white shadow-lg shadow-emerald-500/30">
-          π
-        </div>
+        <img src="/favicon.png" alt="Cultiva" class="h-11 w-11 object-contain" />
         <div>
-          <p class="text-[11px] font-bold uppercase tracking-[0.28em] text-emerald-500">
-            Cultiva
-          </p>
+          <p class="text-[11px] font-bold tracking-[0.28em] text-emerald-500 uppercase">Cultiva</p>
           <p class="text-sm font-semibold text-slate-700">Dashboard</p>
         </div>
       </div>
@@ -40,7 +36,6 @@
         <span>{{ item.label }}</span>
       </button>
     </nav>
-
   </div>
 </template>
 
