@@ -32,7 +32,7 @@
             <AppSelect
               v-model="form.external_id"
               label="Nome do Produto"
-              placeholder="Ex.: Abacate premium"
+              placeholder="Digite o nome do produto (ex: Feijão)"
               :options="productOptions"
               label-key="name"
               value-key="id"
