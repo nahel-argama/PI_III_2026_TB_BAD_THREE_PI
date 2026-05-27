@@ -41,3 +41,5 @@ PROHORT_MONTHLY_URL = __settings.get_attr_typed("PROHORT_MONTHLY_URL", "", str)
 
 API_HOST = __settings.get_attr_typed("API_HOST", "127.0.0.1", str)
 API_PORT = __settings.get_attr_typed("API_PORT", 8000, int)
+
+GEMINI_KEY = __settings.get_attr_typed("GEMINI_KEY", "", str)

@@ -2,7 +2,6 @@ import datetime
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from decimal import Decimal
 
 import app.database as db
 import app.api.products as products
@@ -15,6 +14,7 @@ class SearchResponse(BaseModel):
 
     id: str
     name: str
+    presentation_name: str | None
     created_at: datetime.datetime
 
 
@@ -26,7 +26,8 @@ class PriceResponse(BaseModel):
     to_date: datetime.date
     name: str
     state: str
-    avg_price: Decimal
+    avg_price: float
+    price_entries: dict[datetime.date, float]
 
 
 @router.get("/products/search")
