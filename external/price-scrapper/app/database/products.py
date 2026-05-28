@@ -87,7 +87,7 @@ def get_products_without_context(limit: int = 20) -> list[dict]:
                 id,
                 name
             FROM products
-            WHERE presentation_name IS NULL OR context IS NULL
+            WHERE presentation_name IS NULL
             LIMIT ?
             """,
             [limit],
@@ -102,16 +102,16 @@ def get_products_without_context(limit: int = 20) -> list[dict]:
 
 
 def update_product_context(
-    conn: db.DuckDBPyConnection, product_id: str, presentation_name: str, context: str
+    conn: db.DuckDBPyConnection, product_id: str, presentation_name: str
 ) -> None:
     try:
         conn.execute(
             """
             UPDATE products
-            SET presentation_name = ?, context = ?
+            SET presentation_name = ?
             WHERE id = ?
             """,
-            [presentation_name, context, product_id],
+            [presentation_name, product_id],
         )
     except Exception as e:
         raise Exception(f"Error updating product context: {e}")
