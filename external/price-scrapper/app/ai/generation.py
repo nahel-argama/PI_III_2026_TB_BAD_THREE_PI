@@ -12,22 +12,20 @@ client = genai.Client(api_key=env.GEMINI_KEY)
 
 def generate_product_context_batch(product_names: list[str]) -> dict:
     prompt = f"""
-    Com base em um lista de nomes de produtos provenientes de datasets da CONAB, ou seja, produtos do agronecio, como carnes, vegetais, frutas, hortaliças, grãos e entre outros.
+    Com base em um lista de nomes de produtos provenientes de datasets da CONAB, ou seja, produtos do agronecio, como
+    carnes, vegetais, frutas, hortaliças, grãos e entre outros.
 
     Faça o nome de apresentação do produto:
     - Os produtos do dataset estão normalizados, sem acentos e símbolos
     - Faça a versão deles capitalizadas e com os acentos para apresentação e identificação
 
-    Crie um contexto do produto:
-    - Para gerações automáticas de imagens, preciso de um contexto do que é o produto com um máximo de 30 palavras
-
     Os nomes dos produtos são: {", ".join(product_names)}
 
-    Retorne um JSON com apenas o json, esse output será lido por um json parser, seguinte estrutura:
+    Retorne um JSON , esse output será lido por um json parser, então envie somente o json, nada a mais, nenhum text
+    diferente do json, seguinte estrutura:
     {{
         "product_name": {{
             "presentation_name": "...",
-            "context": "..."
         }}
     }}
     """
@@ -64,7 +62,6 @@ def run_batch_update():
                     db_conn,
                     product_id,
                     data["presentation_name"],
-                    data["context"],
                 )
         db_conn.commit()
         _LOGGER.info(f"Successfully updated {len(products_to_update)} products.")
