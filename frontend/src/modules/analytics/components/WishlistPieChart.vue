@@ -1,73 +1,74 @@
 <template>
-  <div class="flex justify-center py-6 h-[400px]">
-    <v-chart class="w-full h-full" :option="chartOption" autoresize />
+  <div class="flex justify-center py-6 h-[400px] w-full">
+    <VueApexCharts
+      type="pie"
+      width="100%"
+      height="100%"
+      :options="chartOptions"
+      :series="series"
+      class="w-full max-w-2xl flex justify-center"
+    />
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue';
-import { use } from 'echarts/core';
-import { CanvasRenderer } from 'echarts/renderers';
-import { PieChart } from 'echarts/charts';
-import { TitleComponent, TooltipComponent, LegendComponent } from 'echarts/components';
-import VChart from 'vue-echarts';
-
-use([
-  CanvasRenderer,
-  PieChart,
-  TitleComponent,
-  TooltipComponent,
-  LegendComponent,
-]);
+import VueApexCharts from 'vue3-apexcharts';
 
 const props = defineProps({
   results: { type: Array, required: true }
 });
 
-const chartOption = computed(() => {
-  if (!props.results?.length) return {};
-  
+const series = computed(() => {
+  return props.results?.map(item => Number(item.total)) || [];
+});
+
+const chartOptions = computed(() => {
   return {
+    chart: {
+      type: 'pie',
+      fontFamily: 'inherit',
+    },
+    labels: props.results?.map(item => item.product_name) || [],
     tooltip: {
-      trigger: 'item',
-      formatter: '{b}: <br/>{c} desejos ({d}%)'
+      y: {
+        formatter: function (val) {
+          return val + " desejos";
+        }
+      }
     },
     legend: {
-      orient: 'vertical',
-      left: 'left',
-      type: 'scroll',
+      position: 'bottom',
     },
-    series: [
+    responsive: [
       {
-        name: 'Produtos Desejados',
-        type: 'pie',
-        radius: ['40%', '70%'],
-        avoidLabelOverlap: false,
-        itemStyle: {
-          borderRadius: 10,
-          borderColor: '#fff',
-          borderWidth: 2
+        breakpoint: 480,
+        options: {
+          chart: {
+            width: 300,
+          },
+          legend: {
+            position: 'bottom',
+          },
         },
-        label: {
-          show: false,
-          position: 'center'
-        },
-        emphasis: {
-          label: {
-            show: true,
-            fontSize: 16,
-            fontWeight: 'bold'
-          }
-        },
-        labelLine: {
-          show: false
-        },
-        data: props.results.map(item => ({
-          value: item.total,
-          name: item.product_name
-        }))
-      }
-    ]
+      },
+    ],
   };
 });
 </script>
+
+<style scoped>
+:deep(text.apexcharts-pie-label) {
+  /* Animação que mantém a opacidade em 0 durante os primeiros 900ms (64% de 1.4s) e depois faz um fade in até 1 */
+  animation: delayAndFade 1.4s ease-in forwards;
+}
+
+@keyframes delayAndFade {
+  0%, 64% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+</style>
