@@ -55,6 +55,12 @@ def get_prices_endpoint(
     avg_price = products.get_products_price_avg(prices)
     product = db.get_product_by_id(product_id)
 
+    price_entries = {}
+    for p in prices:
+        # SQLite returns string for dates
+        date_val = datetime.date.fromisoformat(p["date"]) if isinstance(p["date"], str) else p["date"]
+        price_entries[date_val] = float(p["price"])
+
     return PriceResponse(
         from_date=from_date,
         to_date=to_date,
@@ -62,6 +68,7 @@ def get_prices_endpoint(
         name=product["name"],
         state=state,
         avg_price=avg_price,
+        price_entries=price_entries,
     )
 
 
