@@ -9,9 +9,8 @@ export const productSearchService = {
    * @returns {Promise<Array>} Lista de produtos encontrados.
    */
   async search(query) {
-    // O backend espera o termo entre aspas, ex: "laranja"
     const response = await externalApi.get('/api/products/search', {
-      params: { query: `"${query}"` },
+      params: { query: query || '' },
     });
 
     if (Array.isArray(response.data)) {

@@ -5,6 +5,7 @@ import {
   EyeIcon,
   PhotoIcon,
   UserCircleIcon,
+  ChartPieIcon,
 } from '@heroicons/vue/24/outline';
 
 export const dashboardProfiles = {
@@ -13,6 +14,7 @@ export const dashboardProfiles = {
     subtitle: 'Acompanhe estoque, oportunidades e preços sugeridos para vender melhor.',
     navItems: [
       { id: 'meu-estoque', label: 'Meu Estoque', icon: ArchiveBoxIcon },
+      { id: 'wishlist-analytics', label: 'Análise de Produtos', icon: ChartPieIcon },
       { id: 'historico-venda', label: 'Histórico de Venda', icon: ArrowPathIcon },
       { id: 'meu-perfil', label: 'Meu Perfil', icon: UserCircleIcon },
     ],

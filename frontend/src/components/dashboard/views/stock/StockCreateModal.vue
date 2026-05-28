@@ -29,20 +29,33 @@
           </div>
 
           <form class="flex flex-col gap-4 px-6 py-6 sm:px-8" @submit.prevent="handleSubmit">
-            <AppSelect
-              v-model="form.external_id"
-              label="Nome do Produto"
-              placeholder="Ex.: Abacate premium"
-              :options="productOptions"
-              label-key="name"
-              value-key="id"
-              :loading="searchLoading"
-              :filter-locally="false"
-              autocomplete
-              required
-              @search="handleSearch"
-              @select="handleProductSelect"
-            />
+            <div>
+              <AppSelect
+                v-model="form.external_id"
+                label="Nome do Produto"
+                placeholder="Digite o nome do produto (ex: Feijão)"
+                :options="productOptions"
+                label-key="name"
+                value-key="id"
+                :loading="searchLoading"
+                :filter-locally="false"
+                autocomplete
+                required
+                @search="handleSearch"
+                @select="handleProductSelect"
+              />
+              
+              <div v-if="isLoadingPrice" class="mt-1.5 flex items-center gap-2 text-xs font-medium text-slate-500">
+                <svg class="h-3.5 w-3.5 animate-spin text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Buscando preço sugerido na sua região...</span>
+              </div>
+              <p v-else-if="suggestedPrice" class="mt-1.5 text-xs font-medium text-slate-500">
+                Preço sugerido na sua região: <span class="font-bold text-emerald-600">{{ new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(suggestedPrice) }}</span>
+              </p>
+            </div>
 
             <AppSelect
               v-model="form.category"
@@ -128,6 +141,7 @@ import AppSelect from '@/components/ui/AppSelect.vue';
 import { useProductSearch } from '@/composables/useProductSearch';
 import { createProduct } from '@/services/product';
 import { listCategories } from '@/services/category';
+import { useAuthStore } from '@/stores/auth';
 
 const props = defineProps({
   modelValue: {
@@ -150,13 +164,19 @@ const form = reactive({ ...INITIAL_FORM });
 const selectedProduct = ref(null);
 const submitError = ref('');
 const isSubmitting = ref(false);
+const suggestedPrice = ref(null);
+const isLoadingPrice = ref(false);
 
 const categoryOptions = ref([]);
+
+const authStore = useAuthStore();
 
 function resetForm() {
   Object.assign(form, INITIAL_FORM);
   selectedProduct.value = null;
   submitError.value = '';
+  suggestedPrice.value = null;
+  isLoadingPrice.value = false;
 }
 
 const {
@@ -180,7 +200,6 @@ watch(
   () => props.modelValue,
   (isOpen) => {
     if (isOpen) {
-      handleSearch();
       fetchCategories();
     } else {
       resetForm();
@@ -193,9 +212,35 @@ function closeModal() {
   emit('update:modelValue', false);
 }
 
-function handleProductSelect(option) {
+async function handleProductSelect(option) {
   selectedProduct.value = option;
   form.external_id = option?.id || null;
+  suggestedPrice.value = null;
+
+  if (option?.id) {
+    isLoadingPrice.value = true;
+    try {
+      const userState = authStore.getCurrentUser?.state;
+      const stateParam = userState ? userState.toLowerCase() : 'sp';
+      const todayDate = new Date().toISOString().split('T')[0];
+      
+      const response = await fetch(
+        `http://localhost:8001/api/products/${option.id}/prices?from_date=2020-01-01&to_date=${todayDate}&state=${stateParam}`
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        const price = data.avg_price || data.average_price || data.price || (Array.isArray(data) && data[0]?.price);
+        if (price) {
+          suggestedPrice.value = price;
+        }
+      }
+    } catch (err) {
+      console.error('Erro ao buscar preços:', err);
+    } finally {
+      isLoadingPrice.value = false;
+    }
+  }
 }
 
 async function handleSubmit() {

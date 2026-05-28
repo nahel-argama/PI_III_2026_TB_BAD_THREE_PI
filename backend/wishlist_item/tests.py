@@ -249,8 +249,10 @@ class WishlistItemNestedRouteTestCase(TestCase):
         response = self.client.get(self.wishlist_top_products_url())
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['state'], 'SP')
+        self.assertEqual(response.data['state'], '')
+        self.assertEqual(response.data['user_state'], 'SP')
         self.assertEqual(response.data['top'], 5)
+        # 2 default itens in SP + 2 other itens created above = 4 total in database
         self.assertEqual(response.data['total_items'], 4)
         self.assertEqual(len(response.data['results']), 3)
         self.assertEqual(response.data['results'][0]['product_external_key'], 'external-1')

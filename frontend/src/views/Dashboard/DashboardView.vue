@@ -38,6 +38,7 @@ import PurchaseHistoryView from '@/components/dashboard/views/PurchaseHistoryVie
 import SalesHistoryView from '@/components/dashboard/views/SalesHistoryView.vue';
 import ProfileView from '@/components/dashboard/views/ProfileView.vue';
 import ProductImagesPlaceholderView from '@/components/dashboard/views/ProductImagesPlaceholderView.vue';
+import WishlistAnalyticsPage from '@/modules/analytics/pages/WishlistAnalyticsPage.vue';
 
 const authStore = useAuthStore();
 const route = useRoute();
@@ -45,6 +46,7 @@ const dashboardViewRegistry = {
   PRODUTOR: {
     'meu-estoque': StockView,
     'historico-venda': SalesHistoryView,
+    'wishlist-analytics': WishlistAnalyticsPage,
     'meu-perfil': ProfileView,
   },
   VAREJISTA: {

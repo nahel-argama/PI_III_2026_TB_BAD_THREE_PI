@@ -52,7 +52,7 @@
           :disabled="disabled"
           autocomplete="off"
           role="combobox"
-          :aria-expanded="isOpen"
+          :aria-expanded="shouldShowDropdown"
           :aria-controls="listboxId"
           :aria-activedescendant="activeDescendant"
           @focus="openDropdown"
@@ -69,7 +69,7 @@
         :class="{ 'app-select__display--placeholder': !selectedLabel }"
         tabindex="0"
         role="combobox"
-        :aria-expanded="isOpen"
+        :aria-expanded="shouldShowDropdown"
         :aria-controls="listboxId"
         :aria-activedescendant="activeDescendant"
         @keydown="handleKeydown"
@@ -116,7 +116,7 @@
     <Teleport to="body">
       <Transition name="app-select-dropdown">
         <div
-          v-if="isOpen"
+          v-if="shouldShowDropdown"
           :id="listboxId"
           ref="dropdownRef"
           class="app-select__dropdown"
@@ -386,6 +386,14 @@ const activeDescendant = computed(() =>
   activeIndex.value >= 0 ? `${listboxId}-option-${activeIndex.value}` : undefined,
 );
 
+const shouldShowDropdown = computed(() => {
+  if (!isOpen.value) return false;
+  if (props.autocomplete && !query.value.trim() && !props.loading && filteredOptions.value.length === 0) {
+    return false;
+  }
+  return true;
+});
+
 // ─── Methods ─────────────────────────────────────────────────────────────────
 
 function isSelected(option) {
@@ -639,6 +647,11 @@ watch(
 
 .app-select__input::placeholder {
   color: #6b7280; /* gray-500 */
+}
+
+/* Quando tem uma seleção no autocomplete, o placeholder age como texto selecionado */
+.app-select__input--has-selection::placeholder {
+  color: #111827; /* gray-900 */
 }
 
 /* ── Display (read-only) ───────────────────────────────────────────────── */

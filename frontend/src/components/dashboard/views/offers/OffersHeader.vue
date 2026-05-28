@@ -5,7 +5,7 @@
     <div class="flex flex-col gap-5">
       <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h2 class="mt-2 text-3xl font-black tracking-tight text-slate-900">Explorar Ofertas</h2>
+          <h2 class="text-3xl font-black tracking-tight text-slate-900">Explorar Ofertas</h2>
         </div>
 
         <label class="relative block w-full sm:w-96" for="offers-search">

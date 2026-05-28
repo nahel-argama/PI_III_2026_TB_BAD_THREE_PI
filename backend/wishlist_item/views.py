@@ -136,12 +136,6 @@ class WishlistTopProductsView(APIView):
 
     def get(self, request):
         state = self.get_state(request)
-        if not state:
-            return Response(
-                {"detail": "State must be provided or registered on producer address."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
         top = self.get_top(request)
         if top is None:
             return Response(
@@ -149,16 +143,20 @@ class WishlistTopProductsView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        ranked_products = list(
-            WishlistItem.objects.filter(
+        if state:
+            queryset = WishlistItem.objects.filter(
                 wishlist__retailer__user__address__state__iexact=state
             )
-            .values("product_external_key", "product_name")
+        else:
+            queryset = WishlistItem.objects.all()
+
+        total_items = queryset.count()
+
+        ranked_products = list(
+            queryset.values("product_external_key", "product_name")
             .annotate(total=Count("id"))
             .order_by("-total", "product_name")[:top]
         )
-
-        total_items = sum(product["total"] for product in ranked_products)
 
         results = [
             {
@@ -170,9 +168,12 @@ class WishlistTopProductsView(APIView):
             for product in ranked_products
         ]
 
+        user_state = getattr(getattr(request.user, "address", None), "state", None)
+
         return Response(
             {
-                "state": state,
+                "state": state or "",
+                "user_state": user_state.upper() if user_state else "",
                 "top": top,
                 "total_items": total_items,
                 "results": results,
@@ -182,10 +183,7 @@ class WishlistTopProductsView(APIView):
     def get_state(self, request):
         state = request.query_params.get("state")
 
-        if not state:
-            state = getattr(getattr(request.user, "address", None), "state", None)
-
-        if not state:
+        if not state or state.upper() in ["ALL", "TODOS"]:
             return None
 
         return state.strip().upper()
@@ -210,4 +208,4 @@ class WishlistTopProductsView(APIView):
         if total_items == 0:
             return 0
 
-        return round((total / total_items) * 100, 2)
+        return int(round((total / total_items) * 100))

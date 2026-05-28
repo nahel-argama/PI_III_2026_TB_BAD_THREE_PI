@@ -114,18 +114,7 @@ class ProductFilter(django_filters.FilterSet):
         return float(address.latitude), float(address.longitude)
 
     def apply_search(self, queryset, value):
-        vector = (
-            SearchVector("name", weight="A", config="portuguese")
-            + SearchVector("category__name", weight="B", config="portuguese")
-            + SearchVector("producer__trade_name", weight="B", config="portuguese")
-            + SearchVector("description", weight="C", config="portuguese")
-        )
-        query = SearchQuery(value, search_type="websearch", config="portuguese")
-
-        return queryset.annotate(
-            search_vector=vector,
-            search_score=SearchRank(vector, query),
-        ).filter(search_vector=query)
+        return queryset.filter(name__icontains=value)
 
     def apply_geo_distance(self, queryset, latitude, longitude, radius_km=None):
         product_point = self.build_point(
@@ -165,9 +154,9 @@ class ProductFilter(django_filters.FilterSet):
         ordering = []
         if has_geo:
             ordering.append(F("distance_km").asc(nulls_last=True))
-        if has_search:
-            ordering.append("-search_score")
         if ordering:
             ordering.extend(["price", "id"])
             return queryset.order_by(*ordering)
-        return queryset
+        
+        # se não houver ordenação geográfica, usamos a padrão
+        return queryset.order_by("price", "id")
