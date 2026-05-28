@@ -20,7 +20,7 @@
             <span>#{{ index + 1 }}</span>
           </td>
           <td class="px-6 py-4 font-medium text-slate-800">
-            {{ item.product_name }}
+            {{ capitalize(item.product_name) }}
           </td>
           <td class="px-6 py-4">
             {{ item.total }} desejos

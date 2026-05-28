@@ -14,6 +14,7 @@
 <script setup>
 import { computed } from 'vue';
 import VueApexCharts from 'vue3-apexcharts';
+import { capitalize } from '@/utils/string';
 
 const props = defineProps({
   results: { type: Array, required: true }
@@ -29,7 +30,7 @@ const chartOptions = computed(() => {
       type: 'pie',
       fontFamily: 'inherit',
     },
-    labels: props.results?.map(item => item.product_name) || [],
+    labels: props.results?.map(item => capitalize(item.product_name)) || [],
     tooltip: {
       y: {
         formatter: function (val) {

@@ -18,7 +18,7 @@
       <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Produto Mais Desejado</p>
       <p class="mt-2 text-xl font-bold text-emerald-600 truncate">
         <span v-if="isLoading" class="inline-block animate-pulse bg-slate-200 text-transparent rounded w-32">Carregando...</span>
-        <span v-else>{{ data?.results?.[0]?.product_name || 'Nenhum' }}</span>
+        <span v-else>{{ data?.results?.[0]?.product_name ? capitalize(data.results[0].product_name) : 'Nenhum' }}</span>
       </p>
     </div>
   </div>
