@@ -21,7 +21,8 @@ def generate_product_context_batch(product_names: list[str]) -> dict:
 
     Os nomes dos produtos são: {", ".join(product_names)}
 
-    Retorne um JSON com apenas o json, esse output será lido por um json parser, seguinte estrutura:
+    Retorne um JSON , esse output será lido por um json parser, então envie somente o json, nada a mais, nenhum text
+    diferente do json, seguinte estrutura:
     {{
         "product_name": {{
             "presentation_name": "...",
