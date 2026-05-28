@@ -27,7 +27,8 @@ class PriceResponse(BaseModel):
     name: str
     state: str
     avg_price: float
-    price_entries: dict[datetime.date, float]
+    is_fallback: bool
+    price_entries: dict[datetime.date, float] | None
 
 
 @router.get("/products/search")
@@ -48,18 +49,28 @@ def get_prices_endpoint(
     to_date: datetime.datetime,
     state: str,
 ):
+    is_fallback = False
     prices = db.get_product_prices(product_id, from_date, to_date, state)
     if not prices:
-        raise HTTPException(status_code=404, detail="No prices found for this product")
+        is_fallback = True
+        prices = db.get_product_prices(product_id, from_date, to_date, None)
+
+    if not prices:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No price data found for the specified product and date range at {state}",
+        )
 
     avg_price = products.get_products_price_avg(prices)
     product = db.get_product_by_id(product_id)
 
-    price_entries = {}
-    for p in prices:
-        # SQLite returns string for dates
-        date_val = datetime.date.fromisoformat(p["date"]) if isinstance(p["date"], str) else p["date"]
-        price_entries[date_val] = float(p["price"])
+    price_entries = None
+
+    if not is_fallback:
+        price_entries = {}
+        for p in prices:
+            date = p["date"]
+            price_entries[date] = float(p["price"])
 
     return PriceResponse(
         from_date=from_date,
@@ -68,6 +79,7 @@ def get_prices_endpoint(
         name=product["name"],
         state=state,
         avg_price=avg_price,
+        is_fallback=is_fallback,
         price_entries=price_entries,
     )
 

@@ -7,7 +7,7 @@ def get_product_prices(
     product_id: str,
     from_date: datetime.datetime,
     to_date: datetime.datetime,
-    state: str,
+    state: str | None = None,
 ) -> list[dict]:
     conn = get_db()
 
@@ -25,10 +25,13 @@ def get_product_prices(
             created_at
         FROM product_prices
         WHERE product_id = ?
-        AND state = ?
     """
 
-    params = [product_id, state]
+    params = [product_id]
+
+    if state is not None:
+        query += " AND state = ?"
+        params.append(state)
 
     if from_date:
         query += " AND date >= ?"
