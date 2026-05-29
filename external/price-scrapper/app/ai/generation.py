@@ -25,6 +25,7 @@ def generate_product_context_batch(product_names: list[str]) -> dict:
     - Não mande um bloco markdown ou nada do tipo
     - Quero o JSON puro e sem pretty print
     - Utilize a seguinte estrutura:
+    - As chaves referentes ao nome do produto no json devem ser exatamente iguais as chaves passadas na lista de produtos
     {{
         "product_name": {{
             "presentation_name": "...",
@@ -33,7 +34,7 @@ def generate_product_context_batch(product_names: list[str]) -> dict:
     """
 
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-3.5-flash",
         contents=prompt,
     )
 
