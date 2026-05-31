@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 from typing import Generic, TypeVar, TypedDict
+
 import requests
+from rest_framework import exceptions, status
+
 import config.settings as settings
 
 BASE_URL = settings.PRICE_SCRAPPER_ENDPOINT
@@ -45,3 +48,16 @@ def get_product_by_id(
         )
 
     return ExternalServiceResponse(status=response.status_code, data=response.json())
+
+
+def get_product_by_id_validated(
+    product_id: str,
+) -> ExternalServiceResponse[ProductDetailResponse]:
+    response = get_product_by_id(product_id)
+
+    if isinstance(response, ExternalServiceError):
+        raise exceptions.APIException(
+            detail=response.message, code=status.HTTP_400_BAD_REQUEST
+        )
+
+    return response

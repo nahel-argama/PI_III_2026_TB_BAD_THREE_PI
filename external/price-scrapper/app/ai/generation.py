@@ -21,16 +21,11 @@ def generate_product_context_batch(product_names: list[str]) -> dict:
 
     Os nomes dos produtos são: {", ".join(product_names)}
 
-<<<<<<< HEAD
-    Retorne um JSON , esse output será lido por um json parser, então envie somente o json, nada a mais, nenhum text
-    diferente do json, seguinte estrutura:
-=======
     Retorne um JSON:
     - Não mande um bloco markdown ou nada do tipo
     - Quero o JSON puro e sem pretty print
     - Utilize a seguinte estrutura:
     - As chaves referentes ao nome do produto no json devem ser exatamente iguais as chaves passadas na lista de produtos
->>>>>>> bfb5aab (feat: update dataset)
     {{
         "product_name": {{
             "presentation_name": "...",
@@ -48,7 +43,7 @@ def generate_product_context_batch(product_names: list[str]) -> dict:
 
 def run_batch_update():
     _LOGGER.info("Starting batch update for product context")
-    products_to_update = products.get_products_without_context(limit=20)
+    products_to_update = products.get_products_without_presentation_name(limit=20)
 
     if not products_to_update:
         _LOGGER.info("No products to update.")
