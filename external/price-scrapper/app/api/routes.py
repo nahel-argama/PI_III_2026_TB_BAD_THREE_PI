@@ -14,7 +14,7 @@ class SearchResponse(BaseModel):
 
     id: str
     name: str
-    presentation_name: str | None
+    normal_name: str
     created_at: datetime.datetime
 
 
@@ -25,6 +25,7 @@ class PriceResponse(BaseModel):
     from_date: datetime.date
     to_date: datetime.date
     name: str
+    normal_name: str
     state: str
     avg_price: float
     is_fallback: bool
@@ -39,7 +40,19 @@ def search_products_endpoint(query: str, limit: int = 10):
     normalized_query = products.normalize_query(query)
 
     results = db.product_search(normalized_query, limit)
-    return [SearchResponse(**r) for r in results]
+
+    response = []
+    for r in results:
+        response.append(
+            SearchResponse(
+                id=r["id"],
+                name=r["presentation_name"],
+                normal_name=r["name"],
+                created_at=r["created_at"],
+            )
+        )
+
+    return response
 
 
 @router.get("/products/{product_id}/prices")
@@ -76,7 +89,8 @@ def get_prices_endpoint(
         from_date=from_date,
         to_date=to_date,
         product_id=product_id,
-        name=product["name"],
+        name=product["presentation_name"],
+        normal_name=product["name"],
         state=state,
         avg_price=avg_price,
         is_fallback=is_fallback,
@@ -89,4 +103,10 @@ def get_product_endpoint(product_id: str):
     product = db.get_product_by_id(product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    return SearchResponse(**product)
+
+    return SearchResponse(
+        id=product["id"],
+        name=product["presentation_name"],
+        normal_name=product["name"],
+        created_at=product["created_at"],
+    )

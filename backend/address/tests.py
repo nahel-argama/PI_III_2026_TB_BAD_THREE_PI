@@ -6,7 +6,7 @@ from django.test import TestCase
 
 from address.models import Address
 from address import nominatim_client
-from address.nominatim_client import Coordinates, GeocodingError, build_address_query
+from address.nominatim_client import Coordinates, GeocodingError, build_address_queries
 from address.serializers import AddressSerializer
 
 User = get_user_model()
@@ -14,7 +14,7 @@ User = get_user_model()
 
 class NominatimClientTestCase(TestCase):
     def test_build_address_query_uses_city_state_and_brazil(self):
-        query = build_address_query(
+        query = build_address_queries(
             {
                 "street": "Rua 1",
                 "number": "10",
@@ -24,10 +24,12 @@ class NominatimClientTestCase(TestCase):
             }
         )
 
-        self.assertEqual(query, "Rio Claro SP Brasil")
+        self.assertIn("Rua 1 10, Centro, Rio Claro, SP, Brasil", query)
 
     @patch("address.nominatim_client.requests.get")
-    def test_geocode_address_returns_error_when_nominatim_returns_empty_list(self, mock_get):
+    def test_geocode_address_returns_error_when_nominatim_returns_empty_list(
+        self, mock_get
+    ):
         mock_get.return_value.json.return_value = []
         mock_get.return_value.raise_for_status.return_value = None
 
@@ -44,7 +46,9 @@ class NominatimClientTestCase(TestCase):
         self.assertIsInstance(result, GeocodingError)
 
     @patch("address.nominatim_client.requests.get")
-    def test_geocode_address_returns_error_when_response_shape_is_unexpected(self, mock_get):
+    def test_geocode_address_returns_error_when_response_shape_is_unexpected(
+        self, mock_get
+    ):
         mock_get.return_value.json.return_value = {"error": "bad request"}
         mock_get.return_value.raise_for_status.return_value = None
 
@@ -106,7 +110,9 @@ class AddressSerializerTestCase(TestCase):
         self.assertIsNone(address.longitude)
 
     @patch("address.serializers.nominatim_client.geocode_address")
-    def test_update_geocodes_using_updated_and_existing_address_parts(self, mock_geocode):
+    def test_update_geocodes_using_updated_and_existing_address_parts(
+        self, mock_geocode
+    ):
         address = Address.objects.create(
             user=self.user,
             **self.payload,

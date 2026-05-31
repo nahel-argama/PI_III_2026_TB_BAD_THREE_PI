@@ -3,7 +3,7 @@ from rest_framework.throttling import SimpleRateThrottle
 
 class DefaultProductImageGenerationThrottle(SimpleRateThrottle):
     scope = "default_product_image_generation"
-    rate = "2/min"
+    rate = "10/min"
 
     def get_cache_key(self, request, view):
         if not request.user.is_authenticated:

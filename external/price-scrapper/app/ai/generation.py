@@ -43,7 +43,7 @@ def generate_product_context_batch(product_names: list[str]) -> dict:
 
 def run_batch_update():
     _LOGGER.info("Starting batch update for product context")
-    products_to_update = products.get_products_without_context(limit=20)
+    products_to_update = products.get_products_without_presentation_name(limit=20)
 
     if not products_to_update:
         _LOGGER.info("No products to update.")
