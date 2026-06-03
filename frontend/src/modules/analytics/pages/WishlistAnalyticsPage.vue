@@ -1,11 +1,11 @@
 <template>
   <section class="space-y-6 pb-6">
-    <header class="rounded-[28px] border border-white/70 bg-white/90 p-5 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur sm:p-6">
+    <header
+      class="rounded-[28px] border border-white/70 bg-white/90 p-5 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur sm:p-6"
+    >
       <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p class="text-xs font-bold tracking-[0.28em] text-emerald-600 uppercase">
-            Produtor
-          </p>
+          <p class="text-xs font-bold tracking-[0.28em] text-emerald-600 uppercase">Produtor</p>
           <h2 class="mt-2 text-3xl font-black tracking-tight text-slate-900">
             Análise de Produtos
           </h2>
@@ -13,7 +13,7 @@
             Produtos mais desejados pelos varejistas
           </p>
         </div>
-        
+
         <div class="flex w-full flex-col gap-3 sm:flex-row sm:items-center lg:w-auto">
           <AnalyticsFilters
             v-model:stateFilter="stateFilter"
@@ -24,34 +24,47 @@
         </div>
       </div>
     </header>
-    
+
     <!-- Erro -->
-    <div v-if="error" class="rounded-[28px] bg-red-50 p-6 text-sm text-red-600 shadow-sm border border-red-100">
-      <p class="font-semibold text-lg">Não foi possível carregar os dados.</p>
+    <div
+      v-if="error"
+      class="rounded-[28px] border border-red-100 bg-red-50 p-6 text-sm text-red-600 shadow-sm"
+    >
+      <p class="text-lg font-semibold">Não foi possível carregar os dados.</p>
       <p class="mt-1">{{ error }}</p>
     </div>
-    
+
     <AnalyticsSummaryCards :data="data" :is-loading="isLoading" />
-    
+
     <template v-if="!isLoading && data?.results?.length">
-      <div class="rounded-[28px] border border-white/70 bg-white/90 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur overflow-hidden">
+      <div
+        class="overflow-hidden rounded-[28px] border border-white/70 bg-white/90 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur"
+      >
         <div class="flex border-b border-slate-100">
           <button
             class="px-6 py-4 text-sm font-semibold transition"
-            :class="activeTab === 'ranking' ? 'border-b-2 border-emerald-500 text-emerald-600' : 'text-slate-500 hover:bg-slate-50'"
+            :class="
+              activeTab === 'ranking'
+                ? 'border-b-2 border-emerald-500 text-emerald-600'
+                : 'text-slate-500 hover:bg-slate-50'
+            "
             @click="activeTab = 'ranking'"
           >
             Lista de Ranking
           </button>
           <button
             class="px-6 py-4 text-sm font-semibold transition"
-            :class="activeTab === 'grafico' ? 'border-b-2 border-emerald-500 text-emerald-600' : 'text-slate-500 hover:bg-slate-50'"
+            :class="
+              activeTab === 'grafico'
+                ? 'border-b-2 border-emerald-500 text-emerald-600'
+                : 'text-slate-500 hover:bg-slate-50'
+            "
             @click="activeTab = 'grafico'"
           >
             Gráfico de Distribuição
           </button>
         </div>
-        
+
         <div>
           <WishlistRankingList v-if="activeTab === 'ranking'" :results="data.results" />
           <div v-else-if="activeTab === 'grafico'" class="p-6">
@@ -62,9 +75,9 @@
     </template>
 
     <div v-else-if="isLoading" class="space-y-4">
-      <div v-for="i in 5" :key="i" class="h-16 bg-slate-100 animate-pulse rounded-[16px]"></div>
+      <div v-for="i in 5" :key="i" class="h-16 animate-pulse rounded-[16px] bg-slate-100"></div>
     </div>
-    
+
     <EmptyState v-else />
   </section>
 </template>
@@ -80,12 +93,5 @@ import EmptyState from '../components/EmptyState.vue';
 
 const activeTab = ref('ranking');
 
-const {
-  stateFilter,
-  topFilter,
-  data,
-  isLoading,
-  error,
-  userState,
-} = useWishlistAnalytics();
+const { stateFilter, topFilter, data, isLoading, error, userState } = useWishlistAnalytics();
 </script>

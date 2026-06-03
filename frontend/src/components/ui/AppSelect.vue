@@ -388,7 +388,12 @@ const activeDescendant = computed(() =>
 
 const shouldShowDropdown = computed(() => {
   if (!isOpen.value) return false;
-  if (props.autocomplete && !query.value.trim() && !props.loading && filteredOptions.value.length === 0) {
+  if (
+    props.autocomplete &&
+    !query.value.trim() &&
+    !props.loading &&
+    filteredOptions.value.length === 0
+  ) {
     return false;
   }
   return true;

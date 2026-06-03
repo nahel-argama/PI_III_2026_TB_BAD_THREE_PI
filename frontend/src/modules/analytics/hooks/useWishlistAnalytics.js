@@ -3,10 +3,10 @@ import { wishlistAnalyticsService } from '../services/wishlistAnalytics.service'
 import { useToast } from '@/composables/useToast';
 
 export function useWishlistAnalytics() {
-  const stateFilter = ref(''); 
+  const stateFilter = ref('');
   const topFilter = ref(10);
   const userState = ref('');
-  
+
   const data = ref(null);
   const isLoading = ref(false);
   const error = ref(null);
@@ -22,7 +22,7 @@ export function useWishlistAnalytics() {
       if (stateFilter.value) {
         params.state = stateFilter.value;
       }
-      
+
       const response = await wishlistAnalyticsService.getTopProducts(params);
       data.value = response;
 
@@ -36,7 +36,10 @@ export function useWishlistAnalytics() {
       if (is400) {
         error.value = detail || 'Verifique os filtros selecionados.';
       } else {
-        toast.error('Ocorreu um erro ao carregar analytics. Tente novamente mais tarde.', 'Falha de Conexão');
+        toast.error(
+          'Ocorreu um erro ao carregar analytics. Tente novamente mais tarde.',
+          'Falha de Conexão',
+        );
       }
     } finally {
       isLoading.value = false;

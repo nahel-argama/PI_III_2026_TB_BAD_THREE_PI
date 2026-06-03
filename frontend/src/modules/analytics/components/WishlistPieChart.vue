@@ -1,12 +1,12 @@
 <template>
-  <div class="flex justify-center py-6 h-[400px] w-full">
+  <div class="flex h-[400px] w-full justify-center py-6">
     <VueApexCharts
       type="pie"
       width="100%"
       height="100%"
       :options="chartOptions"
       :series="series"
-      class="w-full max-w-2xl flex justify-center"
+      class="flex w-full max-w-2xl justify-center"
     />
   </div>
 </template>
@@ -17,11 +17,11 @@ import VueApexCharts from 'vue3-apexcharts';
 import { capitalize } from '@/utils/string';
 
 const props = defineProps({
-  results: { type: Array, required: true }
+  results: { type: Array, required: true },
 });
 
 const series = computed(() => {
-  return props.results?.map(item => Number(item.total)) || [];
+  return props.results?.map((item) => Number(item.total)) || [];
 });
 
 const chartOptions = computed(() => {
@@ -30,13 +30,13 @@ const chartOptions = computed(() => {
       type: 'pie',
       fontFamily: 'inherit',
     },
-    labels: props.results?.map(item => capitalize(item.product_name)) || [],
+    labels: props.results?.map((item) => capitalize(item.product_name)) || [],
     tooltip: {
       y: {
         formatter: function (val) {
-          return val + " desejos";
-        }
-      }
+          return val + ' desejos';
+        },
+      },
     },
     legend: {
       position: 'bottom',
@@ -65,7 +65,8 @@ const chartOptions = computed(() => {
 }
 
 @keyframes delayAndFade {
-  0%, 64% {
+  0%,
+  64% {
     opacity: 0;
   }
   100% {

@@ -1,7 +1,7 @@
 <template>
   <div class="overflow-x-auto">
     <table class="w-full text-left text-sm text-slate-600">
-      <thead class="border-b border-slate-100 text-xs font-semibold uppercase text-slate-500">
+      <thead class="border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase">
         <tr>
           <th class="px-6 py-5">Pos</th>
           <th class="px-6 py-5">Produto</th>
@@ -10,22 +10,26 @@
         </tr>
       </thead>
       <tbody class="divide-y divide-slate-100">
-        <tr v-for="(item, index) in results" :key="item.product_external_key" class="hover:bg-slate-50/50 transition">
+        <tr
+          v-for="(item, index) in results"
+          :key="item.product_external_key"
+          class="transition hover:bg-slate-50/50"
+        >
           <td
-class="px-6 py-4 font-semibold" :class="[
-            index === 0 ? 'text-amber-500' : '',
-            index === 1 ? 'text-slate-400' : '',
-            index === 2 ? 'text-orange-400' : '',
-            index > 2 ? 'text-slate-400 font-normal' : ''
-          ]">
+            class="px-6 py-4 font-semibold"
+            :class="[
+              index === 0 ? 'text-amber-500' : '',
+              index === 1 ? 'text-slate-400' : '',
+              index === 2 ? 'text-orange-400' : '',
+              index > 2 ? 'font-normal text-slate-400' : '',
+            ]"
+          >
             <span>#{{ index + 1 }}</span>
           </td>
           <td class="px-6 py-4 font-medium text-slate-800">
             {{ capitalize(item.product_name) }}
           </td>
-          <td class="px-6 py-4">
-            {{ item.total }} desejos
-          </td>
+          <td class="px-6 py-4">{{ item.total }} desejos</td>
           <td class="px-6 py-4">
             <div class="flex items-center gap-3">
               <span class="w-10 font-medium">{{ item.percentage }}%</span>
@@ -45,6 +49,6 @@ class="px-6 py-4 font-semibold" :class="[
 
 <script setup>
 defineProps({
-  results: { type: Array, required: true }
+  results: { type: Array, required: true },
 });
 </script>

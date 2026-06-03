@@ -44,16 +44,40 @@
                 @search="handleSearch"
                 @select="handleProductSelect"
               />
-              
-              <div v-if="isLoadingPrice" class="mt-1.5 flex items-center gap-2 text-xs font-medium text-slate-500">
-                <svg class="h-3.5 w-3.5 animate-spin text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+
+              <div
+                v-if="isLoadingPrice"
+                class="mt-1.5 flex items-center gap-2 text-xs font-medium text-slate-500"
+              >
+                <svg
+                  class="h-3.5 w-3.5 animate-spin text-emerald-600"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 <span>Buscando preço sugerido na sua região...</span>
               </div>
               <p v-else-if="suggestedPrice" class="mt-1.5 text-xs font-medium text-slate-500">
-                Preço sugerido na sua região: <span class="font-bold text-emerald-600">{{ new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(suggestedPrice) }}</span>
+                Preço sugerido na sua região:
+                <span class="font-bold text-emerald-600">{{
+                  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                    suggestedPrice,
+                  )
+                }}</span>
               </p>
             </div>
 
@@ -223,14 +247,18 @@ async function handleProductSelect(option) {
       const userState = authStore.getCurrentUser?.state;
       const stateParam = userState ? userState.toLowerCase() : 'sp';
       const todayDate = new Date().toISOString().split('T')[0];
-      
+
       const response = await fetch(
-        `http://localhost:8001/api/products/${option.id}/prices?from_date=2020-01-01&to_date=${todayDate}&state=${stateParam}`
+        `http://localhost:8001/api/products/${option.id}/prices?from_date=2020-01-01&to_date=${todayDate}&state=${stateParam}`,
       );
-      
+
       if (response.ok) {
         const data = await response.json();
-        const price = data.avg_price || data.average_price || data.price || (Array.isArray(data) && data[0]?.price);
+        const price =
+          data.avg_price ||
+          data.average_price ||
+          data.price ||
+          (Array.isArray(data) && data[0]?.price);
         if (price) {
           suggestedPrice.value = price;
         }
