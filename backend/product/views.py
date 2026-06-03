@@ -38,7 +38,7 @@ class ProductViewSet(
         user = self.request.user
 
         if user.user_type == "PRODUCER":
-            return self.queryset.filter(producer=user.producer).order_by('id')
+            return self.queryset.filter(producer=user.producer, is_active=True).order_by('id')
 
         if user.user_type == "RETAILER":
             from django.db.models import F

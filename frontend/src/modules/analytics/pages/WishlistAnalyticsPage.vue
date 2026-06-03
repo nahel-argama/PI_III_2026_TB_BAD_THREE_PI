@@ -37,16 +37,16 @@
       <div class="rounded-[28px] border border-white/70 bg-white/90 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur overflow-hidden">
         <div class="flex border-b border-slate-100">
           <button
-            @click="activeTab = 'ranking'"
             class="px-6 py-4 text-sm font-semibold transition"
             :class="activeTab === 'ranking' ? 'border-b-2 border-emerald-500 text-emerald-600' : 'text-slate-500 hover:bg-slate-50'"
+            @click="activeTab = 'ranking'"
           >
             Lista de Ranking
           </button>
           <button
-            @click="activeTab = 'grafico'"
             class="px-6 py-4 text-sm font-semibold transition"
             :class="activeTab === 'grafico' ? 'border-b-2 border-emerald-500 text-emerald-600' : 'text-slate-500 hover:bg-slate-50'"
+            @click="activeTab = 'grafico'"
           >
             Gráfico de Distribuição
           </button>

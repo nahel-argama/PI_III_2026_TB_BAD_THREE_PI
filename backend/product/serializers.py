@@ -1,3 +1,4 @@
+from django.urls import reverse
 from rest_framework import serializers
 
 from product import price_scrapper_client
@@ -6,7 +7,7 @@ from product_image.serializers import ProductImageSerializer
 from .models import Product
 
 class ProductSerializer(serializers.ModelSerializer):
-    images = ProductImageSerializer(many=True, read_only=True)
+    images = serializers.SerializerMethodField()
     distance_km = serializers.SerializerMethodField()
     external_id = serializers.CharField(write_only=True, required=False)
 
@@ -27,6 +28,34 @@ class ProductSerializer(serializers.ModelSerializer):
             'distance_km',
         ]
         read_only_fields = ['id', 'producer', 'name', 'distance_km']
+
+    def get_images(self, obj):
+        custom_images = obj.images.all()
+        if custom_images.exists():
+            return ProductImageSerializer(
+                custom_images, many=True, context=self.context
+            ).data
+
+        from default_product_image.models import DefaultProductImage
+
+        try:
+            default_img = DefaultProductImage.objects.select_related("image").get(product_name=obj.name)
+            if default_img.image:
+                request = self.context.get("request")
+                url = reverse("image-download", args=[default_img.image_id])
+                if request:
+                    url = request.build_absolute_uri(url)
+                return [
+                    {
+                        "id": default_img.image_id,
+                        "image": url,
+                        "created_at": default_img.created_at,
+                    }
+                ]
+        except DefaultProductImage.DoesNotExist:
+            pass
+
+        return []
 
     def get_distance_km(self, obj):
         distance = getattr(obj, 'distance_km', None)

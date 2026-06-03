@@ -19,6 +19,30 @@ import config.settings as settings
 from default_product_image.throttles import DefaultProductImageGenerationThrottle
 
 
+class DefaultProductImageFeaturesView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        ai_enabled = bool(
+            settings.CF_ACCOUNT_ID
+            and settings.CF_TOKEN
+            and settings.CF_MODEL
+            and settings.CF_ENDPOINT
+        )
+        return Response(
+            {
+                "ai_generation_enabled": ai_enabled,
+                "debug_info": {
+                    "cf_account_id_present": bool(settings.CF_ACCOUNT_ID),
+                    "cf_token_present": bool(settings.CF_TOKEN),
+                    "cf_model_present": bool(settings.CF_MODEL),
+                    "cf_endpoint_present": bool(settings.CF_ENDPOINT),
+                }
+            },
+            status=status.HTTP_200_OK
+        )
+
+
 class DefaultProductImageListView(APIView):
     permission_classes = [IsAdminUser]
     filterset_class = DefaultProductImageFilter
@@ -67,6 +91,24 @@ class DefaultProductImageUploadView(APIView):
 
         return Response(response_serializer.data, status=status.HTTP_200_OK)
 
+    def delete(self, request, product_external_key):
+        try:
+            default_image = DefaultProductImage.objects.get(
+                product_external_key=product_external_key
+            )
+            old_image = default_image.image
+            
+            with transaction.atomic():
+                default_image.delete()
+                
+                # Delete the orphaned image blob if no other references exist
+                if old_image and not old_image.product_images.exists():
+                    old_image.delete()
+                    
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except DefaultProductImage.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
     def store_new_image(self, product_name, product_external_key, upload):
         with transaction.atomic():
             default_image, was_created = DefaultProductImage.objects.get_or_create(
@@ -99,9 +141,15 @@ class DefaultProductImageGenerateView(APIView):
     throttle_classes = [DefaultProductImageGenerationThrottle]
 
     def get(self, request, product_external_key):
-        if not settings.ENABLE_DEFAULT_IMAGE_GENERATION:
+        has_credentials = bool(
+            settings.CF_ACCOUNT_ID
+            and settings.CF_TOKEN
+            and settings.CF_MODEL
+            and settings.CF_ENDPOINT
+        )
+        if not has_credentials:
             return Response(
-                {"detail": "External product image generation is disabled."},
+                {"detail": "External product image generation is disabled (missing credentials)."},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
 

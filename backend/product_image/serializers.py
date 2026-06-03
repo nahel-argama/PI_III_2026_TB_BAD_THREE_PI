@@ -5,13 +5,13 @@ from product_image.models import ProductImage
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
-    image_url = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = ProductImage
-        fields = ["id", "image_url", "created_at"]
+        fields = ["id", "image", "created_at"]
 
-    def get_image_url(self, obj):
+    def get_image(self, obj):
         request = self.context.get("request")
 
         url = reverse("image-download", args=[obj.image_id])

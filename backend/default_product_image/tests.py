@@ -138,8 +138,8 @@ class DefaultProductImageAdminTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     @patch(
-        "default_product_image.views.settings.ENABLE_DEFAULT_IMAGE_GENERATION",
-        False,
+        "default_product_image.views.settings.CF_ACCOUNT_ID",
+        "",
     )
     def test_fail_to_generate_image_when_disabled(self):
         self.client.force_authenticate(user=self.admin_user)
@@ -152,10 +152,10 @@ class DefaultProductImageAdminTestCase(TestCase):
 
     @patch("default_product_image.views.image_generation.generate_product_image")
     @patch("default_product_image.views.product_client.get_product_by_id_validated")
-    @patch(
-        "default_product_image.views.settings.ENABLE_DEFAULT_IMAGE_GENERATION",
-        True,
-    )
+    @patch("default_product_image.views.settings.CF_ACCOUNT_ID", "acc-123")
+    @patch("default_product_image.views.settings.CF_TOKEN", "tok-123")
+    @patch("default_product_image.views.settings.CF_MODEL", "mod-123")
+    @patch("default_product_image.views.settings.CF_ENDPOINT", "http://end-point")
     def test_fail_to_generate_image_due_to_generation_failure(
         self, mocked_get_product, mocked_generate_image
     ):
@@ -178,6 +178,10 @@ class DefaultProductImageAdminTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    @patch("default_product_image.views.settings.CF_ACCOUNT_ID", "acc-123")
+    @patch("default_product_image.views.settings.CF_TOKEN", "tok-123")
+    @patch("default_product_image.views.settings.CF_MODEL", "mod-123")
+    @patch("default_product_image.views.settings.CF_ENDPOINT", "http://end-point")
     @patch("default_product_image.views.product_client.get_product_by_id_validated")
     @patch("default_product_image.views.image_generation.generate_product_image")
     def test_generate_image_successfully(
@@ -215,3 +219,61 @@ class DefaultProductImageAdminTestCase(TestCase):
             'attachment; filename="external-7.png"',
         )
         self.assertEqual(response["Content-Length"], str(len(image_bytes)))
+
+    def test_features_requires_admin(self):
+        self.client.force_authenticate(user=self.non_admin_user)
+        response = self.client.get("/api/default-product-images/features/")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    @patch("default_product_image.views.settings.CF_ACCOUNT_ID", "")
+    def test_features_ai_disabled(self):
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get("/api/default-product-images/features/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.data["ai_generation_enabled"])
+
+    @patch("default_product_image.views.settings.CF_ACCOUNT_ID", "acc-123")
+    @patch("default_product_image.views.settings.CF_TOKEN", "tok-123")
+    @patch("default_product_image.views.settings.CF_MODEL", "mod-123")
+    @patch("default_product_image.views.settings.CF_ENDPOINT", "http://end-point")
+    def test_features_ai_enabled_with_all_vars(self):
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get("/api/default-product-images/features/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data["ai_generation_enabled"])
+
+    @patch("default_product_image.views.settings.CF_ACCOUNT_ID", "")
+    @patch("default_product_image.views.settings.CF_TOKEN", "tok-123")
+    @patch("default_product_image.views.settings.CF_MODEL", "mod-123")
+    @patch("default_product_image.views.settings.CF_ENDPOINT", "http://end-point")
+    def test_features_ai_disabled_when_var_missing(self):
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get("/api/default-product-images/features/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.data["ai_generation_enabled"])
+
+    def test_delete_default_image_successfully(self):
+        self.client.force_authenticate(user=self.admin_user)
+        image = Image.objects.create(blob=b"image-data", mime_type="image/png")
+        DefaultProductImage.objects.create(
+            product_external_key="external-del-1",
+            product_name="External Del One",
+            image=image,
+        )
+
+        response = self.client.delete("/api/default-product-images/external-del-1/image/")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(
+            DefaultProductImage.objects.filter(product_external_key="external-del-1").exists()
+        )
+        self.assertFalse(Image.objects.filter(id=image.id).exists())
+
+    def test_delete_default_image_requires_admin(self):
+        self.client.force_authenticate(user=self.non_admin_user)
+        response = self.client.delete("/api/default-product-images/external-del-1/image/")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_default_image_not_found(self):
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.delete("/api/default-product-images/non-existent/image/")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

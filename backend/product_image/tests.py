@@ -89,7 +89,7 @@ class ProductImageTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(ProductImage.objects.filter(product=self.product).exists())
-        self.assertIn("image_url", response.data)
+        self.assertIn("image", response.data)
 
     def test_producer_cannot_upload_to_other_product(self):
         self.client.force_authenticate(user=self.producer_user)
@@ -114,7 +114,7 @@ class ProductImageTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
-        self.assertIn("image_url", response.data[0])
+        self.assertIn("image", response.data[0])
 
     def test_retailer_cannot_upload_product_image(self):
         self.client.force_authenticate(user=self.retailer_user)

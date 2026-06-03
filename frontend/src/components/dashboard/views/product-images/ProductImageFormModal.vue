@@ -60,7 +60,6 @@
                   :filter-locally="false"
                   autocomplete
                   required
-                  :disabled="mode === 'edit'"
                   @search="handleSearch"
                   @select="handleProductSelect"
                 />
@@ -71,7 +70,28 @@
 
               <!-- Section 2: Horizontal File Upload -->
               <div>
-                <ProductImageUploader v-model="form.imageUrl" label="Arquivo de Imagem" />
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="block text-xs font-bold tracking-wider text-slate-500 uppercase">
+                    Arquivo de Imagem
+                  </label>
+
+                  <!-- Small AI Generation Button next to the label -->
+                  <button
+                    v-if="aiFeatureAvailable && form.productId"
+                    type="button"
+                    :disabled="isGenerating"
+                    class="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white shadow-md shadow-emerald-500/20 transition duration-300 hover:from-emerald-600 hover:to-teal-600 hover:shadow-emerald-500/30 hover:scale-[1.03] active:scale-[0.97] disabled:opacity-75 disabled:cursor-not-allowed"
+                    @click="handleGenerateAiImage"
+                  >
+                    <svg v-if="isGenerating" class="h-3 w-3 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>{{ isGenerating ? 'Gerando...' : 'Gerar com IA' }}</span>
+                  </button>
+                </div>
+
+                <ProductImageUploader v-model="form.imageUrl" label="" />
               </div>
 
               <!-- Section 3: Clean Raw Preview underneath the uploader -->
@@ -122,6 +142,8 @@ import { XMarkIcon, SparklesIcon } from '@heroicons/vue/24/outline';
 import AppSelect from '@/components/ui/AppSelect.vue';
 import AppSecureImage from '@/components/ui/AppSecureImage.vue';
 import { useProductSearch } from '@/composables/useProductSearch';
+import { checkAiGenerationFeature, generateDefaultProductImage } from '@/services/defaultProductImages';
+import { useToast } from '@/composables/useToast';
 import ProductImageUploader from './ProductImageUploader.vue';
 
 const props = defineProps({
@@ -141,6 +163,10 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'submit']);
 
+const toast = useToast();
+const aiFeatureAvailable = ref(false);
+const isGenerating = ref(false);
+
 const form = reactive({
   productId: null,
   name: '',
@@ -158,7 +184,7 @@ const {
 
 watch(
   () => props.modelValue,
-  (isOpen) => {
+  async (isOpen) => {
     if (isOpen) {
       if (props.mode === 'edit') {
         form.productId = props.initialValue?.product_external_key || '';
@@ -177,6 +203,12 @@ watch(
         handleSearch();
       }
       form.imageUrl = props.initialValue?.imageUrl || '';
+
+      try {
+        aiFeatureAvailable.value = await checkAiGenerationFeature();
+      } catch {
+        aiFeatureAvailable.value = false;
+      }
       return;
     }
 
@@ -190,6 +222,8 @@ function resetForm() {
   form.name = '';
   form.imageUrl = '';
   selectedProduct.value = null;
+  aiFeatureAvailable.value = false;
+  isGenerating.value = false;
 }
 
 function closeModal() {
@@ -199,6 +233,35 @@ function closeModal() {
 function handleProductSelect(option) {
   selectedProduct.value = option;
   form.name = option?.name || '';
+  form.imageUrl = '';
+}
+
+async function handleGenerateAiImage() {
+  if (!form.productId) return;
+  isGenerating.value = true;
+  try {
+    const blob = await generateDefaultProductImage(form.productId);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      form.imageUrl = reader.result;
+      toast.success('Imagem gerada com sucesso!', 'IA Concluída');
+    };
+    reader.onerror = () => {
+      toast.error('Erro ao ler a imagem gerada.', 'Geração por IA');
+    };
+    reader.readAsDataURL(blob);
+  } catch (error) {
+    const status = error?.response?.status;
+    if (status === 503) {
+      toast.error('Geração por IA indisponível no momento (desativada no backend).', 'Recurso Indisponível');
+    } else if (status === 429) {
+      toast.error('Limite de gerações atingido. Tente novamente em instantes.', 'Limite Excedido');
+    } else {
+      toast.error('Não foi possível gerar a imagem. Verifique as credenciais ou tente novamente.', 'Falha na IA');
+    }
+  } finally {
+    isGenerating.value = false;
+  }
 }
 
 function handleSubmit() {

@@ -11,7 +11,8 @@
       </thead>
       <tbody class="divide-y divide-slate-100">
         <tr v-for="(item, index) in results" :key="item.product_external_key" class="hover:bg-slate-50/50 transition">
-          <td class="px-6 py-4 font-semibold" :class="[
+          <td
+class="px-6 py-4 font-semibold" :class="[
             index === 0 ? 'text-amber-500' : '',
             index === 1 ? 'text-slate-400' : '',
             index === 2 ? 'text-orange-400' : '',

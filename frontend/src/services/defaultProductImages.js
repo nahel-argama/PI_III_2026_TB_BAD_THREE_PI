@@ -60,3 +60,41 @@ export async function uploadDefaultProductImage(id, imageInput) {
 
   return response.data;
 }
+
+/**
+ * Verifica se a geração de imagens por IA está habilitada.
+ * GET /default-product-images/features/
+ *
+ * @returns {Promise<boolean>}
+ */
+export async function checkAiGenerationFeature() {
+  const response = await api.get('/default-product-images/features/');
+  return response.data?.ai_generation_enabled || false;
+}
+
+/**
+ * Gera uma imagem de produto padrão com IA.
+ * GET /default-product-images/{productExternalKey}/generate-image/
+ *
+ * Retorna a imagem como um Blob.
+ *
+ * @param {string} productExternalKey - Chave externa do produto.
+ * @returns {Promise<Blob>}
+ */
+export async function generateDefaultProductImage(productExternalKey) {
+  const response = await api.get(`/default-product-images/${productExternalKey}/generate-image/`, {
+    responseType: 'blob',
+  });
+  return response.data;
+}
+
+/**
+ * Remove a imagem padrão de um produto.
+ * DELETE /default-product-images/{productExternalKey}/image/
+ *
+ * @param {string} productExternalKey - Chave externa do produto.
+ * @returns {Promise<void>}
+ */
+export async function deleteDefaultProductImage(productExternalKey) {
+  await api.delete(`/default-product-images/${productExternalKey}/image/`);
+}

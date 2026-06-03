@@ -2,9 +2,9 @@
   <div class="flex flex-wrap items-center gap-3">
     <select
       :value="stateFilter"
-      @change="$emit('update:stateFilter', $event.target.value)"
       class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
       :disabled="isLoading"
+      @change="$emit('update:stateFilter', $event.target.value)"
     >
       <option value="">Todos os estados</option>
       <option v-for="uf in estadosOrdenados" :key="uf" :value="uf">
@@ -14,9 +14,9 @@
     
     <select
       :value="topFilter"
-      @change="$emit('update:topFilter', Number($event.target.value))"
       class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
       :disabled="isLoading"
+      @change="$emit('update:topFilter', Number($event.target.value))"
     >
       <option :value="5">Top 5</option>
       <option :value="10">Top 10</option>

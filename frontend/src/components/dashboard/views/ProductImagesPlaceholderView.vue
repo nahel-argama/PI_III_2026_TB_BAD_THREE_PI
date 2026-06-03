@@ -23,6 +23,7 @@ import { computed, ref, onMounted } from 'vue';
 import {
   listDefaultProductImages,
   uploadDefaultProductImage,
+  deleteDefaultProductImage,
 } from '@/services/defaultProductImages';
 import ProductImageFormModal from './product-images/ProductImageFormModal.vue';
 import ProductImagesGrid from './product-images/ProductImagesGrid.vue';
@@ -85,7 +86,19 @@ async function handleSubmit(payload) {
   if (!payload.productId || !payload.imageUrl) return;
 
   try {
+    const isProductChanged =
+      modalMode.value === 'edit' &&
+      selectedProduct.value &&
+      selectedProduct.value.product_external_key !== payload.productId;
+
+    // Upload image to the new/updated product first
     await uploadDefaultProductImage(payload.productId, payload.imageUrl);
+
+    // If product was changed, delete the old association
+    if (isProductChanged) {
+      await deleteDefaultProductImage(selectedProduct.value.product_external_key);
+    }
+
     await fetchProducts();
   } catch {
     // Silently catch upload error
