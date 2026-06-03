@@ -70,7 +70,7 @@
 
               <!-- Section 2: Horizontal File Upload -->
               <div>
-                <div class="flex items-center justify-between mb-1.5">
+                <div class="mb-1.5 flex items-center justify-between">
                   <label class="block text-xs font-bold tracking-wider text-slate-500 uppercase">
                     Arquivo de Imagem
                   </label>
@@ -80,12 +80,29 @@
                     v-if="aiFeatureAvailable && form.productId"
                     type="button"
                     :disabled="isGenerating"
-                    class="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white shadow-md shadow-emerald-500/20 transition duration-300 hover:from-emerald-600 hover:to-teal-600 hover:shadow-emerald-500/30 hover:scale-[1.03] active:scale-[0.97] disabled:opacity-75 disabled:cursor-not-allowed"
+                    class="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 px-3 py-1 text-[10px] font-black tracking-wider text-white uppercase shadow-md shadow-emerald-500/20 transition duration-300 hover:scale-[1.03] hover:from-emerald-600 hover:to-teal-600 hover:shadow-emerald-500/30 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-75"
                     @click="handleGenerateAiImage"
                   >
-                    <svg v-if="isGenerating" class="h-3 w-3 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      v-if="isGenerating"
+                      class="h-3 w-3 animate-spin text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                      ></circle>
+                      <path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     <span>{{ isGenerating ? 'Gerando...' : 'Gerar com IA' }}</span>
                   </button>
@@ -124,7 +141,8 @@
 
               <button
                 type="submit"
-                class="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-2 text-xs font-extrabold text-white shadow-md shadow-emerald-600/10 transition hover:from-emerald-700 hover:to-teal-700 hover:shadow-lg active:scale-[0.98]"
+                :disabled="!form.productId || !form.imageUrl"
+                class="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-2 text-xs font-extrabold text-white shadow-md shadow-emerald-600/10 transition hover:from-emerald-700 hover:to-teal-700 hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span>Salvar</span>
               </button>
@@ -142,7 +160,10 @@ import { XMarkIcon, SparklesIcon } from '@heroicons/vue/24/outline';
 import AppSelect from '@/components/ui/AppSelect.vue';
 import AppSecureImage from '@/components/ui/AppSecureImage.vue';
 import { useProductSearch } from '@/composables/useProductSearch';
-import { checkAiGenerationFeature, generateDefaultProductImage } from '@/services/defaultProductImages';
+import {
+  checkAiGenerationFeature,
+  generateDefaultProductImage,
+} from '@/services/defaultProductImages';
 import { useToast } from '@/composables/useToast';
 import ProductImageUploader from './ProductImageUploader.vue';
 
@@ -189,16 +210,27 @@ watch(
       if (props.mode === 'edit') {
         form.productId = props.initialValue?.product_external_key || '';
         form.name = props.initialValue?.name || '';
-        productOptions.value = [
-          {
-            id: form.productId,
-            name: form.name,
-          },
-        ];
         selectedProduct.value = {
           id: form.productId,
           name: form.name,
         };
+
+        // Fetch products so user can select a different one
+        await handleSearch();
+
+        // Ensure the current product is in the list of options
+        const currentOptionExists = productOptions.value.some(
+          (option) => option.id === form.productId,
+        );
+        if (!currentOptionExists && form.productId) {
+          productOptions.value = [
+            {
+              id: form.productId,
+              name: form.name,
+            },
+            ...productOptions.value,
+          ];
+        }
       } else {
         handleSearch();
       }
@@ -253,11 +285,17 @@ async function handleGenerateAiImage() {
   } catch (error) {
     const status = error?.response?.status;
     if (status === 503) {
-      toast.error('Geração por IA indisponível no momento (desativada no backend).', 'Recurso Indisponível');
+      toast.error(
+        'Geração por IA indisponível no momento (desativada no backend).',
+        'Recurso Indisponível',
+      );
     } else if (status === 429) {
       toast.error('Limite de gerações atingido. Tente novamente em instantes.', 'Limite Excedido');
     } else {
-      toast.error('Não foi possível gerar a imagem. Verifique as credenciais ou tente novamente.', 'Falha na IA');
+      toast.error(
+        'Não foi possível gerar a imagem. Verifique as credenciais ou tente novamente.',
+        'Falha na IA',
+      );
     }
   } finally {
     isGenerating.value = false;
