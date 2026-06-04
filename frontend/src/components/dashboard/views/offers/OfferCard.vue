@@ -9,9 +9,12 @@
           <h3 class="mt-2 truncate text-xl font-black tracking-tight text-slate-900">
             {{ capitalize(item.name || '') }}
           </h3>
+          <p v-if="item.producer_name" class="mt-1.5 text-sm text-slate-500">
+            Vendido por: <span class="font-semibold text-slate-700">{{ item.producer_name }}</span>
+          </p>
           <p
             v-if="item.distance_km !== null && item.distance_km !== undefined"
-            class="mt-2 truncate text-sm text-slate-500"
+            class="mt-1 truncate text-sm text-slate-500"
           >
             A {{ item.distance_km }} km de distância
           </p>
@@ -47,14 +50,14 @@
 
       <div class="mt-auto grid gap-3 pt-5 text-sm sm:grid-cols-2">
         <div class="rounded-2xl bg-slate-50 px-4 py-3">
-          <p class="text-xs font-semibold tracking-[0.24em] text-slate-400 uppercase">Preço</p>
+          <p class="text-xs font-semibold tracking-[0.24em] text-slate-400 uppercase">Preço / kg</p>
           <p class="mt-1 text-base font-bold text-slate-900">R$ {{ item.price }}</p>
         </div>
 
         <div class="rounded-2xl bg-slate-50 px-4 py-3">
           <p class="text-xs font-semibold tracking-[0.24em] text-slate-400 uppercase">Qtd. Disp.</p>
           <p class="mt-1 text-base font-bold text-slate-900">
-            {{ availableQuantity }}
+            {{ availableQuantity }} kg
           </p>
         </div>
       </div>
@@ -64,7 +67,7 @@
           v-if="cartQuantity > 0"
           class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700"
         >
-          No carrinho: {{ cartQuantity }}
+          No carrinho: {{ cartQuantity }} kg
         </div>
 
         <div class="flex items-center gap-2">
@@ -88,6 +91,8 @@
             :disabled="isAdding || availableQuantity <= 0"
             @blur="normalizeQuantity"
           />
+
+          <span class="text-sm font-bold text-slate-500 mr-1">kg</span>
 
           <button
             type="button"

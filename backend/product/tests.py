@@ -214,6 +214,10 @@ class ProductAPITestCase(TestCase):
         product_ids = {item['id'] for item in response.data['results']}
         self.assertEqual(product_ids, {self.product.id, self.other_product.id})
 
+        products_by_id = {item['id']: item for item in response.data['results']}
+        self.assertEqual(products_by_id[self.product.id]['producer_name'], 'Producer One Farm')
+        self.assertEqual(products_by_id[self.other_product.id]['producer_name'], 'Producer Two Farm')
+
     def test_producer_lists_only_own_active_products(self):
         self.client.force_authenticate(user=self.producer_user)
 

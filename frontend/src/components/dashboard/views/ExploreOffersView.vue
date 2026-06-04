@@ -87,6 +87,10 @@ function onSearch(value) {
 }
 
 function getProducerLabel(product) {
+  if (product?.producer_name) {
+    return product.producer_name;
+  }
+
   const producer = product?.producer;
 
   if (producer && typeof producer === 'object') {

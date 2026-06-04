@@ -9,7 +9,7 @@
             {{ capitalize(item.name) }}
           </h3>
           <p class="mt-1 text-sm font-medium text-slate-500">
-            {{ item.total_quantity }} em estoque | R$ {{ item.price }}
+            {{ item.total_quantity }} kg em estoque | R$ {{ item.price }}/kg
           </p>
         </div>
 

@@ -77,7 +77,7 @@
                   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
                     suggestedPrice,
                   )
-                }}</span>
+                }}/kg</span>
               </p>
             </div>
 
@@ -92,7 +92,7 @@
             />
 
             <div>
-              <label for="price" class="mb-2 block text-sm font-bold text-slate-700">Preço</label>
+              <label for="price" class="mb-2 block text-sm font-bold text-slate-700">Preço / kg</label>
               <input
                 id="price"
                 v-model.number="form.price"
@@ -106,7 +106,7 @@
 
             <div>
               <label for="total_quantity" class="mb-2 block text-sm font-bold text-slate-700"
-                >Quantidade Total</label
+                >Quantidade Total (kg)</label
               >
               <input
                 id="total_quantity"

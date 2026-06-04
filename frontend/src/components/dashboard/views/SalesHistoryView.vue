@@ -172,8 +172,8 @@ function buildHistoryItem(order) {
       const productData = item?.product_data || {};
       return {
         name: productData?.name || `Produto #${productId}`,
-        quantity: String(item?.quantity ?? 0),
-        unit: `R$ ${Number(item?.unit_price || 0).toFixed(2)} un.`,
+        quantity: `${item?.quantity ?? 0} kg`,
+        unit: `R$ ${Number(item?.unit_price || 0).toFixed(2)} / kg`,
         category: productData?.category_name || 'Sem categoria',
       };
     }),

@@ -75,8 +75,8 @@ function buildInvoiceHtml(order) {
         <tr>
           <td>${product.name || `Produto #${item.product}`}</td>
           <td>${product.category_name || '-'}</td>
-          <td class="center">${qty}</td>
-          <td class="right">${fmt(unitPrice)}</td>
+          <td class="center">${qty} kg</td>
+          <td class="right">${fmt(unitPrice)} / kg</td>
           <td class="right">${fmt(totalItem)}</td>
         </tr>`;
     })
@@ -453,8 +453,8 @@ function buildInvoiceHtml(order) {
             <tr>
               <th>Produto</th>
               <th>Categoria</th>
-              <th class="center">Qtd.</th>
-              <th class="right">Preço Unit.</th>
+              <th class="center">Qtd. (kg)</th>
+              <th class="right">Preço Unit. / kg</th>
               <th class="right">Total</th>
             </tr>
           </thead>

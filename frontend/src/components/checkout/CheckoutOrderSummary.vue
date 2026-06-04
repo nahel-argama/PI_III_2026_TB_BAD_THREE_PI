@@ -32,11 +32,11 @@
 
           <div class="mt-3 space-y-1 text-xs text-slate-600">
             <div>
-              Quantidade: <span class="font-semibold text-slate-900">{{ item.quantity }}</span>
+              Quantidade: <span class="font-semibold text-slate-900">{{ item.quantity }} kg</span>
             </div>
             <div>
               Preço unitário:
-              <span class="font-semibold text-slate-900">R$ {{ item.pricePerKg.toFixed(2) }}</span>
+              <span class="font-semibold text-slate-900">R$ {{ item.pricePerKg.toFixed(2) }} / kg</span>
             </div>
           </div>
         </div>

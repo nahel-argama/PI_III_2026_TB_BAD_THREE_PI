@@ -10,6 +10,7 @@ class ProductSerializer(serializers.ModelSerializer):
     images = serializers.SerializerMethodField()
     distance_km = serializers.SerializerMethodField()
     external_id = serializers.CharField(write_only=True, required=False)
+    producer_name = serializers.CharField(source='producer.trade_name', read_only=True)
 
     class Meta:
         model = Product
@@ -17,6 +18,7 @@ class ProductSerializer(serializers.ModelSerializer):
             'id',
             'category',
             'producer',
+            'producer_name',
             'external_id',
             'name',
             'description',
@@ -27,7 +29,7 @@ class ProductSerializer(serializers.ModelSerializer):
             'images',
             'distance_km',
         ]
-        read_only_fields = ['id', 'producer', 'name', 'distance_km']
+        read_only_fields = ['id', 'producer', 'producer_name', 'name', 'distance_km']
 
     def get_images(self, obj):
         custom_images = obj.images.all()

@@ -22,7 +22,7 @@
                     <span class="h-4 w-4 rounded bg-slate-200"></span>
                     <span>{{ item.quantity }} kg</span>
                     <span class="h-4 w-4 rounded bg-slate-200"></span>
-                    <span>R$ {{ item.pricePerKg.toFixed(2) }}</span>
+                    <span>R$ {{ item.pricePerKg.toFixed(2) }} / kg</span>
                     <span class="h-4 w-4 rounded bg-slate-200"></span>
                     <span>{{ item.distance }} km</span>
                     <span v-if="item.inStock" class="inline-flex items-center gap-1 text-green-600">

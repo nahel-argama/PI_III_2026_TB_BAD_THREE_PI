@@ -62,7 +62,7 @@
                         {{ getItemName(item) }}
                       </p>
                       <p class="mt-1 text-xs text-slate-500">
-                        Preço unitário: R$ {{ formatMoney(toNumber(item.unit_price)) }}
+                        Preço unitário: R$ {{ formatMoney(toNumber(item.unit_price)) }}/kg
                       </p>
                     </div>
                     <button
@@ -86,7 +86,7 @@
                         -
                       </button>
                       <span class="min-w-8 text-center text-sm font-bold text-slate-900">
-                        {{ item.quantity }}
+                        {{ item.quantity }} kg
                       </span>
                       <button
                         type="button"
