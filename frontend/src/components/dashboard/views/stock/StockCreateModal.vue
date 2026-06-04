@@ -264,7 +264,7 @@ async function handleProductSelect(option) {
         }
       }
     } catch (err) {
-      console.error('Erro ao buscar preços:', err);
+      // Silencia erro de busca de preços
     } finally {
       isLoadingPrice.value = false;
     }

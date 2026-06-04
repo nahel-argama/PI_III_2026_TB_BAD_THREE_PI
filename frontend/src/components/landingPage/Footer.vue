@@ -5,9 +5,9 @@
         <div class="max-w-md">
           <div class="mb-6 flex items-center gap-3">
             <img src="/favicon.png" alt="Cultiva" class="h-8 w-8 object-contain" />
-            <span class="text-xl font-black tracking-tighter text-white"> Cultiva </span>
+            <span class="text-2xl font-black tracking-tighter text-white"> Cultiva </span>
           </div>
-          <p class="text-sm leading-relaxed text-slate-400">
+          <p class="text-base leading-relaxed text-slate-400">
             Plataforma B2B inteligente focada no escoamento de produção para pequenos produtores
             rurais. Tecnologia a favor do pequeno produtor.
           </p>
@@ -15,7 +15,7 @@
 
         <div>
           <h4 class="mb-6 text-sm font-bold tracking-widest text-white uppercase">Institucional</h4>
-          <ul class="space-y-4 text-sm">
+          <ul class="space-y-4 text-base">
             <li>
               <a
                 href="https://docs.google.com/document/d/1Sj4P5nEl6HJOt2TKL23mWR1x7BN8BgVgE_t_16QcDfk/edit?usp=sharing"
