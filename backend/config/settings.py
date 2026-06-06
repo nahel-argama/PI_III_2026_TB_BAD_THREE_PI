@@ -12,6 +12,8 @@ PRICE_SCRAPPER_ENDPOINT = env.str(
 )
 
 # AI Stuff
+GEMINI_KEY = env.str("GEMINI_KEY", default="")
+
 ENABLE_DEFAULT_IMAGE_GENERATION = env.bool(
     "ENABLE_DEFAULT_IMAGE_GENERATION", default=False
 )

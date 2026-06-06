@@ -1,0 +1,21 @@
+info:
+  name: Generate Description
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{host}}/api/products/generate/description/"
+  body:
+    type: json
+    data: |-
+      {
+        "product_name": "Banana"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
