@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_nested.routers import NestedSimpleRouter
 
-from .views import ProductViewSet
+from .views import ProductDescriptionGenerateView, ProductViewSet
 from product_image.views import ProductImageDeleteView, ProductImageViewSet
 
 router = DefaultRouter()
@@ -19,4 +19,9 @@ urlpatterns = [
         name="product-image-delete",
     ),
     path("", include(products_router.urls)),
+    path(
+        "generate/description/",
+        ProductDescriptionGenerateView.as_view(),
+        name="product-description-generate",
+    ),
 ]

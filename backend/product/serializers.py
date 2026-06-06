@@ -158,3 +158,6 @@ class ProductSerializer(serializers.ModelSerializer):
         validated_data.pop('external_id', None)
 
         return super().update(instance, validated_data)
+
+class ProductDescriptionGenerateSerializer(serializers.Serializer):
+    product_name = serializers.CharField(max_length=255)
