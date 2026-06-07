@@ -1,9 +1,10 @@
 import google.genai as genai
-import google.genai.types as types
 
 import config.settings as settings
 
-client = genai.Client(api_key=settings.GEMINI_KEY)
+client = genai.Client(
+    api_key=settings.GEMINI_KEY,
+)
 
 
 def generate_product_description(product_name: str) -> str:

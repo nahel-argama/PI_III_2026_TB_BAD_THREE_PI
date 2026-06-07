@@ -2,8 +2,11 @@ import base64
 import io
 from dataclasses import dataclass
 
+import httpx
 import requests
 from PIL import Image
+import google.genai as genai
+import google.genai.types as types
 
 import config.settings as env
 
@@ -21,28 +24,28 @@ class ImageGenerationSuccess:
     size: int
 
 
-def generate_product_image(
+def generate_product_image_cloudflare(
     product_name: str,
 ) -> ImageGenerationSuccess | ImageGenerationFailure:
     prompt = f"""
-    Professional food photography of {product_name}.
+    Fotografia profissional de alimentos de {product_name}.
 
-    The image must contain ONLY the agricultural product "{product_name}".
+    A imagem deve conter APENAS o produto agrícola "{product_name}".
 
-    Single product centered in the frame.
-    White background.
-    Highly realistic.
-    Natural colors.
-    Studio lighting.
-    Detailed texture.
+    Produto único centralizado no quadro.
+    Fundo branco.
+    Altamente realista.
+    Cores naturais.
+    Iluminação de estúdio.
+    Textura detalhada.
 
-    No text.
-    No labels.
-    No watermark.
-    No packaging.
-    No people.
-    No additional objects.
-    No other products.
+    Sem texto.
+    Sem rótulos.
+    Sem marca d'água.
+    Sem embalagem.
+    Sem pessoas.
+    Sem objetos adicionais.
+    Sem outros produtos.
     """
 
     headers = {
@@ -93,3 +96,62 @@ def generate_product_image(
         )
     except Exception as e:
         return ImageGenerationFailure()
+
+
+def generate_product_image_gemini(
+    product_name: str,
+) -> ImageGenerationSuccess | ImageGenerationFailure:
+    try:
+        client = genai.Client(
+            api_key=env.GEMINI_KEY,
+        )
+        prompt = f"""
+        Forneça a URL de uma imagem de fotografia do produto '{product_name}'.
+
+        Requisitos:
+        - Retorne APENAS a URL bruta da imagem.
+        - NÃO inclua nenhuma formatação em markdown, nenhuma explicação adicional, nenhum texto.
+        - Procure por uma image com o nome do produto no link, quero que vocẽ faça uma busca
+        """
+
+        response = client.models.generate_content(
+            model="gemini-3.5-flash",
+            contents=prompt,
+        )
+
+        url = response.text.strip()
+
+        if not url.startswith("http://") and not url.startswith("https://"):
+            return ImageGenerationFailure()
+    except Exception:
+        return ImageGenerationFailure()
+
+    try:
+        img_response = requests.get(url, timeout=10)
+        img_response.raise_for_status()
+        image_bytes = img_response.content
+    except Exception:
+        return ImageGenerationFailure()
+
+    if not image_bytes:
+        return ImageGenerationFailure()
+
+    try:
+        image = Image.open(io.BytesIO(image_bytes))
+        image_format = image.format or "JPEG"
+        mime_type = Image.MIME.get(image_format, "image/jpeg")
+
+        return ImageGenerationSuccess(
+            image_bytes=image_bytes,
+            format=image_format,
+            mime_type=mime_type,
+            size=len(image_bytes),
+        )
+    except Exception:
+        return ImageGenerationFailure()
+
+
+def generate_product_image(
+    product_name: str,
+) -> ImageGenerationSuccess | ImageGenerationFailure:
+    return generate_product_image_cloudflare(product_name)

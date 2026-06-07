@@ -36,12 +36,17 @@ cp compose.dev.yml compose.yml
 docker compose up --build -d
 ```
 
-Rodar as migrações e iniciar o servidor
+Preparar o banco de dados
 
 ```bash
 python manage.py makemigrations
 python manage.py migrate
+python seed_categories.py
+```
 
+Rodar o servidor
+
+```bash
 python manage.py runserver
 ```
 
@@ -60,6 +65,27 @@ python manage.py create_admin_user
 ```
 
 Assim que criado, o usuário poderá fazer login pela mesma rota de login dos outros usuários.
+
+## Populando com usuários de teste
+
+```bash
+python manage.py seed_users
+```
+
+Tabela de usuários:
+
+| Email                        | Senha      | Tipo de Usuário |
+|------------------------------|------------|-----------------|
+| produtor.norte@example.com   | teste123   | Produtor        |
+| produtor.nordeste@example.com| teste123   | Produtor        |
+| produtor.centro_oeste@example.com| teste123 | Produtor        |
+| produtor.sudeste@example.com | teste123   | Produtor        |
+| produtor.sul@example.com     | teste123   | Produtor        |
+| varejista.norte@example.com  | teste123   | Varejista       |
+| varejista.nordeste@example.com| teste123  | Varejista       |
+| varejista.centro_oeste@example.com| teste123| Varejista       |
+| varejista.sudeste@example.com| teste123  | Varejista       |
+| varejista.sul@example.com    | teste123   | Varejista       |
 
 ## Documentação das Rotas
 

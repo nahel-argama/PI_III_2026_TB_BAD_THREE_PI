@@ -5,9 +5,14 @@ from decimal import Decimal
 
 def normalize_query(query: str) -> str:
     transformed = query.lower().strip()
-    normalized = unicodedata.normalize("NFD", transformed).replace(" ", "")
+    normalized = (
+        unicodedata.normalize("NFD", transformed)
+        .encode("ascii", "ignore")
+        .decode("utf-8")
+    )
 
-    return normalized
+    return normalized.replace(" ", "")
+
 
 
 def get_products_price_avg(products: list[dict]) -> Decimal:
