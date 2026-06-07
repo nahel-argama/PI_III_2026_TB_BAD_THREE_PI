@@ -8,7 +8,7 @@ http:
   url: "{{host}}/api/default-product-images/:external-id/generate-image"
   params:
     - name: external-id
-      value: "36"
+      value: "835"
       type: path
   auth: inherit
 

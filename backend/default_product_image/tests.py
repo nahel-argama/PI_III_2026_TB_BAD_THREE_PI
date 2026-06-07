@@ -141,6 +141,10 @@ class DefaultProductImageAdminTestCase(TestCase):
         "default_product_image.views.settings.CF_ACCOUNT_ID",
         "",
     )
+    @patch(
+        "default_product_image.views.settings.GEMINI_KEY",
+        "",
+    )
     def test_fail_to_generate_image_when_disabled(self):
         self.client.force_authenticate(user=self.admin_user)
 
@@ -226,6 +230,7 @@ class DefaultProductImageAdminTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     @patch("default_product_image.views.settings.CF_ACCOUNT_ID", "")
+    @patch("default_product_image.views.settings.GEMINI_KEY", "")
     def test_features_ai_disabled(self):
         self.client.force_authenticate(user=self.admin_user)
         response = self.client.get("/api/default-product-images/features/")
@@ -246,6 +251,7 @@ class DefaultProductImageAdminTestCase(TestCase):
     @patch("default_product_image.views.settings.CF_TOKEN", "tok-123")
     @patch("default_product_image.views.settings.CF_MODEL", "mod-123")
     @patch("default_product_image.views.settings.CF_ENDPOINT", "http://end-point")
+    @patch("default_product_image.views.settings.GEMINI_KEY", "")
     def test_features_ai_disabled_when_var_missing(self):
         self.client.force_authenticate(user=self.admin_user)
         response = self.client.get("/api/default-product-images/features/")
