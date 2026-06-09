@@ -299,7 +299,7 @@ async function handleProductSelect(option) {
           suggestedPrice.value = price;
         }
       }
-    } catch (err) {
+    } catch {
       // Silencia erro de busca de preços
     } finally {
       isLoadingPrice.value = false;

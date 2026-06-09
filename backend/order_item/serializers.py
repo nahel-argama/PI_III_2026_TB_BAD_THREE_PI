@@ -2,15 +2,46 @@ from .models import OrderItem
 from rest_framework import serializers
 from order.services import validate_item_stock
 from product.models import Product
+from django.urls import reverse
+from product_image.serializers import ProductImageSerializer
 
 
 class ProductSummarySerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
     producer_trade_name = serializers.CharField(source='producer.trade_name', read_only=True)
+    images = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'category', 'category_name', 'producer', 'producer_trade_name']
+        fields = ['id', 'name', 'category', 'category_name', 'producer', 'producer_trade_name', 'images']
+
+    def get_images(self, obj):
+        custom_images = obj.images.all()
+        if custom_images.exists():
+            return ProductImageSerializer(
+                custom_images, many=True, context=self.context
+            ).data
+
+        from default_product_image.models import DefaultProductImage
+
+        try:
+            default_img = DefaultProductImage.objects.select_related("image").get(product_name=obj.name)
+            if default_img.image:
+                request = self.context.get("request")
+                url = reverse("image-download", args=[default_img.image_id])
+                if request:
+                    url = request.build_absolute_uri(url)
+                return [
+                    {
+                        "id": default_img.image_id,
+                        "image": url,
+                        "created_at": default_img.created_at,
+                    }
+                ]
+        except DefaultProductImage.DoesNotExist:
+            pass
+
+        return []
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product_data = ProductSummarySerializer(source='product', read_only=True)

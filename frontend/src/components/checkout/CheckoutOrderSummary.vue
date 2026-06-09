@@ -15,12 +15,16 @@
         :key="item.id"
         class="flex gap-4 border-b border-slate-200 pb-6 last:border-0"
       >
-        <img
+        <div
           v-if="item.imageUrl"
-          :src="item.imageUrl"
-          :alt="item.name"
-          class="h-20 w-20 flex-shrink-0 rounded-lg border border-slate-200 object-cover"
-        />
+          class="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border border-slate-200"
+        >
+          <AppSecureImage
+            :src="item.imageUrl"
+            :alt="item.name"
+            object-fit-class="object-cover"
+          />
+        </div>
         <div
           v-else
           class="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-xs font-bold text-slate-500"
@@ -52,6 +56,8 @@
 </template>
 
 <script setup>
+import AppSecureImage from '@/components/ui/AppSecureImage.vue';
+
 /**
  * @typedef {import('@/types/checkout').OrderItem} OrderItem
  */
