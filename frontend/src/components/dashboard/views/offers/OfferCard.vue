@@ -19,6 +19,15 @@
             A {{ item.distance_km }} km de distância
           </p>
         </div>
+        <button
+          v-if="item.description"
+          type="button"
+          class="rounded-2xl border border-slate-200 bg-white p-2.5 text-slate-500 transition hover:border-emerald-200 hover:text-emerald-600 focus:outline-none"
+          :aria-label="`Ver descrição de ${capitalize(item.name || '')}`"
+          @click="openDescriptionModal"
+        >
+          <InformationCircleIcon class="h-5 w-5" />
+        </button>
       </div>
 
       <div
@@ -114,13 +123,28 @@
         </button>
       </div>
     </div>
+
+    <AppDialog
+      v-model="isDescriptionOpen"
+      :title="`Descrição: ${capitalize(item.name || '')}`"
+      variant="success"
+      confirm-label="Fechar"
+      :show-cancel="false"
+      @confirm="isDescriptionOpen = false"
+    >
+      <div 
+        class="whitespace-pre-wrap text-left text-sm text-slate-600 leading-relaxed max-h-[40vh] overflow-y-auto px-1 custom-scrollbar" 
+        v-html="formattedDescription"
+      ></div>
+    </AppDialog>
   </article>
 </template>
 
 <script setup>
 import { computed, ref, watch } from 'vue';
-import { PhotoIcon } from '@heroicons/vue/24/outline';
+import { PhotoIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
 import AppSecureImage from '@/components/ui/AppSecureImage.vue';
+import AppDialog from '@/components/ui/AppDialog.vue';
 import { capitalize } from '@/utils/string';
 
 const props = defineProps({
@@ -150,6 +174,19 @@ const availableQuantity = computed(() => {
   const reserved = Number(props.item.reserved_quantity || 0);
   return Math.max(0, total - reserved);
 });
+
+const isDescriptionOpen = ref(false);
+
+const formattedDescription = computed(() => {
+  if (!props.item.description) return '';
+  return props.item.description
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br />');
+});
+
+function openDescriptionModal() {
+  isDescriptionOpen.value = true;
+}
 
 const canAddToCart = computed(() => {
   return (
