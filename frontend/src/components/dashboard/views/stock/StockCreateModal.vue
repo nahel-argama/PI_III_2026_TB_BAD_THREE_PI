@@ -119,9 +119,41 @@
             </div>
 
             <div>
-              <label for="description" class="mb-2 block text-sm font-bold text-slate-700"
-                >Descrição (Opcional)</label
-              >
+              <div class="mb-2 flex items-center justify-between">
+                <label for="description" class="block text-sm font-bold text-slate-700"
+                  >Descrição (Opcional)</label
+                >
+                <button
+                  v-if="form.external_id"
+                  type="button"
+                  :disabled="isGeneratingDescription"
+                  class="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 px-3 py-1 text-[10px] font-black tracking-wider text-white uppercase shadow-md shadow-emerald-500/20 transition duration-300 hover:scale-[1.03] hover:from-emerald-600 hover:to-teal-600 hover:shadow-emerald-500/30 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-75"
+                  @click="handleGenerateDescription"
+                >
+                  <svg
+                    v-if="isGeneratingDescription"
+                    class="h-3 w-3 animate-spin text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    ></circle>
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  <span>{{ isGeneratingDescription ? 'Gerando...' : 'Gerar com IA' }}</span>
+                </button>
+              </div>
               <textarea
                 id="description"
                 v-model="form.description"
@@ -163,9 +195,10 @@ import { reactive, ref, watch } from 'vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import AppSelect from '@/components/ui/AppSelect.vue';
 import { useProductSearch } from '@/composables/useProductSearch';
-import { createProduct } from '@/services/product';
+import { createProduct, generateProductDescription } from '@/services/product';
 import { listCategories } from '@/services/category';
 import { useAuthStore } from '@/stores/auth';
+import { useToast } from '@/composables/useToast';
 
 const props = defineProps({
   modelValue: {
@@ -194,6 +227,8 @@ const isLoadingPrice = ref(false);
 const categoryOptions = ref([]);
 
 const authStore = useAuthStore();
+const toast = useToast();
+const isGeneratingDescription = ref(false);
 
 function resetForm() {
   Object.assign(form, INITIAL_FORM);
@@ -201,6 +236,7 @@ function resetForm() {
   submitError.value = '';
   suggestedPrice.value = null;
   isLoadingPrice.value = false;
+  isGeneratingDescription.value = false;
 }
 
 const {
@@ -268,6 +304,35 @@ async function handleProductSelect(option) {
     } finally {
       isLoadingPrice.value = false;
     }
+  }
+}
+
+async function handleGenerateDescription() {
+  if (!selectedProduct.value || !selectedProduct.value.name) return;
+  isGeneratingDescription.value = true;
+  try {
+    const response = await generateProductDescription(selectedProduct.value.name);
+    if (response && response.description) {
+      form.description = response.description;
+      toast.success('Descrição gerada com sucesso!', 'IA Concluída');
+    }
+  } catch (err) {
+    const status = err?.response?.status;
+    if (status === 503) {
+      toast.error(
+        'Geração por IA indisponível no momento (desativada no backend).',
+        'Recurso Indisponível',
+      );
+    } else if (status === 429) {
+      toast.error('Limite de gerações atingido. Tente novamente em instantes.', 'Limite Excedido');
+    } else {
+      toast.error(
+        'Não foi possível gerar a descrição. Verifique as credenciais ou tente novamente.',
+        'Falha na IA',
+      );
+    }
+  } finally {
+    isGeneratingDescription.value = false;
   }
 }
 

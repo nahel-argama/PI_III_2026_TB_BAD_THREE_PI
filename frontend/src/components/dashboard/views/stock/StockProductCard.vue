@@ -13,15 +13,27 @@
           </p>
         </div>
 
-        <button
-          type="button"
-          class="rounded-2xl border border-slate-200 bg-white p-2.5 text-slate-500 transition hover:border-rose-200 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
-          :aria-label="`Remover ${capitalize(item.name)}`"
-          :disabled="isRemoving"
-          @click="openDeleteDialog"
-        >
-          <TrashIcon class="h-5 w-5" />
-        </button>
+        <div class="flex items-center gap-2">
+          <button
+            v-if="item.description"
+            type="button"
+            class="rounded-2xl border border-slate-200 bg-white p-2.5 text-slate-500 transition hover:border-emerald-200 hover:text-emerald-600 focus:outline-none"
+            :aria-label="`Ver descrição de ${capitalize(item.name)}`"
+            @click="openDescriptionModal"
+          >
+            <InformationCircleIcon class="h-5 w-5" />
+          </button>
+
+          <button
+            type="button"
+            class="rounded-2xl border border-slate-200 bg-white p-2.5 text-slate-500 transition hover:border-rose-200 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none"
+            :aria-label="`Remover ${capitalize(item.name)}`"
+            :disabled="isRemoving"
+            @click="openDeleteDialog"
+          >
+            <TrashIcon class="h-5 w-5" />
+          </button>
+        </div>
       </div>
 
       <div
@@ -61,12 +73,26 @@
       :loading="isRemoving"
       @confirm="confirmDelete"
     />
+
+    <AppDialog
+      v-model="isDescriptionOpen"
+      :title="`Descrição: ${capitalize(item.name)}`"
+      variant="success"
+      confirm-label="Fechar"
+      :show-cancel="false"
+      @confirm="isDescriptionOpen = false"
+    >
+      <div 
+        class="whitespace-pre-wrap text-left text-sm text-slate-600 leading-relaxed max-h-[40vh] overflow-y-auto px-1 custom-scrollbar" 
+        v-html="formattedDescription"
+      ></div>
+    </AppDialog>
   </article>
 </template>
 
 <script setup>
 import { computed, ref } from 'vue';
-import { PhotoIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import { PhotoIcon, TrashIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
 import AppSecureImage from '@/components/ui/AppSecureImage.vue';
 import AppDialog from '@/components/ui/AppDialog.vue';
 import { deleteProduct } from '@/services/product';
@@ -83,10 +109,23 @@ const emit = defineEmits(['remove']);
 
 const isRemoving = ref(false);
 const isDialogOpen = ref(false);
+const isDescriptionOpen = ref(false);
 
 const imageUrl = computed(() => {
   return props.item.images?.[0]?.image || null;
 });
+
+const formattedDescription = computed(() => {
+  if (!props.item.description) return '';
+  // Converte **texto** para <strong>texto</strong> e converte quebras de linha
+  return props.item.description
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br />');
+});
+
+function openDescriptionModal() {
+  isDescriptionOpen.value = true;
+}
 
 function openDeleteDialog() {
   isDialogOpen.value = true;

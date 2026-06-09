@@ -24,3 +24,8 @@ export async function getProductById(id) {
   const response = await api.get(`/products/${id}/`);
   return response.data;
 }
+
+export async function generateProductDescription(productName) {
+  const response = await api.post('/products/generate/description/', { product_name: productName });
+  return response.data;
+}
