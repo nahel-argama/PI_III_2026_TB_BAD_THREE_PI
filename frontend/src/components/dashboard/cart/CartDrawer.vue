@@ -175,6 +175,10 @@ function formatMoney(value) {
 }
 
 function getProducerLabel(order) {
+  const producerData = order?.producer_data;
+  if (producerData) {
+    return producerData.trade_name || producerData.name || `Produtor #${order.producer}`;
+  }
   return `Produtor #${order?.producer ?? '-'}`;
 }
 
@@ -183,7 +187,7 @@ function getOrderItems(order) {
 }
 
 function getItemName(item) {
-  return `Produto #${item?.product ?? '-'}`;
+  return item?.product_data?.name || `Produto #${item?.product ?? '-'}`;
 }
 
 function getLineTotal(item) {

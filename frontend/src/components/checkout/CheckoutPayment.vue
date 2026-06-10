@@ -48,7 +48,7 @@ const allPaymentMethods = [
   },
   {
     id: 3,
-    name: 'Cartão de Crédito B2B',
+    name: 'Cartão de Crédito',
     description: 'Parcelado em até 12x',
   },
 ];

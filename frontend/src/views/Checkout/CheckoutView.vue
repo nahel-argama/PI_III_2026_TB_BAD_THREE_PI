@@ -174,7 +174,10 @@ const checkoutItems = computed(() => {
 const checkoutProducer = computed(() => {
   const data = order.value?.producer_data;
   if (data) {
-    return data;
+    return {
+      ...data,
+      name: data.trade_name || data.name || `Produtor #${data.id}`,
+    };
   }
   const producer = order.value?.producer;
   return {
